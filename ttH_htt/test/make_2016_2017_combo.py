@@ -234,9 +234,9 @@ for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
         print enterHere
         WS_output_byCat = card+"_Catpoi_final"
 
-        if not takeCombo :
-            floating_by_cat = \
-            "--PO 'map=.*2lss_e.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
+
+        floating_by_cat = "\
+ --PO 'map=.*2lss_e.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
  --PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
  --PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
  --PO 'map=.*3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
@@ -245,18 +245,6 @@ for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
  --PO 'map=.*3l_1tau.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
  --PO 'map=.*2l_2tau.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
  --PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
-"
-        else :
-            floating_by_cat = \
-            "--PO 'map=.*2lss_e.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
-  --PO 'map=.*2lss_m.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'\
-  --PO 'map=.*3l_b.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
-  --PO 'map=.*3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'\
-  --PO 'map=.*4l.*/ttH.*:r_ttH_4l[1,-5,10]'\
-  --PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
-  --PO 'map=.*2lss_1tau_.*/ttH.*:r_ttH_2lss_1tau[1,-5,10]'\
-  --PO 'map=.*3l_1tau_.*/ttH.*:r_ttH_3l_1tau[1,-5,10]'\
-  --PO 'map=.*2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'\
 "
 
         run_cmd("cd "+enterHere+" ; text2workspace.py %s/../%s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose %s %s; cd -"  % (enterHere, card, WS_output_byCat, floating_ttV, floating_by_cat))
