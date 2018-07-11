@@ -342,7 +342,7 @@ for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
 
         run_cmd("cd "+enterHere+' ; python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root  -p r_ttH  ; cd -')
         gSystem.Load('libHiggsAnalysisCombinedLimit')
-        print ("Retrieving yields from workspace: ", os.getcwd()+"/"++takeYields)
+        print ("Retrieving yields from workspace: ", os.getcwd()+"/"+takeYields)
         fin = TFile(os.getcwd()+"/"+mom_result+takeYields+".root")
         wsp = fin.Get('w')
         cmb = ch.CombineHarvester()
