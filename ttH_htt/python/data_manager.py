@@ -1,11 +1,194 @@
 import ROOT
 import array
+import math
 
 def run_cmd(command):
   print "executing command = '%s'" % command
   p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
   stdout, stderr = p.communicate()
   return stdout
+
+def rebin_total(template, folder, fin, divideByBinWidth, name_total) :
+    total_hist = fin.Get(folder+"/"+name_total)
+    hist = template.Clone()
+    hist.SetMarkerSize(0);
+    hist.SetFillColorAlpha(12, 0.40)
+    hist.SetLineWidth(0)
+    hist.SetMinimum(options.minY)
+    hist.SetMaximum(options.maxY)
+    for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+        bin_width = 1.
+        if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
+        hist.SetBinContent(ii, total_hist.GetBinContent(ii)/bin_width)
+        hist.SetBinError(ii, total_hist.GetBinError(ii)/bin_width)
+    if not hist.GetSumw2N() : hist.Sumw2()
+    hist.GetXaxis().SetTitleOffset(0.7);
+    hist.GetXaxis().SetLabelColor(10);
+    hist.GetYaxis().SetTitleOffset(0.8);
+    hist.GetYaxis().SetTitleSize(0.080);
+    hist.GetYaxis().SetLabelSize(0.065);
+    hist.GetYaxis().SetTickLength(0.04);
+    hist.GetXaxis().SetTickLength(0.04);
+    return hist
+
+def rebin_hist(template, fin, name, itemDict, divideByBinWidth) :
+    print folder+"/"+name
+    hist = fin.Get(folder+"/"+name)
+    hist_rebin = template.Clone()
+    hist_rebin.SetMarkerSize(0);
+    hist_rebin.SetFillColor(itemDict[0])
+    hist_rebin.SetFillStyle(itemDict[1])
+    if "none" not in itemDict[2] : legend1.AddEntry(hist_rebin, itemDict[2], "f");
+    if itemDict[3] == True :  hist_rebin.SetLineColor(1);
+    else : hist_rebin.SetLineColor(itemDict[0]);
+    for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+        bin_width = 1.
+        if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
+        ### remove negatives
+        binContent_original = hist.GetBinContent(ii)
+        binError2_original = hist.GetBinError(ii)**2;
+        if binContent_original < 0. :
+            print ("bin with negative entry: ", binContent_original)
+            binError2_modified = binError2_original + math.pow(2, binContent_original - binContent_modified)
+            if not binError2_modified >= 0. : print "Bin error negative!"
+            hist_rebin.SetBinError(ii, math.sqrt(binError2_modified)/bin_width);
+            hist_rebin.SetBinContent(ii, 0.)
+        else :
+            hist_rebin.SetBinError(ii,   hist.GetBinError(ii)/bin_width);
+            hist_rebin.SetBinContent(ii, hist.GetBinContent(ii)/bin_width)
+    if not hist.GetSumw2N() : hist.Sumw2()
+    return hist_rebin
+
+def rebin_data(template, folder, fin, fromHavester) :
+    if not fromHavester :
+        dataTGraph = fin.Get(folder+"/data")
+        dataTGraph1 = ROOT.TGraphAsymmErrors()
+        for ii in xrange(0, template.GetXaxis().GetNbins()) :
+            bin_width = 1.
+            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
+            xp = ROOT.Double()
+            yp = ROOT.Double()
+            dataTGraph.GetPoint(ii,xp,yp)
+            dataTGraph1.SetPoint(ii,       template.GetBinCenter(ii+1) , yp/bin_width)
+            dataTGraph1.SetPointEYlow(ii,  dataTGraph.GetErrorYlow(ii)/bin_width)
+            dataTGraph1.SetPointEYhigh(ii, dataTGraph.GetErrorYhigh(ii)/bin_width)
+            dataTGraph1.SetPointEXlow(ii,  template.GetBinWidth(ii+1)/2.)
+            dataTGraph1.SetPointEXhigh(ii, template.GetBinWidth(ii+1)/2.)
+    else :
+        dataTGraph = fin.Get(folder+"/data_obs")
+        dataTGraph1 = template.Clone()
+        for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+            bin_width = 1.
+            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
+            dataTGraph1.SetBinContent(ii, dataTGraph.GetBinContent(ii)/bin_width)
+            dataTGraph1.SetBinError(ii, dataTGraph.GetBinError(ii)/bin_width)
+    dataTGraph1.SetMarkerColor(1);
+    dataTGraph1.SetMarkerStyle(20);
+    dataTGraph1.SetMarkerSize(2);
+    dataTGraph1.SetLineColor(1);
+    dataTGraph1.SetLineWidth(1);
+    dataTGraph1.SetLineStyle(1)
+    dataTGraph1.SetMinimum(options.minY)
+    dataTGraph1.SetMaximum(options.maxY)
+    return dataTGraph1
+
+def err_data(template, folder, fromHavester) :
+    if not fromHavester :
+        dataTGraph = fin.Get(folder+"/data")
+        dataTGraph1 = ROOT.TGraphAsymmErrors()
+        for ii in xrange(0, template.GetXaxis().GetNbins()) :
+            bin_width = 1.
+            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
+            dividend = template.GetBinContent(ii+1)*bin_width
+            xp = ROOT.Double()
+            yp = ROOT.Double()
+            dataTGraph.GetPoint(ii,xp,yp)
+            if yp > 0 :
+                if dividend > 0 : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , yp/dividend-1)
+                else : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , -2.6)
+            else : dataTGraph1.SetPoint(ii, template.GetBinCenter(ii+1) , -2.6)
+
+            dataTGraph1.SetPointEYlow(ii,  dataTGraph.GetErrorYlow(ii)/dividend)
+            dataTGraph1.SetPointEYhigh(ii, dataTGraph.GetErrorYhigh(ii)/dividend)
+            dataTGraph1.SetPointEXlow(ii,  template.GetBinWidth(ii+1)/2.)
+            dataTGraph1.SetPointEXhigh(ii, template.GetBinWidth(ii+1)/2.)
+    else :
+        dataTGraph = fin.Get(folder+"/data_obs")
+        dataTGraph1 = template.Clone()
+        for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
+            bin_width = 1.
+            if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
+            dividend = template.GetBinContent(ii)*bin_width
+            if dataTGraph.GetBinContent(ii) > 0 :
+              if dividend > 0 :
+                dataTGraph1.SetBinContent(ii, (dataTGraph.GetBinContent(ii)/dividend)-1)
+                dataTGraph1.SetBinError(ii,    dataTGraph.GetBinError(ii)/dividend) #
+            else :
+                dataTGraph1.SetBinContent(ii, -2.6)
+        if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
+    dataTGraph1.SetMarkerColor(1);
+    dataTGraph1.SetMarkerStyle(20);
+    dataTGraph1.SetMarkerSize(2);
+    dataTGraph1.SetLineColor(1);
+    dataTGraph1.SetLineWidth(1);
+    dataTGraph1.SetLineStyle(1)
+    return dataTGraph1
+
+def do_hist_total_err(template, labelX, name_total) :
+    total_hist = fin.Get(folder+"/"+name_total)
+    hist_total_err = template.Clone()
+    hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}");
+    hist_total_err.GetXaxis().SetTitleOffset(1.15);
+    hist_total_err.GetYaxis().SetTitleOffset(0.8);
+    hist_total_err.GetXaxis().SetTitleSize(0.14);
+    hist_total_err.GetYaxis().SetTitleSize(0.105);
+    hist_total_err.GetYaxis().SetLabelSize(0.105);
+    hist_total_err.GetXaxis().SetLabelSize(0.10);
+    hist_total_err.GetYaxis().SetTickLength(0.04);
+    hist_total_err.GetXaxis().SetLabelColor(1);
+    hist_total_err.GetXaxis().SetTitle("BDT")
+    hist_total_err.SetMarkerSize(0);
+    hist_total_err.SetFillColorAlpha(12, 0.40)
+    hist_total_err.SetLineWidth(2)
+    hist_total_err.SetMinimum(-2.6)
+    hist_total_err.SetMaximum(2.6)
+    for bin in xrange(0, hist_total_err.GetXaxis().GetNbins()) :
+        hist_total_err.SetBinContent(bin+1, 0)
+        if total_hist.GetBinContent(bin+1) > 0. :
+            hist_total_err.SetBinError(bin+1, total_hist.GetBinError(bin+1)/total_hist.GetBinContent(bin+1))
+    return hist_total_err
+
+def addLabel_CMS_preliminary() :
+
+    x0 = 0.2
+    y0 = 0.953
+    ypreliminary = 0.95
+    xlumi = 0.7
+    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC");
+    label_cms.AddText("CMS");
+    label_cms.SetTextFont(61);
+    label_cms.SetTextAlign(13);
+    label_cms.SetTextSize(0.0575);
+    label_cms.SetTextColor(1);
+    label_cms.SetFillStyle(0);
+    label_cms.SetBorderSize(0);
+    label_preliminary = ROOT.TPaveText(x0 + 0.1050, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC");
+    label_preliminary.AddText("Preliminary");
+    label_preliminary.SetTextFont(52);
+    label_preliminary.SetTextAlign(13);
+    label_preliminary.SetTextSize(0.050);
+    label_preliminary.SetTextColor(1);
+    label_preliminary.SetFillStyle(0);
+    label_preliminary.SetBorderSize(0);
+    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0050, xlumi + 0.1900, y0 + 0.0550, "NDC");
+    label_luminosity.AddText("41.53 fb^{-1} (13 TeV)");
+    label_luminosity.SetTextAlign(13);
+    label_luminosity.SetTextSize(0.050);
+    label_luminosity.SetTextColor(1);
+    label_luminosity.SetFillStyle(0);
+    label_luminosity.SetBorderSize(0);
+
+    return [label_cms, label_preliminary, label_luminosity]
 
 def finMaxMin(histSource) :
     file = TFile(histSource+".root","READ");
@@ -116,14 +299,260 @@ def ReadLimits(limits_output):
       if "Expected 97.5%:" in line : up2=float(tokens[4])
     return [do2,do1,central,up1,up2]
 
-calculateInt=[
-    "tth_htt",
-    "tth_hww",
-    "tth_hzz",
-    "fakes_data",
-    "TTW",
-    "TTZ",
-    "EWK",
-    "Rares",
-    "data_obs"
-  ]
+
+###########################################################
+# doYields
+
+def AddSystQuad(list):
+    ell = []
+    for element in list : ell = ell + [math.pow(element, 2.)]
+    quad =  math.sqrt(sum(ell))
+    return quad
+
+def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
+
+    c_cat = []
+    sum_proc = []
+    err_sum_proc = []
+    for label in labels :
+        c_cat = c_cat  + [cmb.cp().bin(['ttH_'+label])]
+        sum_proc = sum_proc + [0]
+        err_sum_proc = err_sum_proc + [0]
+
+    header = r'\begin{tabular}{|l|'
+    bottom = r'Observed data & '
+    for ll in xrange(len(labels)) :
+        header = header + r'r@{$ \,\,\pm\,\, $}l|'
+        if blinded : bottom = bottom + r' \multicolumn{2}{c|}{$-$} '
+        else : bottom = bottom + r' \multicolumn{2}{c|}{$%g$} ' % (c_cat[ll].cp().GetObservedRate())
+        if ll == len(labels) - 1 : bottom = bottom + r' \\'
+        else : bottom = bottom + ' &'
+    header = header +"} \n"
+    bottom = bottom +"\n"
+    filey.write(header)
+
+    if type == 'tau' :
+        conversions = "conversions"
+        flips = 'flips'
+        fakes_data = 'fakes_data'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{2}{c|}{$1\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$2\Plepton + 2\tauh$} & \multicolumn{2}{c|}{$3\Plepton + 1\tauh$} & \multicolumn{2}{c|}{$2\Plepton ss + 1\tauh$} \\
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilep2lss' :
+        conversions = "Convs"
+        flips = 'data_flips'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{20}{c|}{$2\Plepton ss$}  \\ \hline
+        B-tag  & \multicolumn{4}{c|}{no req.}  & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}   \\ \hline
+        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$} & \multicolumn{4}{c|}{$mm$}  \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilepCR2lss' :
+        conversions = "Convs"
+        flips = 'flips_data'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{20}{c|}{$2\Plepton ss$}  \\ \hline
+        B-tag   & \multicolumn{4}{c|}{no req.} & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}  \\ \hline
+        Leptons  & \multicolumn{4}{c|}{$ee$} & \multicolumn{4}{c|}{$em$}  & \multicolumn{4}{c|}{$mm$} & \multicolumn{4}{c|}{$em$}  & \multicolumn{4}{c|}{$mm$} \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilepCR3l4l' :
+        conversions = "Convs"
+        flips = 'flips_data'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process & \multicolumn{10}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton$}  \\ \hline
+        CR & \multicolumn{8}{c|}{$\PcZ$-peak} & \multicolumn{2}{c|}{$WZ$ enrich.}  & \multicolumn{2}{c|}{$ZZ$ enrich.} \\ \hline
+        B-tag  & \multicolumn{4}{c|}{Loose}  & \multicolumn{4}{c|}{Tight}  & \multicolumn{4}{c|}{no req.}   \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & & \multicolumn{4}{c|}{no req.} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    if type == 'multilep3l4l' :
+        conversions = "Convs"
+        flips = 'flips_data'
+        fakes_data = 'data_fakes'
+
+        filey.write(r"""
+        \hline
+        Process &  \multicolumn{8}{c|}{$3\Plepton$} & \multicolumn{2}{c|}{$4\Plepton + 1\tauh$}  \\ \hline
+        B-tag  & \multicolumn{4}{c|}{no req.}  & \multicolumn{8}{c|}{Loose}  & \multicolumn{8}{c|}{Tight}  & \multicolumn{4}{c|}{Loose}  & \multicolumn{4}{c|}{Tight} & \multicolumn{2}{c|}{no req.}  \\ \hline
+        Signal & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} & \multicolumn{2}{c|}{$-$} & \multicolumn{2}{c|}{$+$} \\ \hline
+        \hline
+        \hline"""+"\n")
+
+    signals = [
+        'ttH_hzz',
+        'ttH_hww',
+        'ttH_htt',
+        'ttH_hmm',
+        'ttH_hzg'
+        ]
+
+    TTWX = [
+        'TTW',
+        'TTWW'
+        ]
+
+    if 'multilep' in type :
+        tH = [
+        'tHW_htt',
+        'tHq_htt',
+        'tHW_hww',
+        'tHq_hww',
+        'tHW_hzz',
+        'tHq_hzz'
+        ]
+        signalslabel_tH = [
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \Pgt\Pgt$& ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \Pgt\Pgt$& ',
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \PW\PW$ & ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \PW\PW$ & ',
+            r'$\cPqt\PHiggs q$ $\PHiggs \to \cPZ\cPZ$  & ',
+            r'$\cPqt\PHiggs\PW$ $\PHiggs \to \cPZ\cPZ$  & '
+            ]
+
+    if type == 'tau' :
+        tH = [
+        'tHq',
+        'tHW'
+        ]
+        signalslabel_tH = [
+            r'$\cPqt\PHiggs q$ & ',
+            r'$\cPqt\PHiggs\PW$ & '
+            ]
+
+    EWK = [
+        'ZZ',
+        'WZ'
+    ]
+
+    singleCompMC = []
+    if type == 'tau' : singleCompMC = singleCompMC + ['EWK']
+    singleCompMC = singleCompMC + [
+        'TTZ',
+        fakes_data,
+        conversions,
+        flips,
+        'Rares'
+    ]
+
+    singleCompMClabels = []
+    if type == 'tau' : singleCompMClabels = singleCompMClabels + ['$\PW\cPZ + \cPZ\cPZ$']
+    singleCompMClabels = singleCompMClabels + [
+        '$\cPqt\cPaqt\cPZ$',
+        'Misidentified',
+        'Conversions',
+        'signal flip',
+        'Other'
+    ]
+
+    if type == 'tau' : listTosum = [signals, TTWX, tH]
+    if 'multilep' in type : listTosum = [signals, TTWX, tH, EWK]
+    for todo in listTosum :
+
+        sigsum = [0.0 for i in xrange(len(labels))]
+        sigsumErr = [0.0 for i in xrange(len(labels))]
+
+        if todo == signals :
+            linesigsum = 'ttH (sum) &'
+            signalslabel = [
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \cPZ\cPZ$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \PW\PW$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \Pgt\Pgt$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \mu\mu$ & ',
+                r'$\cPqt\cPaqt\PHiggs$, $\PHiggs \to \cPZ\gamma$& ',
+                ]
+        elif todo == TTWX :
+            linesigsum = 'ttW + ttWW &'
+            signalslabel = [
+                r'$\cPqt\cPaqt\PW$ & ',
+                r'$\cPqt\cPaqt\PW\PW$ & '
+                ]
+        elif todo == tH :
+            linesigsum = '$\cPqt\PHiggs$ (sum) &'
+            signalslabel = signalslabel_tH
+        if todo == EWK :
+            linesigsum = '$\PW\cPZ + \cPZ\cPZ$ &'
+            signalslabel = [
+                r'$\cPZ\cPZ$ & ',
+                r'$\PW\cPZ$ & '
+                ]
+
+        for ss, signal in enumerate(todo) :
+            linesig = signalslabel[ss]
+            for ll, label in enumerate(labels) :
+                if "2lss_1tau" in label or  "3l_1tau" in label :
+                    thissig = c_cat[ll].cp().process([signal+'_faketau']).GetRate() + c_cat[ll].cp().process([signal+'_gentau']).GetRate()
+                    thissigErr = AddSystQuad({c_cat[ll].cp().process([signal+'_faketau']).GetUncertainty(*uargs), c_cat[ll].cp().process([signal+'_gentau']).GetUncertainty(*uargs)})
+                else :
+                    thissig = c_cat[ll].cp().process([signal]).GetRate()
+                    thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
+                if not thissig + thissigErr < 0.05:
+                    linesig = linesig + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+                else : linesig = linesig + r' \multicolumn{2}{c|}{$< 0.05$} '
+                if ll == len(labels) - 1 : linesig = linesig + r' \\'
+                else : linesig = linesig + ' &'
+                sigsum[ll] = sigsum[ll] + thissig
+                sigsumErr[ll] = AddSystQuad({sigsumErr[ll], thissigErr})
+                sum_proc[ll] = sum_proc[ll] + thissig
+                err_sum_proc[ll] = AddSystQuad({err_sum_proc[ll], thissigErr})
+            filey.write(linesig+"\n")
+        filey.write(r'\hline'+"\n")
+
+        for ll, label in enumerate(labels) :
+            if not sigsum[ll] +  sigsumErr[ll] < 0.05:
+                linesigsum = linesigsum + ' $%.2f$ & $%.2f$ ' % (sigsum[ll], sigsumErr[ll])
+            else :  linesigsum = linesigsum + r' \multicolumn{2}{c|}{$< 0.05$} '
+            if ll == len(labels) - 1 : linesigsum = linesigsum + r' \\'
+            else : linesigsum = linesigsum + ' &'
+        filey.write(linesigsum+"\n")
+        filey.write(r'\hline'+"\n")
+
+    for ss, signal in enumerate(singleCompMC) :
+        lineTTZ = singleCompMClabels[ss]+' & '
+        for ll, label in enumerate(labels) :
+            if ("2lss_1tau" in label or  "3l_1tau" in label ) and signal not in ['fakes_data', 'flips']:
+                thissig = c_cat[ll].cp().process([signal+'_faketau']).GetRate() + c_cat[ll].cp().process([signal+'_gentau']).GetRate()
+                thissigErr = AddSystQuad({c_cat[ll].cp().process([signal+'_faketau']).GetUncertainty(*uargs), c_cat[ll].cp().process([signal+'_gentau']).GetUncertainty(*uargs)})
+            else :
+                thissig = c_cat[ll].cp().process([signal]).GetRate()
+                thissigErr = c_cat[ll].cp().process([signal]).GetUncertainty(*uargs)
+            if not thissig + thissigErr < 0.05:
+                lineTTZ = lineTTZ + ' $%.2f$ & $%.2f$ ' % (thissig, thissigErr)
+            else : lineTTZ = lineTTZ + r' \multicolumn{2}{c|}{$< 0.05$} '
+            sum_proc[ll] = sum_proc[ll] + thissig
+            err_sum_proc[ll] = AddSystQuad({err_sum_proc[ll], thissigErr})
+            if ll == len(labels) - 1 : lineTTZ = lineTTZ + r' \\ '+"\n"
+            else : lineTTZ = lineTTZ + ' &'
+        filey.write(lineTTZ+"\n")
+
+    lineSUM = r'\hline\hline'+"\n"+' SM expectation & '
+    for ll, label in enumerate(labels) :
+        if not sum_proc[ll] + err_sum_proc[ll] < 0.05:
+            lineSUM = lineSUM + ' $%.2f$ & $%.2f$ ' % (sum_proc[ll] , err_sum_proc[ll] )
+        else : lineSUM = lineSUM + r' \multicolumn{2}{c|}{$< 0.05$} '
+        if ll == len(labels) - 1 : lineSUM = lineSUM + r' \\ '+"\n"
+        else : lineSUM = lineSUM + ' &'
+    filey.write(lineSUM+"\n")
+
+    filey.write(r'\hline'+"\n")
+    filey.write(bottom)
+    filey.write(r"""\hline
+    \end{tabular}"""+"\n")
