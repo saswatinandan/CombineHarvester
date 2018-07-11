@@ -260,6 +260,7 @@ for card in [ cardToWrite_2017 , cardToWrite  ] : # ,
 
     if (card == cardToWrite and doImpactCombo) or (card == cardToWrite_2017 and doImpact2017) :
         ### For impacts 2017 + 2016 only
+        ## there is a funcionality for ignoring the bin stats errors in this fork https://github.com/gpetruc/CombineHarvester/commit/28c66f57649a7f9b279cd3298fe905b2073e095a
         ## it creates many files !!!!
         if not sendToCondor or impactsSubmit :
             run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/impacts_"+card)
