@@ -30,7 +30,7 @@ sendToCondor = True ### Impacts / GOF / likelihood scans for combo need it
 
 #####################################################################
 ## What to do:
-doFits = True ## To do any of the rest you must have ran with this being True once
+doFits = False ## To do any of the rest you must have ran with this being True once
 ## but, once it is done one there is no need to loose time repeating it
 
 #######################
@@ -72,7 +72,7 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePostFitCombine = False
-preparePostFitHavester = False
+preparePostFitHavester = True
 
 doYieldsAndPlots = False # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
@@ -207,20 +207,40 @@ if takeCombo :
     cardToWrite = "../gpetrucc_2017_2016/comb_1617v2_withCR_sanity"
 
     if remove_Clos_t :
-        newFile = os.getcwd()+"/"+mom_result+cardToWrite_2017+'_no_Clos.txt'
+        add = '_group'
+        newFile = os.getcwd()+"/"+mom_result+cardToWrite_2017+add+'.txt'
         path_to_file = os.getcwd()+"/"+mom_result+cardToWrite_2017+".txt"
         with open(newFile, 'w') as out_file:
             with open(path_to_file, 'r') as in_file:
                 for line in in_file:
                     if "CMS_ttHl17_Clos_t_shape" not in line : out_file.write(line)
-        cardToWrite_2017 = cardToWrite_2017+'_no_Clos'
         """
         cb = ch.CombineHarvester()
+        cb_bin = ch.CombineHarvester()
         cb.ParseDatacard(os.getcwd()+"/"+mom_result+cardToWrite_2017+".txt", mass = "")
-        cb.cp().FilterSysts(lambda systematic : systematic.name() == "CMS_ttHl_Clos_t_shape");
-        writer = ch.CardWriter(os.getcwd()+"/"+mom_result+cardToWrite_2017+'_no2l_2tau_Clos.txt',
-                   os.getcwd()+"/"+mom_result+cardToWrite_2017+'_no2l_2tau_Clos.root')
-        writer.WriteCards('LIMITS/cmb', cb)
+        #cb.cp().FilterSysts(lambda systematic : systematic.name() == "CMS_ttHl_Clos_t_shape");
+        cardToWrite_2017 = cardToWrite_2017+add
+        #cb.cp().RenameParameter("3l_bl_neg_zpeak", "3l_0tau")
+        bins = [
+            "2lss_ee_neg",
+            "2lss_ee_pos",
+            "2lss_em_bl_neg",
+            "2lss_em_bl_pos",
+            "2lss_mm_bl_neg",
+            "2lss_mm_bl_pos",
+            "2lss_em_bt_neg",
+            "2lss_em_bt_pos",
+            "2lss_mm_bt_neg",
+            "2lss_mm_bt_pos"
+            ]
+        cmb_bin = cb.cp().bin(bins);
+        #while the fllowing one combines the different processes to get the shapes with the proper treatment of the correlation of the systematic errors
+        for(unsigned int i_proc=0; i_proc<name_procs.size(); i_proc++)
+        cmb_proc = cb_bin.cp().process("2lss_0tau");
+        writer = ch.CardWriter(os.getcwd()+"/"+mom_result+cardToWrite_2017+'.txt',
+                   os.getcwd()+"/"+mom_result+cardToWrite_2017+'.root')
+        writer.WriteCards('LIMITS/cmb', cmb_proc)
+        print os.getcwd()+"/"+mom_result+cardToWrite_2017+'.txt written'
 
         """
 
@@ -234,7 +254,7 @@ floating_ttV = \
 
 sigRates = ["r_ttH_2lss_0tau", "r_ttH_3l_0tau", "r_ttH_4l", "r_ttH_2lss_1tau", "r_ttH_3l_1tau", "r_ttH_2l_2tau", "r_ttH_1l_2tau" ]
 
-for card in [ cardToWrite  ] : # , cardToWrite_2017
+for card in [ cardToWrite_2017  ] : # , cardToWrite
     WS_output = card+"_3poi"
     if doFits :
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; text2workspace.py %s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose  --PO 'map=.*/ttH.*:r_ttH[1,-5,10]' %s ; cd -"  % (card, WS_output, floating_ttV))
@@ -246,22 +266,12 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --algo singles --cl=0.68 -P r_ttH --floatOtherPOI=1 --saveFitResult -n step1  --saveWorkspace > %s_rate_ttH.log   ; cd -"  % (WS_output, blindStatement, WS_output))
         ## --saveWorkspace to extract the stats only part of the errors and the limit woth mu=1 injected
         ### Some example of this concept here: https://cms-hcomb.gitbooks.io/combine/content/part3/commonstatsmethods.html#useful-options-for-likelihood-scans
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -d  higgsCombineteststep1.MultiDimFit.mH120.root   -w w --snapshotName \"MultiDimFit\" -n teststep2 --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 -P r_ttH   -S 0 --algo singles > %s_rate_ttH_stats_only.log   ; cd -"  % (WS_output))
+        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -d  higgsCombinestep1.MultiDimFit.mH120.root   -w w --snapshotName \"MultiDimFit\" -n teststep2 --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 -P r_ttH   -S 0 --algo singles > %s_rate_ttH_stats_only.log   ; cd -"  % (WS_output))
         # --freezeParameters (instead of -S 0) also work on the above
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH -n from1_r_ttH > %s_limit_ttH_from1.log  --cminDefaultMinimizerType Minuit --keepFailures %s from1_r_ttH ; cd -"  % (WS_output, blindStatement, WS_output, ToCondor))
+        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits %s.root %s --setParameters r_ttH=0,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH -n from0_r_ttH > %s_limit_ttH_from0.log  ; cd -"  % (WS_output, blindStatement, WS_output, ToCondor))
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits -t -1   higgsCombineteststep1.MultiDimFit.mH120.root   --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n from1_r_ttH --snapshotName \"MultiDimFit\"  --toysFrequentist --bypassFrequentistFit  > %s_limit_ttH_from0.log  ; cd -"  % (WS_output, ToCondor))
-
-        # combine -M AsymptoticLimits -t -1   higgsCombineteststep1.MultiDimFit.mH120.root   --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n from1_r_ttH --snapshotName "MultiDimFit"  --toysFrequentist --bypassFrequentistFit  &
-
-        # combine -M AsymptoticLimits  comb_2017v2_withCR_sanity_3poi.root   --setParameters r_ttH=0,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n from0_r_ttH  &
-
-        # combine -M HybridNew --frequentist --testStat LHC  --fork 4 -t -1 --expectSignal 1  higgsCombineteststep1.MultiDimFit.mH120.root   --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n frommu1_r_ttH --snapshotName "MultiDimFit"  --toysFrequentist --bypassFrequentistFit  &
-
-        #combine -M HybridNew --frequentist --testStat LHC -H ProfileLikelihood -- fork 4 -t -1 --expectSignal 1 higgsCombinebestfit.MultiDimFit.mH125.root --snapshotName MultiDimFit --toysFrequentist --bypassFrequentistFit
-
-        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --algo singles --cl=0.68  --cminDefaultMinimizerType Minuit --keepFailures > %s_rate_3D.log  ; cd -"  % (WS_output, blindStatement, WS_output))
+        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits -t -1   higgsCombinestep1.MultiDimFit.mH120.root   --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n from1_r_ttH --snapshotName \"MultiDimFit\"  --toysFrequentist --bypassFrequentistFit  > %s_limit_ttH_from1.log  ; cd -"  % (WS_output))
 
     if (doHessImpactCombo and card == cardToWrite) or (doHessImpact2017 and card == cardToWrite2017) :
         # hessian impacts
@@ -438,13 +448,13 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
 
     if preparePostFitHavester  and card == cardToWrite_2017 :
         print ("[WARNING:] combine does not deal well with autoMCstats option for bin by bin stat uncertainty")
-        run_cmd("mkdir "+savePostfitHavester)
+        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/"+savePostfitHavester)
         enterHere = os.getcwd()+"/"+mom_result+"/"+savePostfitHavester
         run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s ; cd -' % (enterHere, WS_output, redefineToTTH))
         print ("the diagnosis that input Havester is going to be on fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine -- check if you have a crash!")
         doPostfit = " -f fitDiagnostics.root:fit_s --postfit "
         run_cmd("cd "+enterHere+' ; PostFitShapesFromWorkspace --workspace %s/../%s.root -d %s/../%s.txt -o %s_shapes.root -m 125 --sampling --print %s ; cd -' % (enterHere, WS_output, enterHere, card, WS_output, doPostfit)) # --skip-prefit
-        print ("the output with the shapes is "+WS_output+"_shapes.root")
+        print ("the output with the shapes is "+enterHere+WS_output+"_shapes.root")
 
     if doYieldsAndPlots :
 
@@ -456,12 +466,12 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
 
         enterHere = os.getcwd()+"/"+mom_result
         doPostFitCombine = True
-        if 1>0 :
+        if 0>1 :
             doPostfit = savePostfitCombine
             fileShapes = "fitDiagnostics.root"
             appendHavester = " "
             fileoriginal = "--original %s/../%s.root" % (enterHere,card)
-        elif doPostfitHavester :
+        if 1 > 0 : # doPostfitHavester
             doPostfit = savePostfitHavester
             fileShapes = WS_output+"_shapes.root"
             appendHavester = " --fromHavester "
@@ -485,7 +495,7 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
         mlf = TFile(enterHere+'/fitDiagnostics.root')
         rfr = mlf.Get('fit_s')
         typeFit = " "
-        for fit in ["prefit", "postfit"] :
+        for fit in ["prefit"] : # , "postfit"
             print fit+' tables:'
             if fit == "postfit" :
                 cmb.UpdateParameters(rfr)
@@ -525,7 +535,14 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
                     # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_1tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.5 --maxY 24 --MC_IsSplit --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
                     # python makePostFitPlots_FromCombine.py --channel  ttH_2l_2tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.35 --maxY 13.9 --notFlips --notConversions --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
                     # python makePostFitPlots_FromCombine.py --channel  ttH_1l_2tau_OS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY 0.07 --maxY 5000. --useLogPlot --notFlips --unblind --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2l_2tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes.root --minY -0.35 --maxY 13.9 --notFlips --notConversions --unblind --fromHavester
+
+                    # PostFitShapesFromWorkspac_mergeMultilep --workspace /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity_3poi.root -d /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.txt -o comb_2017v2_withCR_sanity_3poi_shapes_combo.root -m 125 --sampling --print
+
+
             ######################################
+            """
             labels = [
                 "2lss_ee_neg",
                 "2lss_ee_pos",
@@ -549,6 +566,7 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
             if not doPostfit == "none" :
                 for ll, label in enumerate(labels) :
                     run_cmd('python makePostFitPlots_FromCombine.py --channel ttH_%s --input %s --minY -0.8 --maxY 29 --notFlips --labelX \"BDT (ttH,tt/ttV)\" %s %s %s --original %s/../%s.root >  %s' % (label, enterHere+"/"+fileShapes, appendHavester, typeFit, blindStatementPlot, enterHere, card, enterHere+"/"+fileShapes+"_"+label+".log"))
+            # python makePostFitPlots_FromCombine_mergeMultilep.py --channel  ttH_2lss_ee_neg  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -1.0 --maxY 150 --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
             #################################
             labels = [
             "3l_bl_neg",
@@ -612,20 +630,4 @@ for card in [ cardToWrite  ] : # , cardToWrite_2017
             if not doPostfit == "none" :
                 for ll, label in enumerate(labels) :
                     run_cmd('python makePostFitPlots_FromCombine.py --channel  ttH_%s  --input %s  --minY -0.8 --maxY 29 --notFlips --labelX \"BDT (ttH,tt/ttV)\" %s %s %s --original %s/../%s.root >  %s' % (label, enterHere+"/"+fileShapes, appendHavester, typeFit, blindStatementPlot, enterHere, card, enterHere+"/"+fileShapes+"_"+label+".log"))
-
-
-"""
-crab status -d crab_HHTo4T_madgraph_pythia8_CP5_M400_lhe_p1 &
-crab status -d crab_HHTo4T_madgraph_pythia8_CP5_M700_lhe_p1 &
-crab status -d crab_HHTo4T_madgraph_pythia8_CP5_M700_lhe_p1 &
-crab status -d crab_HHTo4T_madgraph_pythia8_CP5_M400_lhe_p1 &
-crab status -d crab_HHTo4V_madgraph_pythia8_CP5_M700_lhe_p1 &
-crab status -d crab_HHTo4V_madgraph_pythia8_CP5_M400_lhe_p1 &
-crab status -d crab_HHTo2T2V_madgraph_pythia8_CP5_M400_lhe_p1 &
-crab status -d crab_HHTo2T2V_madgraph_pythia8_CP5_M700_lhe_p1 &
-
-"""
-
-#combineTool.py -M AsymptoticLimits comb_2017v2_withCR_sanity_Catpoi_final.root --setParameters r_ttW=1,r_ttZ=1,r_ttH_2lss_0tau=0,r_ttH_3l_0tau=0,r_ttH_4l=0,r_ttH_2lss_1tau=0,r_ttH_3l_1tau=0,r_ttH_2l_2tau=0,r_ttH_1l_2tau=0 --redefineSignalPOI r_ttH_4l -n from0_r_ttH_4l  --cminDefaultMinimizerType Minuit
-
-#[3]+  Done                    combineTool.py -M AsymptoticLimits comb_2017v2_withCR_sanity_Catpoi_final.root --setParameters r_ttW=1,r_ttZ=1,r_ttH_2lss_0tau=1,r_ttH_3l_0tau=1,r_ttH_4l=1,r_ttH_2lss_1tau=1,r_ttH_3l_1tau=1,r_ttH_2l_2tau=1,r_ttH_1l_2tau=1 --redefineSignalPOI r_ttH_4l -n from1_r_ttH_4l
+            """
