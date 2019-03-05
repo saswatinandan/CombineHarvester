@@ -22,3 +22,8 @@ __init__.py
 *.pdf
 
 docs/html
+
+HH_htt/python/*.pyc
+HH_htt/python/__init__.pyc
+HH_htt/python/data_manager.pyc
+HH_htt/compLimits_hh_2017_v*.py
