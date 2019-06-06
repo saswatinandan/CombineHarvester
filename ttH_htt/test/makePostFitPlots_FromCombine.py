@@ -6,7 +6,8 @@ from optparse import OptionParser
 from collections import OrderedDict
 execfile("../python/data_manager.py")
 ROOT.gStyle.SetOptStat(0)
-
+#ROOT.gStyle.SetErrorX(0)
+ROOT.gStyle.SetEndErrorSize(0)
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option(
@@ -17,7 +18,7 @@ parser.add_option(
 parser.add_option(
     "--odir", type="string", dest="odir",
     help="Directory for the output plots",
-    default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/posfit_3poi_ttVFromZero/"
+    default="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/"
     )
 parser.add_option(
     "--original", type="string", dest="original",
@@ -60,9 +61,9 @@ parser.add_option(
     default=False
     )
 parser.add_option(
-    "--doMultilep", action="store_false", dest="doMultilep",
+    "--doMultilepCatPlot", action="store_true", dest="doMultilepCatPlot",
     help="Do subcategories from multilepton cards ",
-    default=True
+    default=False
     )
 parser.add_option(
     "--unblind", action="store_true", dest="unblind",
@@ -94,23 +95,32 @@ parser.add_option(
 divideByBinWidth = options.divideByBinWidth
 category = options.channel
 print ("category", category)
+#setTDRStyle()
 
 labelY = "Events"
 if divideByBinWidth : labelY = "Events / bin width"
 
 if options.doPostFit :
-    if not options.fromHavester :
+    if not options.fromHavester and not options.doMultilepCatPlot :
         folder = "shapes_fit_s/"+category
         folder_data = "shapes_fit_s/"+category # it is a TGraphAsymmErrors, not histogram
+        typeFit = "postfit"
+    elif options.doMultilepCatPlot :
+        folder = "shapes_fit_s/"
+        folder_data = "shapes_fit_s/" # it is a TGraphAsymmErrors, not histogram
         typeFit = "postfit"
     else :
         folder = category+"_postfit"
         folder_data = category+"_postfit" # it is a histogram
         typeFit = "postfit"
 else :
-    if not options.fromHavester :
+    if not options.fromHavester and not options.doMultilepCatPlot :
         folder = "shapes_prefit/"+category
         folder_data = "shapes_prefit/"+category # it is a TGraphAsymmErrors, not histogram
+        typeFit = "prefit"
+    elif options.doMultilepCatPlot :
+        folder = "shapes_prefit/"
+        folder_data = "shapes_prefit/" # it is a TGraphAsymmErrors, not histogram
         typeFit = "prefit"
     else :
         folder = category+"_prefit"
@@ -120,7 +130,7 @@ print ("folder", folder)
 if not options.fromHavester : name_total = "total"
 else : name_total = "TotalProcs"
 
-if "tau" not in category :
+if "0tau" in category or "4l" in category or "cr" in category :
     conversions = "Convs"
     fakes       = "data_fakes"
     flips       = "data_flips"
@@ -133,32 +143,37 @@ dprocs = OrderedDict()
 if not options.MC_IsSplit :
     # if label == "none" it means that this process is to be merged with the anterior key
     #                      color, fillStype, label,       , make border
-    dprocs[fakes]        = [12,     3345,      "Non-prompt",        True]
-    dprocs[flips]        = [1,     3006,      "Charge mis-m",       True]
+    if not "4l" in category :
+        dprocs[fakes]        = [12,     3345,      "Non-prompt",        True]
+        dprocs[flips]        = [1,     3006,      "Charge mis-m",       True]
     dprocs[conversions]  = [5,     1001,      "Conv.", True]
     dprocs["Rares"]      = [851,   1001,      "Rares",       True]
-    if "tau" in category : dprocs["EWK"]        = [610,   1001,      "EWK",         True]
+    if "3l_0tau" in category or "4l" in category or "crwz" in category :
+        if not "4l" in category : dprocs["WZ"]        = [610,   1001,      "none",         True]
+        dprocs["ZZ"]        = [610,   1001,      "EWK",         True]
     else :
-        dprocs["ZZ"]        = [610,   1001,      "none",         True]
-        dprocs["WZ"]        = [610,   1001,      "EWK",         True]
-    dprocs["TTW"]        = [823,   1001,      "none",        False]
-    dprocs["TTWW"]       = [823,   1001,      "ttW + ttWW",        True]
+        dprocs["EWK"]        = [610,   1001,      "EWK",         True]
+    if not "4l" in category :
+        dprocs["TTW"]        = [823,   1001,      "none",        False]
+        dprocs["TTWW"]       = [823,   1001,      "ttW + ttWW",        True]
     dprocs["TTZ"]        = [822,   1001,      "ttZ",         True]
-    dprocs["ttH_hzg"]    = [2,     1001,      "none",        False]
+    if not "4l" in category :
+        dprocs["ttH_hzg"]    = [2,     1001,      "none",        False]
+        dprocs["ttH_hmm"]    = [2,     1001,      "none",        False]
     dprocs["ttH_hww"]    = [2,     1001,      "none",        False]
     dprocs["ttH_hzz"]    = [2,     1001,      "none",        False]
-    dprocs["ttH_hmm"]    = [2,     1001,      "none",        False]
-    dprocs["ttH_htt"]    = [2,     1001,      "ttH",     True]
+    if not "crzz" in category : dprocs["ttH_htt"]    = [2,     1001,      "ttH",     True]
     #})
 else :
     # if label == "none" it means that this process is to be merged with the anterior key
     #                      color, fillStype, label,       , make border
-    dprocs[fakes]        = [12,     3345,      "Non-prompt",        True]
-    dprocs[flips]        = [1,     3006,      "Charge mis-m",       True]
+    if not "4l" in category :
+        dprocs[fakes]        = [12,     3345,      "Non-prompt",        True]
+        dprocs[flips]        = [1,     3006,      "Charge mis-m",       True]
     dprocs[conversions]  = [5,     1001,      "Conv.", True]
     dprocs["Rares_faketau"]  = [851,   1001,      "none",       False]
     dprocs["Rares_gentau"]   = [851,   1001,      "Rares",       True]
-    if "tau" in category :
+    if not "0tau" in category :
         dprocs["EWK_faketau"]    = [610,   1001,      "none",       False]
         dprocs["EWK_gentau"]     = [610,   1001,      "EWK",         True]
     else :
@@ -179,15 +194,20 @@ else :
     dprocs["ttH_hmm_gentau"] = [2,   1001,      "none",     False]
     dprocs["ttH_htt_gentau"] = [2,   1001,      "ttH",     True]
 
-label_head = "2017 fit,"
+label_head = ""
 if "1l_2tau" in category :
-    label_head = label_head+" 1l 2#tau"
+    label_head = label_head+" 1l+2#tau"
     ## remove "fakes_data" from first entry and add as last
     del dprocs[fakes]
     dprocs[fakes] =      [1,     3005,      "Mis.",        True]
-if "2l_2tau" in category : label_head = label_head+" 2l 2#tau"
-if "3l_1tau" in category : label_head = label_head+" 3l 1#tau"
-if "2lss_1tau" in category : label_head = label_head+" 2lss 1#tau"
+if "2l_2tau" in category : label_head = label_head+" 2l+2#tau"
+if "3l_1tau" in category : label_head = label_head+" 3l+1#tau"
+if "2lss_1tau" in category : label_head = label_head+" 2lss+1#tau"
+##################
+if "2lss_0tau" in category and not "3j" in category : label_head = label_head+" 2lss l^{#pm}l^{#pm}"
+if "3l_0tau" in category and not "zpeak" in category : label_head = label_head+" 3l"
+if "2lss_0tau" in category and "3j" in category : label_head = label_head+" 2lss l^{#pm}l^{#pm}, ttW CR"
+if "3l_0tau" in category and "zpeak" in category : label_head = label_head+" 3l, ttZ CR"
 ##################
 if "2lss_ee_neg" in category and not "3j" in category : label_head = label_head+" 2lss e-e-"
 if "2lss_ee_pos" in category and not "3j" in category  : label_head = label_head+" 2lss e+e+"
@@ -229,21 +249,57 @@ if typeFit == "prefit" : label_head = label_head+" "+typeFit
 else : label_head = label_head+" #mu(ttH)=#hat{#mu}"
 print label_head
 
-if options.notFlips : del dprocs[flips]
+if not "4l" in category :
+    if options.notFlips : del dprocs[flips]
 if options.notConversions : del dprocs[conversions]
 print ("will draw processes", list(dprocs.keys()))
 
-if not options.original == "none" :
-    fileOrig = options.original
-    readFrom = category+"/data_obs"
+if options.doMultilepCatPlot :
+    if "2lss" in category :
+        nbins = 5
+        binlabels = ["ee", "e#mu bl", "e#mu bt", "#mu#mu bl", "#mu#mu bt"]
+        if not "3j" in category :
+            bins = [
+            ["ttH_2lss_ee_neg", "ttH_2lss_ee_pos"],
+            ["ttH_2lss_em_bl_neg", "ttH_2lss_em_bl_pos"],
+            ["ttH_2lss_em_bt_neg", "ttH_2lss_em_bt_pos"],
+            ["ttH_2lss_mm_bl_neg", "ttH_2lss_mm_bl_pos"],
+            ["ttH_2lss_mm_bt_neg", "ttH_2lss_mm_bt_pos"]
+            ]
+        else : bins = [
+        ["ttH_2lss_ee_neg_3j", "ttH_2lss_ee_pos_3j"],
+        ["ttH_2lss_em_bl_neg_3j", "ttH_2lss_em_bl_pos_3j"],
+        ["ttH_2lss_em_bt_neg_3j", "ttH_2lss_em_bt_pos_3j"],
+        ["ttH_2lss_mm_bl_neg_3j", "ttH_2lss_mm_bl_pos_3j"],
+        ["ttH_2lss_mm_bt_neg_3j", "ttH_2lss_mm_bt_pos_3j"]
+        ]
+    if "3l" in category :
+        nbins = 2
+        binlabels = ["bl", "bt"]
+        if not "zpeak" in category :
+            bins = [
+            ["ttH_3l_bl_neg", "ttH_3l_bl_pos"],
+            ["ttH_3l_bt_neg", "ttH_3l_bt_pos"]
+            ]
+        else : bins = [
+        ["ttH_3l_bl_neg_zpeak", "ttH_3l_bl_pos_zpeak"],
+        ["ttH_3l_bt_neg_zpeak", "ttH_3l_bt_pos_zpeak"]
+        ]
+    template = ROOT.TH1D("", "", nbins, 0, nbins+1)
 else :
-    fileOrig = options.input
-    readFrom = folder+"/data_obs"
-print ("template on ", fileOrig, readFrom)
-fileorriginal = ROOT.TFile(fileOrig)
-template = fileorriginal.Get(readFrom)
+    if not options.original == "none" :
+        fileOrig = options.original
+        readFrom = category+"/data_obs"
+    else :
+        fileOrig = options.input
+        readFrom = folder+"/data_obs"
+    print ("template on ", fileOrig, readFrom)
+    fileorriginal = ROOT.TFile(fileOrig)
+    template = fileorriginal.Get(readFrom)
 template.GetYaxis().SetTitle(labelY)
 template.SetTitle(" ")
+template.SetMinimum(options.minY)
+template.SetMaximum(options.maxY)
 fin = ROOT.TFile(options.input)
 
 legend_y0 = 0.650;
@@ -256,21 +312,35 @@ legend1.SetTextSize(0.040);
 legend1.SetHeader(label_head);
 
 if options.unblind :
-    data = rebin_data(template, folder, fin, options.fromHavester)
-    legend1.AddEntry(data, "Observed", "p");
-hist_total = rebin_total(template, folder, fin, divideByBinWidth, name_total)
+    if not options.doMultilepCatPlot :
+        data = rebin_data(template, folder, fin, options.fromHavester, errorBar=False)
+        data_err = rebin_data(template, folder, fin, options.fromHavester) # no marker if zero entries
+    else :
+        data = rebin_dataCats(template, bins, folder, fin, options.fromHavester)
+        data_err = data
+    dumb_data = template.Clone()
+    dumb_data.SetMarkerColor(1);
+    dumb_data.SetMarkerStyle(20);
+    dumb_data.SetMarkerSize(1);
+    dumb_data.SetLineColor(1);
+    dumb_data.SetLineWidth(2);
+    dumb_data.SetLineStyle(1)
+    legend1.AddEntry(dumb_data, "Observed", "pe");
+if not options.doMultilepCatPlot : hist_total = rebin_total(template, folder, fin, divideByBinWidth, name_total)
+else : hist_total = rebin_totalCat(template, bins, folder, fin, divideByBinWidth, name_total)
 legend1.AddEntry(hist_total, "Uncertainty", "f");
 
 canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500);
 canvas.SetFillColor(10);
 canvas.SetBorderSize(2);
-canvas.Draw();
+dumb = canvas.Draw();
+del dumb
 
 topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995);
 topPad.SetFillColor(10);
 topPad.SetTopMargin(0.075);
 topPad.SetLeftMargin(0.20);
-topPad.SetBottomMargin(0.00);
+topPad.SetBottomMargin(0.03);
 topPad.SetRightMargin(0.04);
 if options.useLogPlot : topPad.SetLogy();
 bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.01, 1.00, 0.34);
@@ -281,41 +351,75 @@ bottomPad.SetBottomMargin(0.35);
 bottomPad.SetRightMargin(0.04);
 ####################################
 canvas.cd();
-topPad.Draw();
+dumb = topPad.Draw();
+del dumb
 topPad.cd();
-hist_total.Draw("axis")
+dumb = hist_total.Draw("axis")
+del dumb
 histogramStack_mc = ROOT.THStack()
 print ("list of processes considered and their integrals")
 for key in  dprocs.keys() :
-    histogram = rebin_hist(template, fin, key, dprocs[key], divideByBinWidth)
+    print key
+    if not options.doMultilepCatPlot : histogram = rebin_hist(template, fin, key, dprocs[key], divideByBinWidth)
+    else : histogram = doCategories(template, bins, fin, key, dprocs[key], divideByBinWidth)
     histogramStack_mc.Add(histogram)
-    print (key, histogram.Integral())
-histogramStack_mc.Draw("hist,same")
-hist_total.Draw("e2,same")
-if options.unblind : data.Draw("e1P,same")
+    err = ROOT.Double()
+    content = histogram.IntegralAndError(0, histogram.GetXaxis().GetNbins()+1, err, "")
+    print (key, content, err)
+dumb = histogramStack_mc.Draw("hist,same")
+del dumb
+dumb = hist_total.Draw("e2,same")
+del dumb
+if options.unblind :
+    dumb = data.Draw("P,same")
+    del dumb
+    dumb = data_err.Draw("e,same")
+    del dumb
 hist_total.Draw("axis,same")
-legend1.Draw("same")
+dumb = legend1.Draw("same")
+del dumb
 labels = addLabel_CMS_preliminary()
-for label in labels : label.Draw("same")
+for label in labels :
+    dumb = label.Draw("same")
+    del dumb
+## if do categories add bottom text
 #################################
 canvas.cd();
-bottomPad.Draw();
+dumb = bottomPad.Draw();
+del dumb
 bottomPad.cd();
 bottomPad.SetLogy(0);
 print ("doing bottom pad")
-hist_total_err = do_hist_total_err(template, options.labelX, name_total, category)
-hist_total_err.Draw("e2")
+if not options.doMultilepCatPlot : hist_total_err = do_hist_total_err(template, options.labelX, name_total, category)
+else : hist_total_err = do_hist_total_errCats(hist_total, bins, binlabels, options.labelX, name_total, category)
+dumb = hist_total_err.Draw("e2")
+del dumb
 if options.unblind :
-    dataerr = err_data(hist_total, folder, options.fromHavester)
-    dataerr.Draw("e1P,same")
+    if not options.doMultilepCatPlot :
+        dataerr = err_data(hist_total, folder, options.fromHavester)
+        dataerr_point = err_data(hist_total, folder, options.fromHavester, errorBar=False) # no marker if zero entries
+    else :
+        dataerr = err_dataCat(hist_total, data, folder, options.fromHavester)
+        dataerr_point = dataerr
+    #if options.fromHavester : dataerr.SetErrorX(0)
+    dumb = dataerr.Draw("E,same")
+    del dumb
+    dumb = dataerr_point.Draw("P,same")
+    del dumb
 line = ROOT.TF1("line","1", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax());
 line.SetLineStyle(3);
 line.SetLineColor(ROOT.kBlack);
-line.Draw("same");
+dumb = line.Draw("same");
+del dumb
 ##################################
 oplin = "linear"
 if options.useLogPlot : oplin = "log"
 optbin = "plain"
 if divideByBinWidth : optbin = "divideByBinWidth"
-canvas.SaveAs(options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf")
-print ("saved",options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf")
+if not options.doMultilepCatPlot :
+    nameplot = options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+".pdf"
+else : nameplot = options.odir+category+"_"+typeFit+"_"+optbin+"_unblind"+str(options.unblind)+"_"+oplin+"_cats.pdf"
+dumb = canvas.SaveAs(nameplot)
+dumb = canvas.SaveAs(nameplot.replace(".pdf",".C"))
+del dumb
+print ("saved",nameplot)

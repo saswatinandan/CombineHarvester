@@ -173,7 +173,7 @@ tex.SetTextSize(0.035);
 tex.SetTextFont(61);
 tex.DrawLatexNDC(0.26, 0.91, "CMS");
 tex.SetTextFont(42)
-tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity/1000.));
+tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (41.5));
 tex.SetTextSize(0.035);
 tex.SetTextFont(52)
 tex.DrawLatexNDC(0.36,0.91,"Preliminary")

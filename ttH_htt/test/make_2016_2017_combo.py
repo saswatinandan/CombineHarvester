@@ -30,7 +30,7 @@ sendToCondor = True ### Impacts / GOF / likelihood scans for combo need it
 
 #####################################################################
 ## What to do:
-doFits = False ## To do any of the rest you must have ran with this being True once
+doFits = True ## To do any of the rest you must have ran with this being True once
 ## but, once it is done one there is no need to loose time repeating it
 
 #######################
@@ -72,9 +72,9 @@ GOF_submit = False
 # 5)
 # OR you do from Combine or from from Havester
 preparePostFitCombine = False
-preparePostFitHavester = True
+preparePostFitHavester = False
 
-doYieldsAndPlots = False # will do the prefit and postfit table of yields.
+doYieldsAndPlots = True # will do the prefit and postfit table of yields.
 # If any of the bellow are true it also do prefit and postfit plots
 # You must have ran the respective preparePostFit... before (or put as true as well)
 doPostFitCombine = False # doYieldsAndPlots must be true
@@ -257,19 +257,19 @@ sigRates = ["r_ttH_2lss_0tau", "r_ttH_3l_0tau", "r_ttH_4l", "r_ttH_2lss_1tau", "
 for card in [ cardToWrite_2017  ] : # , cardToWrite
     WS_output = card+"_3poi"
     if doFits :
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; text2workspace.py %s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose  --PO 'map=.*/ttH.*:r_ttH[1,-5,10]' %s ; cd -"  % (card, WS_output, floating_ttV))
+        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; text2workspace.py %s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose  --PO 'map=.*/ttH.*:r_ttH[1,-5,10]' %s ; cd -"  % (card, WS_output, floating_ttV))
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M Significance --signif %s.root %s %s > %s.log  ; cd -"  % (WS_output, blindStatement, redefineToTTH, WS_output))
+        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M Significance --signif %s.root %s %s > %s.log  ; cd -"  % (WS_output, blindStatement, redefineToTTH, WS_output))
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M Significance --signif %s.root %s %s > %s_asimov.log -t -1 ; cd -"  % (WS_output, blindStatement, redefineToTTH, WS_output))
+        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M Significance --signif %s.root %s %s > %s_asimov.log -t -1 ; cd -"  % (WS_output, blindStatement, redefineToTTH, WS_output))
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --algo singles --cl=0.68 -P r_ttH --floatOtherPOI=1 --saveFitResult -n step1  --saveWorkspace > %s_rate_ttH.log   ; cd -"  % (WS_output, blindStatement, WS_output))
+        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit %s.root %s --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --algo singles --cl=0.68 -P r_ttH --floatOtherPOI=1 --saveFitResult -n step1  --saveWorkspace > %s_rate_ttH.log   ; cd -"  % (WS_output, blindStatement, WS_output))
         ## --saveWorkspace to extract the stats only part of the errors and the limit woth mu=1 injected
         ### Some example of this concept here: https://cms-hcomb.gitbooks.io/combine/content/part3/commonstatsmethods.html#useful-options-for-likelihood-scans
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -d  higgsCombinestep1.MultiDimFit.mH120.root   -w w --snapshotName \"MultiDimFit\" -n teststep2 --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 -P r_ttH   -S 0 --algo singles > %s_rate_ttH_stats_only.log   ; cd -"  % (WS_output))
+        #run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M MultiDimFit -d  higgsCombinestep1.MultiDimFit.mH120.root   -w w --snapshotName \"MultiDimFit\" -n teststep2 --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 -P r_ttH   -S 0 --algo singles > %s_rate_ttH_stats_only.log   ; cd -"  % (WS_output))
         # --freezeParameters (instead of -S 0) also work on the above
 
-        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits %s.root %s --setParameters r_ttH=0,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH -n from0_r_ttH > %s_limit_ttH_from0.log  ; cd -"  % (WS_output, blindStatement, WS_output, ToCondor))
+        run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits %s.root %s --setParameters r_ttH=0,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH -n from0_r_ttH > %s_limit_ttH_from0.log  ; cd -"  % (WS_output, blindStatement, WS_output))
 
         run_cmd("cd "+os.getcwd()+"/"+mom_result+" ; combine -M AsymptoticLimits -t -1   higgsCombinestep1.MultiDimFit.mH120.root   --setParameters r_ttH=1,r_ttW=1,r_ttZ=1 --redefineSignalPOI r_ttH  -n from1_r_ttH --snapshotName \"MultiDimFit\"  --toysFrequentist --bypassFrequentistFit  > %s_limit_ttH_from1.log  ; cd -"  % (WS_output))
 
@@ -283,8 +283,8 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
 
     if (doCategories or doLimitsByCat or  doRatesByLikScan) and card == cardToWrite_2017 :
         ### for category by category - 2017 only
-        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/categories_"+card+"_2l2t_fromZero")
-        enterHere = os.getcwd()+"/"+mom_result+"/categories_"+card+"_2l2t_fromZero"
+        run_cmd("mkdir "+os.getcwd()+"/"+mom_result+"/categories_"+card+"_23July")
+        enterHere = os.getcwd()+"/"+mom_result+"/categories_"+card+"_23July"
         print enterHere
         WS_output_byCat = card+"_Catpoi_final"
 
@@ -300,7 +300,7 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
  --PO 'map=.*1l_2tau.*/ttH.*:r_ttH_1l_2tau[1,-5,10]'\
 "
 
-        run_cmd("cd "+enterHere+" ; text2workspace.py %s/../%s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose %s %s; cd -"  % (enterHere, card, WS_output_byCat, floating_ttV, floating_by_cat))
+        #run_cmd("cd "+enterHere+" ; text2workspace.py %s/../%s.txt -o %s.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose %s %s; cd -"  % (enterHere, card, WS_output_byCat, floating_ttV, floating_by_cat))
 
         parameters = "r_ttW=1,r_ttZ=1"
         for rate in sigRates :
@@ -321,7 +321,7 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
             for rate in sigRates :
                 parameters0 = parameters0+","+rate+"=0"
 
-            for rate in ["r_ttH_2l_2tau"]: # sigRates + [ "r_ttW" , "r_ttZ" ]:
+            for rate in sigRates + [ "r_ttW" , "r_ttZ" ]:
 
                 run_cmd("cd "+enterHere+" ; combineTool.py -M AsymptoticLimits %s.root %s --setParameters %s --redefineSignalPOI %s  -n from0_%s %s from0_%s > %s_limit_from0_%s.log  ; cd -"  % (WS_output_byCat, blindStatement, parameters0, rate, rate , ToCondor, rate , WS_output_byCat, rate)) #  --floatOtherPOI=1
 
@@ -332,6 +332,8 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
                 #    --redefineSignalPOI r_ttH_thiscategory --floatOtherPOI 1 is:
                 # - consider only r_ttH_thiscategory as parameter of interest
                 # - the other POIs are left freely floating
+
+                run_cmd("cd "+enterHere+" ; combineTool.py -M AsymptoticLimits   higgsCombinestep1_%s.MultiDimFit.mH120.root   --setParameters %s --redefineSignalPOI %s  -n from1_%s --snapshotName \"MultiDimFit\"  --toysFrequentist --bypassFrequentistFit %s from1_%s -n from1_%s_notAsimov  > %s_limit_from1_%s.log ; cd -"  % (rate, parameters, rate, rate, ToCondor, rate, rate, WS_output_byCat, rate))
 
         if doRatesByLikScan :
             typeFitRates      = [ " ", " -t -1 "]
@@ -360,40 +362,6 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
                         ## hadd the results, the plotter bellow will also create a file with the crossings
                         ## hadd higgsCombineObs_r_ttH_2l_2tau.POINTS.MultiDimFit.mH125.root higgsCombineObs_r_ttH_2l_2tau.POINTS.*.MultiDimFit.mH125.root
                         run_cmd("cd "+enterHere+" ; $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plot1DScan.py higgsCombine%s_%s.MultiDimFit.mH125.root --others higgsCombine%s_%s.MultiDimFit.mH125.root:Expected:2 --POI %s -o ML_%s"  % ( label, rate, label, rate, rate, rate ))
-
-                # hadd higgsCombineObs_r_ttH_2l_2tau.joint.MultiDimFit.mH125.root higgsCombineObs_r_ttH_2l_2tau.POINTS.*.MultiDimFit.mH125.root
-                # $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plot1DScan.py higgsCombineObs_r_ttH_2l_2tau.joint.MultiDimFit.mH125.root --others higgsCombineExp_r_ttH_2l_2tau.joint.MultiDimFit.mH125.root:Expected:2 --POI r_ttH_2l_2tau -o ML_r_ttH_2l_2tau_joint
-    # $CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plot1DScan.py higgsCombineObs_r_ttH_2lss_0tau.MultiDimFit.mH125.root --others higgsCombineExp.MultiDimFit.mH125.root:Expected:1 --POI r_ttH_2lss_0tau -o ML_r_ttH_2lss_0tau
-
-    #combine -n Obs_r_ttH_2l_2tau -M MultiDimFit -m 125 comb_2017v2_withCR_sanity_Catpoi_final.root --algo=grid --points 20  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2lss_0tau=1,r_ttH_3l_0tau=1,r_ttH_4l=1,r_ttH_2lss_1tau=1,r_ttH_3l_1tau=1,r_ttH_2l_2tau=1,r_ttH_1l_2tau=1,r_ttW=1,r_ttZ=1 -P r_ttH_2l_2tau  --floatOtherPOIs=1 --rMin -4 --rMax 4
-    # [#0] WARNING:Minization -- RooMinimizerFcn: Minimized function has error status. Returning maximum FCN so far (1.65516) to force MIGRAD to back out of this region. Error log follows
-    # [#0] WARNING:Minization -- RooMinimizerFcn: Minimized function has error status. Returning maximum FCN so far (0.565655) to force MIGRAD to back out of this region. Error log follows
-
-    #combine -n Exp -M MultiDimFit -m 125 comb_2017v2_withCR_sanity_Catpoi_final.root --algo=grid --points 50  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2lss_0tau=1,r_ttH_3l_0tau=1,r_ttH_4l=1,r_ttH_2lss_1tau=1,r_ttH_3l_1tau=1,r_ttH_2l_2tau=1,r_ttH_1l_2tau=1,r_ttW=1,r_ttZ=1 -P r_ttH_2l_2tau  --floatOtherPOIs=1 --rMin -4 --rMax 4  -t -1
-
-    #$CMSSW_BASE/src/CombineHarvester/CombineTools/scripts/plot1DScan.py higgsCombineObs.MultiDimFit.mH125.root --others higgsCombineExp.MultiDimFit.mH125.root:Expected:1 --POI r_ttH_2l_2tau -o ML_r_ttH_2l_2tau
-
-    # $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/systematicsAnalyzer.py ../ttH_2l_2tau_sumOS_mvaOutput_final_x_2017.txt --all -f html > ttH_2l_2tau_sumOS_mvaOutput_final_x_card.html
-
-    # text2workspace.py ../comb_2017v2_withCR_sanity.txt -o comb_2017v2_withCR_sanity_2l_2tau_poi.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose    --PO 'map=.*zpeak.*/ttH.*:r_ttH_2lss_0tau[1,-5,10]'    --PO 'map=.*_3l_cr.*/ttH.*:r_ttH_3l_0tau[1,-5,10]'            --PO 'map=.*_4l_cr.*/ttH.*:r_ttH_4l[1,-5,10]'             --PO 'map=.*_2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'             --PO 'map=.*/TTZ.*:r_ttZ[1,0,6]'  --PO 'map=.*/TTW:r_ttW[1,0,6]' --PO 'map=.*/TTW_.*:r_ttW[1,0,6]' --PO 'map=.*/TTWW.*:r_ttW[1,0,6]'
-
-    # combine comb_2017v2_withCR_sanity_2l_2tau_poi.root -M MultiDimFit --rMin -5 --rMax 10  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2l_2tau=1 -P r_ttH_2l_2tau  --cminDefaultMinimizerType Minuit --floatOtherPOIs=0
-
-    # combine comb_2017v2_withCR_sanity_2l_2tau_only.root -M MultiDimFit --rMin -5 --rMax 10 -n toys --toysFrequentist -t 200  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2l_2tau=0  --cminDefaultMinimizerType Minuit --floatOtherPOIs=0
-
-    # text2workspace.py ../comb_2017v2_withCR_sanity.txt -o comb_2017v2_withCR_sanity_2l_2tau_only.root -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose        --PO 'map=.*_2l_2tau_.*/ttH.*:r_ttH_2l_2tau[1,-5,10]'
-
-    # combine comb_2017v2_withCR_sanity_2l_2tau_poi.root -M MaxLikelihoodFit --rMin -5 --rMax 10 --expectSignal 0 -n toys  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2l_2tau=1  --cminDefaultMinimizerType Minuit
-    # combine comb_2017v2_withCR_sanity_2l_2tau_poi.root -M MaxLikelihoodFit --rMin -5 --rMax 10 --toysFrequentist -t 200  --expectSignal 0 -n toys  --setParameters r_ttW=1,r_ttZ=1,r_ttH_2l_2tau=0
-
-    # root -l $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/plotParametersFromToys.C+("mlfittoys.root", "mlfit.root","comb_2017v2_withCR_sanity_2l_2tau_poi.root")'
-
-    #combine -n Exp -M MultiDimFit -m 125 htt_tt.txt -t -1 --expectSignal=1 --algo=grid --points 300 --setParameterRanges r=-1.0,4.0
-    #wget https://raw.githubusercontent.com/nucleosynthesis/HiggsAnalysis-CombinedLimit/combine_tutorial_SWAN/combine_tutorials_2016/combine_intro/plotMuScan.py
-    #wget https://raw.githubusercontent.com/nucleosynthesis/HiggsAnalysis-CombinedLimit/combine_tutorial_SWAN/combine_tutorials_2016/combine_intro/tdrStyle.py
-    #python plotMuScan.py
-    #combine -n Obs -M MultiDimFit -m 125 htt_tt.txt -t -1 --expectSignal=1 --algo=singles --robustFit=1 --setParameterRanges r=-1.0,4.0
-    #combine -n Obs -M MultiDimFit -m 125 htt_tt.txt -t -1 --toysFreq --expectSignal=1 --algo=singles --robustFit=1 --setParameterRanges r=-1.0,4.0
 
     if (card == cardToWrite and doImpactCombo) or (card == cardToWrite_2017 and doImpact2017) :
         ### For impacts 2017 + 2016 only
@@ -445,6 +413,11 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
         enterHere = os.getcwd()+"/"+mom_result+"/"+savePostfitCombine
         run_cmd("cd "+enterHere+' ; combineTool.py -M FitDiagnostics %s/../%s.root %s --saveNormalization --saveShapes --saveWIthUncertainties %s ; cd -' % (enterHere, WS_output, redefineToTTH, sendToCondor))
         print ("the output with the shapes is going to be fitDiagnostics.Test.root or fitDiagnostics.root depending on your version of combine")
+        ##### PostFitShapesFromWorkspace_mergeMultilep --workspace /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity_3poi.root -o /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --sampling --print
+        ## -f fitDiagnostics.Test.root:fit_s --postfit
+        ## -d /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/^CostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.txt -o comb_2017v2_withCR_sanity_3poi_shapes.root
+
+        # PostFitShapesFromWorkspace_mergeMultilep --workspace /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity_3poi.root -o /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --sampling --print -d  /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.txt -f f/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/fitDiagnostics.Test.root:fit_s --postfit
 
     if preparePostFitHavester  and card == cardToWrite_2017 :
         print ("[WARNING:] combine does not deal well with autoMCstats option for bin by bin stat uncertainty")
@@ -531,14 +504,38 @@ for card in [ cardToWrite_2017  ] : # , cardToWrite
                 for ll, label in enumerate(labels) :
                     run_cmd('python makePostFitPlots_FromCombine.py --channel  ttH_%s  --input %s %s %s %s %s --original %s/../%s.root > %s' % (label, enterHere+"/"+fileShapes, appendHavester, typeFit, blindStatementPlot, optionsToPlot[ll], enterHere, card, enterHere+"/"+fileShapes+"_"+label+".log"))
 
-                    #python makePostFitPlots_FromCombine.py --channel  ttH_3l_1tau_OS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.2 --maxY 6.9 --MC_IsSplit --notFlips --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
-                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_1tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.5 --maxY 24 --MC_IsSplit --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
-                    # python makePostFitPlots_FromCombine.py --channel  ttH_2l_2tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.35 --maxY 13.9 --notFlips --notConversions --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
-                    # python makePostFitPlots_FromCombine.py --channel  ttH_1l_2tau_OS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY 0.07 --maxY 5000. --useLogPlot --notFlips --unblind --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root
+                    #python makePostFitPlots_FromCombine.py --channel  ttH_3l_1tau_OS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.2 --maxY 6.9 --MC_IsSplit --notFlips --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_1tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.5 --maxY 24 --MC_IsSplit --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2l_2tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.35 --maxY 13.9 --notFlips --notConversions --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_1l_2tau_OS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY 0.07 --maxY 5000. --useLogPlot --notFlips --unblind --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root --doPostFit
 
                     # python makePostFitPlots_FromCombine.py --channel  ttH_2l_2tau_sumOS  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes.root --minY -0.35 --maxY 13.9 --notFlips --notConversions --unblind --fromHavester
 
-                    # PostFitShapesFromWorkspac_mergeMultilep --workspace /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity_3poi.root -d /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitHavester_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.txt -o comb_2017v2_withCR_sanity_3poi_shapes_combo.root -m 125 --sampling --print
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_0tau  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --minY -5 --maxY 115  --unblind --fromHavester --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_3l_0tau  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --minY -3 --maxY 109  --notFlips --unblind --fromHavester --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_3l_0tau  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -3 --maxY 230  --unblind --notFlips --doMultilepCatPlot --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_0tau  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -10 --maxY 329  --unblind  --doMultilepCatPlot --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_3l_0tau  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -6 --maxY 229  --unblind --notFlips --doMultilepCatPlot --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_4l  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -0.35 --maxY 13.9  --notFlips --notConversions --unblind  --original /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/../comb_2017v2_withCR_sanity.root --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_0tau_3j  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --minY -5 --maxY 133  --unblind --fromHavester --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_0tau_3j  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --minY -5 --maxY 133  --unblind --fromHavester --doPostFit
+
+                   # python makePostFitPlots_FromCombine.py --channel  ttH_2lss_0tau_3j  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -12 --maxY 349  --unblind --doMultilepCatPlot --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_3l_0tau_zpeak  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017/PostFitHavester_comb_2017v2_withCR_sanity/comb_2017v2_withCR_sanity_3poi_shapes_combo.root --minY -6 --maxY 229  --notFlips --unblind --fromHavester --doPostFit
+
+                    # python makePostFitPlots_FromCombine.py --channel  ttH_3l_0tau_zpeak  --input /afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/gpetrucc_2017//PostFitCombine_comb_2017v2_withCR_sanity/fitDiagnostics.root --minY -12 --maxY 449  --unblind --notFlips --doMultilepCatPlot --doPostFit
+
 
 
             ######################################

@@ -21,7 +21,9 @@ doLog = True
 dprocs = OrderedDict()
 #dprocs["ttW"]    = [[], [], 12.75, "ttW"]
 #dprocs["ttZ"]    = [[], [], 11.25, "ttZ"]
-dprocs["ttH"]            = [[], [], 11.25, "Comb.",            "Combined" ]
+
+dprocs["ttHw2016"]            = [[], [], 12.75, "Comb.",            "Combined (with 2016)" ]
+dprocs["ttH"]            = [[], [], 11.25, "Comb.",            "Combined (2017)" ]
 dprocs["ttH_1l_2tau"]    = [[], [], 9.75,  "1l + 2#tau_{h}"  , r"$1\Plepton + 2\tauh$"]
 dprocs["ttH_2lss_0tau"]  = [[], [], 8.25,  "2lss"            , r"$2\Plepton ss$ "]
 dprocs["ttH_2lss_1tau"]  = [[], [], 6.75,  "2lss + 1#tau_{h}", r"$2\Plepton ss + 1\tauh$" ]
@@ -72,7 +74,7 @@ filey.write(r"""
 for kk, key in enumerate(dprocs.keys()) :
      dprocs[key][0] = getLimits(input_folder, "from0_r_"+key)
      dprocs[key][1] = getLimits(input_folder, "from1_r_"+key)
-     filey.write( "%s & $%.2f$ & $%.2f^{+%.2f}_{-%.2f}$ & $%.2f^{+%.2f}_{-%.2f}$ \\ \n" % (dprocs[key][4], dprocs[key][0][5], dprocs[key][0][2], dprocs[key][0][3]-dprocs[key][0][2], dprocs[key][0][2]-dprocs[key][0][1], dprocs[key][1][2], dprocs[key][1][3]-dprocs[key][1][2], dprocs[key][1][2]-dprocs[key][1][1] ))
+     filey.write( "%s & $%.2f$ & $%.2f^{+%.2f}_{-%.2f}$ & $%.2f$ & $%.2f^{+%.2f}_{-%.2f}$ \\ \n" % (dprocs[key][4], dprocs[key][0][5], dprocs[key][0][2], dprocs[key][0][3]-dprocs[key][0][2], dprocs[key][0][2]-dprocs[key][0][1], dprocs[key][1][5],dprocs[key][1][2], dprocs[key][1][3]-dprocs[key][1][2], dprocs[key][1][2]-dprocs[key][1][1] ))
      graph_exp2s = TGraphAsymmErrors(len(dprocs.keys()))
      graph_exp2s.SetPoint(kk, dprocs[key][0][2], dprocs[key][2])
      #print (dprocs[key][0][2])
@@ -114,7 +116,7 @@ for kk, key in enumerate(dprocs.keys()) :
      mg.Add(graph_obs, "P")
      #########
      graph_obs_mu1 = TGraphAsymmErrors(len(dprocs.keys()))
-     graph_obs_mu1.SetPoint(kk, dprocs[key][1][2], dprocs[key][2])
+     graph_obs_mu1.SetPoint(kk, dprocs[key][1][5], dprocs[key][2])
      graph_obs_mu1.SetPointError(kk, 0.0, 0.0, yerr, yerr)
      graph_obs_mu1.SetMarkerColor(kRed);
      graph_obs_mu1.SetMarkerStyle(24);
@@ -184,7 +186,8 @@ tex.SetTextSize(0.035);
 tex.SetTextFont(61);
 tex.DrawLatexNDC(0.26, 0.91, "CMS");
 tex.SetTextFont(42)
-tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity/1000.));
+#tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (luminosity/1000.));
+tex.DrawLatexNDC(0.67, 0.91, "%.1f fb^{-1} (13 TeV)" % (41.5));
 tex.SetTextSize(0.035);
 tex.SetTextFont(52)
 tex.DrawLatexNDC(0.36,0.91,"Preliminary")
