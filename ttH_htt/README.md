@@ -9,7 +9,7 @@ scram b -j 8
 The output of the KBFI analysis jobs ("prepareDatacards") is comverted into .txt/.root combine datacards as the bellow example:
 
 ```
-WriteDatacards.py  --inputShapes /absolute/or/relative/path/to/prepareDatacards_favourite.root --channel 1l_2tau --cardFolder /absolute/or/relative/path/of/folder/to/results --output_file /absolute/or/relative/name_without_txt_sufix --noX_prefix
+WriteDatacards.py  --inputShapes /absolute/or/relative/path/to/prepareDatacards_favourite.root --channel 1l_2tau --cardFolder /absolute/or/relative/path/of/folder/to/results 
 ```
 
 Please check it out the extensive list of command line descriptions and further options by running it with the --help option
