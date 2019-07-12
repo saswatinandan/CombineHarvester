@@ -14,7 +14,7 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 # cd /home/acaan/VHbbNtuples_8_0_x/CMSSW_7_4_7/src/ ; cmsenv ; cd -
-# python do_limits.py --channel "2lss_1tau" --uni "Tallinn"
+# python do_limits_fixedBin.py --uni "TLL" --channel "2lss_1tau"
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="none")
@@ -108,17 +108,19 @@ if university == "Tallinn_HH_autoMCstats":
     takeRebinedFolder=False
     add_x_prefix=False
     doRebin = False
-    doKeepBlinded = "true"
+    doKeepBlinded = "false"
     autoMCstats = "true"
     useSyst = "true" # use shape syst
-    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun26/"
+    #mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun26/"
+    mom = "/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/test/tau_cards_JER/"
     local = "Tallinn/"
-    card_prefix = "addSystFakeRates_"
+    #card_prefix = "addSystFakeRates_"
+    card_prefix = "prepareDatacards_"
     cards = [
-    "1l_2tau_OS_mvaOutput_final_x",
+    "1l_2tau_mvaOutput_final_x", # "1l_2tau_OS_mvaOutput_final_x",
     "2lss_1tau_sumOS_mvaOutput_final_x",
-    "2l_2tau_sumOS_mvaOutput_final_x",
-    "3l_1tau_OS_mvaOutput_final_x",
+    "2l_2tau_mvaOutput_final_x", # "2l_2tau_sumOS_mvaOutput_final_x",
+    "3l_1tau_mvaOutput_final_x", #OS
     "ttWctrl_mvaDiscr_2lss_x",
     "ttZctrl_mvaDiscr_3l_x"
     ]
@@ -150,14 +152,14 @@ if university == "Tallinn":
     doKeepBlinded = "true"
     autoMCstats = "true"
     useSyst = "true" # use shape syst
-    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
+    #mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun09/"
     local = "Tallinn/"
     card_prefix = "prepareDatacards_"
     cards = [
     "1l_2tau_mvaOutput_final_x",
     "2lss_1tau_sumOS_mvaOutput_final_x",
-    "2l_2tau_mvaOutput_final_regularBin", #"2l_2tau_mvaOutput_final_x",
-    "3l_1tau_mvaOutput_final_x_noNeg",
+    "2l_2tau_mvaOutput_final_x", # "2l_2tau_mvaOutput_final_regularBin",
+    "3l_1tau_mvaOutput_final_x", # "3l_1tau_mvaOutput_final_x_noNeg",
     "2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M",
     "1l_2tau_mvaOutput_HTT_SUM_VT",
     #
@@ -194,30 +196,36 @@ if university == "Tallinn":
     "ttH_1l_2tau/",
     ]
 
-elif university == "Cornell":
-    typeFit = "postfit"
+elif university == "TLL":
+    typeFit = "prefit"
     takeRebinedFolder=False
-    add_x_prefix=False
+    add_x_prefix=True
     doRebin = False
     doKeepBlinded = "true"
     autoMCstats = "true"
-    useSyst = "true" # use shape syst
-    mom = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/2018jun05/"
-    local = "Cornell/ch/"
-    card_prefix = "datacards_"
-    cards = [
-    "1l2tau_41p53invfb_Binned_2018jun04",
-    "2lss1tau_41p53invfb_Binned_2018jun04",
-    "2l2tau_41p53invfb_Binned_2018jun04",
-    "3l1tau_41p53invfb_Binned_2018jun04"
-    ]
+    useSyst = "false" # use shape syst
+    mom = "/afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/tth-bdt-training/treatDatacards/"
+    local = "2lss_1tau_NN_tHcat_2019Jun17/"
+    execfile("../cards/info_2lss_1tau_datacards.py")
+    info = read_from()
+    cards = []
+    for ii, bdtType in enumerate(info["bdtTypes"]) :
+        fileName = info["mom"] + "/prepareDatacards_" + info["ch_nickname"] + "_" + bdtType + "_4bins_quantiles.root"
+        cards += [fileName]
+    #card_prefix = "datacards_"
+    #cards = [
+    #"1l2tau_41p53invfb_Binned_2018jun04",
+    #"2lss1tau_41p53invfb_Binned_2018jun04",
+    #"2l2tau_41p53invfb_Binned_2018jun04",
+    #"3l1tau_41p53invfb_Binned_2018jun04"
+    #]
 
-    channels = [
-    "1l_2tau",
-    "2lss_1tau",
-    "2l_2tau",
-    "3l_1tau"
-    ]
+    #channels = [
+    #"1l_2tau",
+    #"2lss_1tau",
+    #"2l_2tau",
+    #"3l_1tau"
+    #]
 
 
 print ("to run this script your CMSSW_base should be the one that CombineHavester installed")
@@ -225,7 +233,7 @@ print ("to run this script your CMSSW_base should be the one that CombineHaveste
 if not readLimits :
     for nn, card in enumerate(cards) :
         if not nn < 4 and channel == "none" : continue
-        elif not channel == "none" not channels[nn] == channel : continue #
+        elif not channel == "none" and not channels[nn] == channel : continue #
         #####################################################################
         wdata = "" # to append to WriteDatacard_$channel
         hasConversions = "true"
@@ -274,7 +282,7 @@ if not readLimits :
             dolog = "true"
             divideByBinWidth = "false"
         #####################################################################
-        my_file = mom+local+card_prefix+card+'.root'
+        my_file = card #mom+local+card_prefix+card+'.root'
         file = TFile(my_file,"READ");
         if os.path.exists(my_file) :
             print ("testing ", my_file)
@@ -300,8 +308,8 @@ if not readLimits :
 
             # make txt datacard
             datacard_file=my_file
-            datacardFile_output = mom+local+"ttH_"+card
-            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s --use_autoMCstats=%s' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst, autoMCstats))
+            datacardFile_output = card.replace(".root",".txt").replace("/prepareDatacards_" + info["ch_nickname"],"ttH") #mom+local+"ttH_"+card
+            run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s ' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst)) # --use_autoMCstats=%s , autoMCstats
             txtFile = datacardFile_output + ".txt"
             logFile = datacardFile_output + ".log"
             logFileNoS = datacardFile_output +  "_noSyst.log"
@@ -309,22 +317,6 @@ if not readLimits :
                 run_cmd('cd '+mom+local+' ; combine -M AsymptoticLimits -m %s -t -1 --run blind -S 0 %s &> %s' % (str(125), txtFile, logFileNoS))
                 run_cmd('cd '+mom+local+' ; combine -M AsymptoticLimits -m %s -t -1 --run blind %s &> %s' % (str(125), txtFile, logFile))
                 run_cmd('cd '+mom+local+' ;  rm higgsCombineTest.AsymptoticLimits.mH125.root')
-
-            """
-            ### outdated
-            if doPlots :
-                filesh = open(mom+local+"execute_plots"+channels[nn]+"_"+university+".sh","w")
-                filesh.write("#!/bin/bash\n")
-                rootFile = mom+local+"ttH_"+card+"_shapes.root"
-                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s --use_autoMCstats=%s' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst, autoMCstats))
-                run_cmd('cd '+mom+local+' combine -M FitDiagnostics -d %s  -t -1  --expectSignal 1' % (txtFile))
-                run_cmd('cd '+mom+local+' PostFitShapes -d %s -o %s -m 125 -f fitDiagnostics.root:fit_s --postfit --sampling --print' % (txtFile, rootFile)) # --postfit
-                makeplots=('root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\\"'
-                +str(card)+'\\",\\"'+str(local)+'\\",\\"'+str(channels[nn])+'\\",\\"'+str(mom)+'\\",'+str(dolog)+','+str(hasFlips)+','+hasConversions+',\\"BDT\\",\\"\\",'+str(minimim)+','+str(max)+','+isSplit+',\\"'+typeFit+'\\",'+divideByBinWidth+','+doKeepBlinded+')')
-                #root -l -b -n -q /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/macros/makePostFitPlots.C++(\"2lss_1tau_sumOS_mvaOutput_2lss_1tau_HTT_SUM_M_11bins_quantiles\",\"2018jun02/\",\"2lss_1tau\",\"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/\",false,false,\"BDT\",\"\",0.0,10.0)
-                filesh.write(makeplots+ "\n")
-                print ("to have the plots take the makePlots command from: ",mom+local+"execute_plots"+channels[nn]+"_"+cards[nn]+"_"+university+".sh")
-            """
 
             if doImpacts :
                 run_cmd('cd '+mom+local+' ; combineTool.py  -M T2W -i %s' % (txtFile))
@@ -337,7 +329,7 @@ if not readLimits :
                 run_cmd('cd '+mom+local+' ; mv impacts.pdf '+mom+local+'impacts_'+channels[nn]+"_"+cards[nn]+'_'+university+'.pdf')
 
             if doGOF :
-                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s --use_autoMCstats=%s' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst, autoMCstats))
+                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s ' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst)) # --use_autoMCstats=%s , autoMCstats
                 run_cmd('cd '+mom+local+' ;  combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 %s' % (txtFile))
                 run_cmd('combine -M GoodnessOfFit --algo=saturated --fixedSignalStrength=1 -t 1000 -s 12345  %s --saveToys --toysFreq' % (txtFile))
                 run_cmd('cd '+mom+local+'combineTool.py -M CollectGoodnessOfFit --input higgsCombineTest.GoodnessOfFit.mH120.root higgsCombineTest.GoodnessOfFit.mH120.12345.root -o GoF_saturated.json')
@@ -347,63 +339,5 @@ if not readLimits :
                 run_cmd('cd '+mom+local+' ; rm higgsCombine*root')
                 run_cmd('cd '+mom+local+' ; rm GoF_saturated.json')
 
-            """
-            ### outdated
-            if doYields :
-                run_cmd('%s --input_file=%s --output_file=%s --add_shape_sys=%s --use_autoMCstats=%s' % ('WriteDatacards_'+channels[nn]+wdata, my_file, datacardFile_output, useSyst, autoMCstats))
-                run_cmd('combine -M FitDiagnostics -d %s  -t -1 --expectSignal 1' % (txtFile))
-                run_cmd('python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py -a fitDiagnostics.root -g plots.root')
-                run_cmd('combineTool.py  -M T2W -i %s' % (txtFile))
-                ROOT.PyConfig.IgnoreCommandLineOptions = True
-                gROOT.SetBatch(ROOT.kTRUE)
-                gSystem.Load('libHiggsAnalysisCombinedLimit')
-                print ("Retrieving yields from: ",datacardFile_output)
-                fin = TFile(datacardFile_output)
-                wsp = fin.Get('w')
-                cmb = ch.CombineHarvester()
-                cmb.SetFlag("workspaces-use-clone", True)
-                ch.ParseCombineWorkspace(cmb, wsp, 'ModelConfig', 'data_obs', False)
-                mlf = TFile('fitDiagnostics.root')
-                rfr = mlf.Get('fit_s')
-                print 'Pre-fit tables:'
-                filey = open(mom+local+"yields_"+channels[nn]+"_"+university+"_prefit.tex","w")
-                PrintTables(cmb, tuple(), 'ttH_'+channels[nn], filey, university, channels[nn], blinded)
-                cmb.UpdateParameters(rfr)
-                print 'Post-fit tables:'
-                filey = open(mom+local+"yields_"+channels[nn]+"_"+university+"_postfit.tex","w")
-                PrintTables(cmb, (rfr, 500), 'ttH_'+channels[nn], filey, university, channels[nn], blinded)
-                print ("the yields are on this file: ", mom+local+"yields_"+channels[nn]+"_"+university+"_*.tex")
-            """"
         else : print (my_file,"does not exist ")
         ##if doPlots : run_cmd("bash "+mom+local+"execute_plots"+channels[nn]+"_"+university+".sh")
-
-################################################################
-"""
-## in the future this will also do the plots of limits
-if readLimits :
-    colorsToDo = np.arange(1,4)
-    binstoDo=np.arange(1,4)
-    file = open(mom+local+"limits.csv","w")
-    for ii in [0] :
-        for nn,channel in enumerate(channels) :
-            if not nn < 4 : continue
-            #options.variables+'_'+bdtTypesToDoFile[ns]+'_nbin_'+str(nbins)
-            if ii == 0 : limits=ReadLimits( cards[nn], [1],"" ,channel,mom+local,-1,-1)
-            if ii == 1 : limits=ReadLimits( cards[nn], [1],"_noSyst" ,channel,mom+local,-1,-1)
-            print (channel, limits)
-            for jj in limits[0] : file.write(str(jj)+', ')
-            file.write('\n')
-            #plt.plot(binstoDo,limits[0], color=colorsToDo[nn],linestyle='-',marker='o',label="bdtTypesToDoLabel[nn]")
-            #plt.plot(binstoDo,limits[1], color=colorsToDo[nn],linestyle='-')
-            #plt.plot(binstoDo,limits[3], color=colorsToDo[nn],linestyle='-')
-        #ax.legend(loc='best', fancybox=False, shadow=False , ncol=1)
-        #ax.set_xlabel('nbins')
-        #ax.set_ylabel('limits')
-        #maxsum=0
-        #plt.axis((min(binstoDo),max(binstoDo),0.5,2.5))
-        #ax.legend(loc='best', fancybox=False, shadow=False , ncol=1)
-        #ax.set_xlabel('nbins')
-        #ax.set_ylabel('limits')
-        #maxsum=0
-        #plt.axis((min(binstoDo),max(binstoDo),0.5,2.5))
-"""
