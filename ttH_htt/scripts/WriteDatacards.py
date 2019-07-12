@@ -7,11 +7,6 @@ from subprocess import Popen, PIPE
 #from CombineHarvester.ttH_htt.list_syst import *
 sys.stdout.flush()
 
-
-syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
-execfile(syst_file)
-print ("syst values and channels options taken from: " +  syst_file)
-
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--inputShapes",    type="string",       dest="inputShapes", help="Full path of prepareDatacards.root")
@@ -21,7 +16,7 @@ parser.add_option("--analysis",       type="string",       dest="analysis",    h
 parser.add_option("--output_file",    type="string",       dest="output_file", help="Name of the output file.\n Default: the same of the input, substituing 'prepareDatacards' by 'datacard'", default="none")
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  help="do not assume hist from prepareDatacards starts with 'x_' prefix", default=False)
-parser.add_option("--era",            type="int",          dest="era",         help="Era to consider. Default: 2017",  default=2017)
+parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
 inputShapes = options.inputShapes
@@ -30,6 +25,10 @@ era         = options.era
 shape       = options.shapeSyst
 analysis    = options.analysis
 cardFolder  = options.cardFolder
+
+syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
+execfile(syst_file)
+print ("syst values and channels options taken from: " +  syst_file)
 
 if not os.path.exists(cardFolder):
     os.makedirs(cardFolder)

@@ -12,11 +12,7 @@ The output of the KBFI analysis jobs ("prepareDatacards") is comverted into .txt
 WriteDatacards.py  --inputShapes /absolute/or/relative/path/to/prepareDatacards_favourite.root --channel 1l_2tau --cardFolder /absolute/or/relative/path/of/folder/to/results --output_file /absolute/or/relative/name_without_txt_sufix --noX_prefix
 ```
 
-Please check it out the extensive list of command line descriptions and further options by running on thie repository:
-
-```
-python scripts/WriteDatacards.py -h
-```
+Please check it out the extensive list of command line descriptions and further options by running it with the --help option
 
 The options for common and specific systematics are found on. 
 
@@ -40,14 +36,10 @@ With the intention of testing locally if the datacard production was succesfull 
 makePostFitPlots_FromCombine.py --inputDatacard /absolute/or/relative/path/to/prepareDatacards_favourite.root --odir  /absolute/or/relative/path/of/folder/to/results --channel 2lss_1tau
 ```
 
+Please check it out the extensive list of command line descriptions and further options by running it with the --help option
+
 #IMPORTANT: 
 To run the latter it is imperative that you started your ssh session with at least `-Y` option (prefereable with `-XY`): e.g. `ssh -Y user@server.ser`
-
-Please check it out the extensive list of command line descriptions and further options by running on thie repository:
-
-```
-python scripts/makePostFitPlots_FromCombine.py -h
-```
 
 The options for color code of the plots (global to each analysis ttH/HH) are found on 
 

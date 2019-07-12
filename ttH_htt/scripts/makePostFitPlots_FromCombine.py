@@ -7,25 +7,6 @@ from optparse import OptionParser
 from collections import OrderedDict
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-#ROOT.gROOT.SetBatch()
-ROOT.gStyle.SetOptStat(0)
-sys.stdout.flush()
-
-func_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py"
-execfile(func_file)
-
-opt_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/plot_options.py"
-execfile(opt_file)
-print ("plot options taken from: " +  opt_file)
-
-syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
-execfile(syst_file)
-print ("channel list options by channel options taken from: " +  syst_file)
-
-ranges_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/plot_ranges_ttH.py"
-execfile(ranges_file)
-plot_ranges = options_plot_ranges()
-print ("channel list plot ranges by channel options taken from: " +  ranges_file)
 
 from optparse import OptionParser
 parser = OptionParser()
@@ -78,7 +59,7 @@ parser.add_option("--analysis",       type="string",       dest="analysis",
     default="ttH"
     )
 parser.add_option("--era",       type="string",       dest="era",    
-    help="Analysis type = 'ttH' or 'HH' (to know what to take as Higgs procs and naming convention of systematics), Default ttH", 
+    help="Era to consider (important for list of systematics and labeling). Default: 2017", 
     default="2017"
     )
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   
@@ -86,6 +67,26 @@ parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",
     default=False
     )
 (options, args) = parser.parse_args()
+
+#ROOT.gROOT.SetBatch()
+ROOT.gStyle.SetOptStat(0)
+sys.stdout.flush()
+
+func_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py"
+execfile(func_file)
+
+opt_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/plot_options.py"
+execfile(opt_file)
+print ("plot options taken from: " +  opt_file)
+
+syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
+execfile(syst_file)
+print ("channel list options by channel options taken from: " +  syst_file)
+
+ranges_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/plot_ranges_ttH.py"
+execfile(ranges_file)
+plot_ranges = options_plot_ranges()
+print ("channel list plot ranges by channel options taken from: " +  ranges_file)
 
 plainBins        = options.plainBins
 divideByBinWidth = options.divideByBinWidth
