@@ -25,8 +25,11 @@ configs/list_syst.py
 - the specificities of each channel are entered as dictionary entries, eg [here for list of processes/channel](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/configs/list_syst.py#L76-L92) and [here for specipc systematics/channel/process](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/configs/list_syst.py#L95-L122) -- the structure/usage of those are expected to be self explanatory in the case you need to implement a new entry.
 
 #P.s.: 
-Those are certifyed to work for all the ttH channels, 
-but the same core scripts should work as well for the HH analysis if one adds to the configs. This will be done in a posterior stage.
+Those are certified to work for all the ttH channels, 
+but the same core scripts should work as well for the HH analysis if one adds to the configs. This will be done in a posterior stage. 
+
+#TODO (Xanda): 
+Check closelly for the master10X KBFI analysis code + shape systematics
 
 ==========================================================
 
