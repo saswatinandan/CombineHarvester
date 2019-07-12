@@ -56,11 +56,13 @@ The options for ranges of the plots (specific for each channel) are found on (at
 configs/plot_ranges_ttH.py
 ```
 
+- In the way that these two files are loaded on the main script there is no need to recompile the folder if you change/add a systematics entry.
+
 #Note:
 The input of this script is one KBFI format "prepareDatacards", as this calls inside the `WriteDatacards.py`, followed by a couple more of combine commands necessary to do prefit/postfit plots in a self contained naming convention cascade. 
 
 #P.s.: 
-It takes one "prepareDatacards" and output one plot, this is not the optimal for the cases of NN subcategorization, for those see the warning bellow.
+It takes one "prepareDatacards" and outputs one plot, this is not the optimal for the cases of NN subcategorization, for those see the warning bellow.
 
 ==========================================================
 
