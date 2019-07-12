@@ -2,8 +2,30 @@ import ROOT
 import array
 import math
 
+# usage: file, path = splitPath(s)
+def splitPath(s) :
+    f = os.path.basename(s)
+    p = s[:-(len(f))-1]
+    return f, p
+
+def runCombineCmd(combinecmd, outfolder=".", saveout=None):
+    print ("Command: ", combinecmd)
+    try:
+        p = Popen(shlex.split(combinecmd) , stdout=PIPE, stderr=PIPE, cwd=outfolder)
+        comboutput = p.communicate()[0]
+    except OSError:
+        print ("command not known\n", combinecmd)
+        comboutput = None
+    if not saveout == None :
+        saveTo = outfolder + "/" + saveout
+        with open(saveTo, "w") as text_file:
+            text_file.write(comboutput)
+        print ("Saved result to: " + saveTo)
+    print ("\n")
+    return comboutput
+
 def run_cmd(command):
-  print "executing command = '%s'" % command
+  print ("executing command = '%s'" % command)
   p = subprocess.Popen(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
   stdout, stderr = p.communicate()
   return stdout
@@ -14,39 +36,39 @@ def AddSystQuad(list):
     quad =  math.sqrt(sum(ell))
     return quad
 
-def rebin_total(template, folder, fin, divideByBinWidth, name_total) :
+def rebin_total(template, folder, fin, divideByBinWidth, name_total, dict) :
     total_hist = fin.Get(folder+"/"+name_total)
     hist = template.Clone()
-    hist.SetMarkerSize(0);
+    hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
     #hist.SetFillColor(1)
     #hist.SetFillStyle(3244)
     hist.SetLineWidth(0)
-    hist.SetMinimum(options.minY)
-    hist.SetMaximum(options.maxY)
+    hist.SetMinimum(dict["minY"])
+    hist.SetMaximum(dict["maxY"])
     for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
         bin_width = 1.
         if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
         hist.SetBinContent(ii, total_hist.GetBinContent(ii)/bin_width)
-        if ii == 6 and "2lss_0tau_3j" in category :
-            ## just this bin went wrong on Havester combo of processes..
-            ## I calculated the error by hand as quadratic sum of processes -- just for this bin
-            hist.SetBinError(ii, 4.5)
-        else : hist.SetBinError(ii, total_hist.GetBinError(ii)/bin_width)
-    #if not hist.GetSumw2N() : hist.Sumw2()
-    hist.GetXaxis().SetTitleOffset(0.55);
-    hist.GetXaxis().SetLabelColor(10);
-    if (options.maxY > 1000.) : hist.GetYaxis().SetTitleOffset(1.75);
-    else : hist.GetYaxis().SetTitleOffset(1.35);
-    hist.GetYaxis().SetTitleSize(0.050);
-    hist.GetYaxis().SetLabelSize(0.056);
-    hist.GetYaxis().SetTickLength(0.04);
-    hist.GetXaxis().SetTickLength(0.04);
+        #if ii == 6 and "2lss_0tau_3j" in channel :
+        #    ## just this bin went wrong on Havester combo of processes..
+        #    ## I calculated the error by hand as quadratic sum of processes -- just for this bin
+        #    hist.SetBinError(ii, 4.5)
+        #else : 
+        hist.SetBinError(ii, total_hist.GetBinError(ii)/bin_width)
+    hist.GetXaxis().SetTitleOffset(0.55)
+    hist.GetXaxis().SetLabelColor(10)
+    if (dict["maxY"] > 1000.) : hist.GetYaxis().SetTitleOffset(1.75)
+    else : hist.GetYaxis().SetTitleOffset(1.35)
+    hist.GetYaxis().SetTitleSize(0.050)
+    hist.GetYaxis().SetLabelSize(0.056)
+    hist.GetYaxis().SetTickLength(0.04)
+    hist.GetXaxis().SetTickLength(0.04)
     return hist
 
 def rebin_totalCat(template, bins, folder, fin, divideByBinWidth, name_total) :
     hist = template.Clone()
-    hist.SetMarkerSize(0);
+    hist.SetMarkerSize(0)
     hist.SetFillColorAlpha(12, 0.40)
     #hist.SetFillColor(1)
     #hist.SetFillStyle(3244)
@@ -64,52 +86,52 @@ def rebin_totalCat(template, bins, folder, fin, divideByBinWidth, name_total) :
         hist.SetBinError(bb+1, error)
         print ("filled bin", bb+1)
     if not hist.GetSumw2N() : hist.Sumw2()
-    hist.GetXaxis().SetTitleOffset(0.55);
-    hist.GetXaxis().SetLabelColor(10);
-    hist.GetYaxis().SetTitleOffset(1.35);
-    hist.GetYaxis().SetTitleSize(0.050);
-    hist.GetYaxis().SetLabelSize(0.056);
-    hist.GetYaxis().SetTickLength(0.04);
-    hist.GetXaxis().SetTickLength(0.04);
+    hist.GetXaxis().SetTitleOffset(0.55)
+    hist.GetXaxis().SetLabelColor(10)
+    hist.GetYaxis().SetTitleOffset(1.35)
+    hist.GetYaxis().SetTitleSize(0.050)
+    hist.GetYaxis().SetLabelSize(0.056)
+    hist.GetYaxis().SetTickLength(0.04)
+    hist.GetXaxis().SetTickLength(0.04)
     return hist
 
 
-def rebin_hist(template, fin, name, itemDict, divideByBinWidth) :
+def rebin_hist(template, folder, fin, name, itemDict, divideByBinWidth) :
     print folder+"/"+name
     hist = fin.Get(folder+"/"+name)
     hist_rebin = template.Clone()
-    hist_rebin.SetMarkerSize(0);
-    hist_rebin.SetFillColor(itemDict[0])
-    hist_rebin.SetFillStyle(itemDict[1])
-    if "none" not in itemDict[2] : legend1.AddEntry(hist_rebin, itemDict[2], "f");
-    if itemDict[3] == True :  hist_rebin.SetLineColor(1);
-    else : hist_rebin.SetLineColor(itemDict[0]);
+    hist_rebin.SetMarkerSize(0)
+    hist_rebin.SetFillColor(itemDict["color"])
+    hist_rebin.SetFillStyle(itemDict["fillStype"])
+    if not itemDict["label"] == "none" : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
+    if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
+    else : hist_rebin.SetLineColor(itemDict["color"])
     for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
         bin_width = 1.
         if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii)
         ### remove negatives
         binContent_original = hist.GetBinContent(ii)
-        binError2_original = hist.GetBinError(ii)**2;
+        binError2_original = hist.GetBinError(ii)**2
         if binContent_original < 0. :
             print ("bin with negative entry: ", binContent_original)
             binError2_modified = binError2_original + math.pow(2, binContent_original - binContent_modified)
             if not binError2_modified >= 0. : print "Bin error negative!"
-            hist_rebin.SetBinError(ii, math.sqrt(binError2_modified)/bin_width);
+            hist_rebin.SetBinError(ii, math.sqrt(binError2_modified)/bin_width)
             hist_rebin.SetBinContent(ii, 0.)
         else :
-            hist_rebin.SetBinError(ii,   hist.GetBinError(ii)/bin_width);
+            hist_rebin.SetBinError(ii,   hist.GetBinError(ii)/bin_width)
             hist_rebin.SetBinContent(ii, hist.GetBinContent(ii)/bin_width)
     if not hist.GetSumw2N() : hist.Sumw2()
     return hist_rebin
 
 def doCategories(template, bins, fin, name, itemDict, divideByBinWidth) :
     hist_rebin = template.Clone()
-    hist_rebin.SetMarkerSize(0);
-    hist_rebin.SetFillColor(itemDict[0])
-    hist_rebin.SetFillStyle(itemDict[1])
-    if "none" not in itemDict[2] : legend1.AddEntry(hist_rebin, itemDict[2], "f");
-    if itemDict[3] == True :  hist_rebin.SetLineColor(1);
-    else : hist_rebin.SetLineColor(itemDict[0]);
+    hist_rebin.SetMarkerSize(0)
+    hist_rebin.SetFillColor(itemDict["color"])
+    hist_rebin.SetFillStyle(itemDict["fillStype"])
+    if "none" not in itemDict["label"] : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
+    if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
+    else : hist_rebin.SetLineColor(itemDict["fillStype"])
     for bb, bin in enumerate(bins) :
         content = 0
         for cat in bin :
@@ -127,52 +149,7 @@ def doCategories(template, bins, fin, name, itemDict, divideByBinWidth) :
         #print ("filled bin", bb+1)
     return hist_rebin
 
-def rebin_dataCats(template, bins, folder, fin, fromHavester) :
-    if not fromHavester :
-        dataTGraph1 = ROOT.TGraphAsymmErrors()
-        for bb, bin in enumerate(bins) :
-            content = 0
-            errorUp = 0
-            errorDo = 0
-            for cat in bin :
-                dataTGraph = fin.Get(folder+cat+"/data")
-                for ii in range(0, dataTGraph.GetN()) :
-                    xp = ROOT.Double()
-                    yp = ROOT.Double()
-                    dataTGraph.GetPoint(ii,xp,yp)
-                    content += yp
-                    errorUp = AddSystQuad([errorUp, dataTGraph.GetErrorYhigh(ii)])
-                    errorDo = AddSystQuad([errorDo, dataTGraph.GetErrorYlow(ii)])
-            print ("done bin", bb , template.GetBinCenter(bb+1) , content)
-            dataTGraph1.SetPoint(bb,       template.GetBinCenter(bb+1) , content)
-            dataTGraph1.SetPointEYlow(bb,  errorDo)
-            dataTGraph1.SetPointEYhigh(bb, errorUp)
-            dataTGraph1.SetPointEXlow(bb,  template.GetBinWidth(bb+1)/2.)
-            dataTGraph1.SetPointEXhigh(bb, template.GetBinWidth(bb+1)/2.)
-    else :
-        dataTGraph = fin.Get(folder+cat+"/data_obs")
-        dataTGraph1 = template.Clone()
-        for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
-            for bb, bin in enumerate(bins) :
-                content = 0
-                error = 0
-                for cat in bin :
-                    err = ROOT.Double()
-                    content += takeFrom.IntegralAndError(0,takeFrom.GetXaxis().GetNbins()+1, err, "")
-                    error = AddSystQuad([error, err])
-            dataTGraph1.SetBinContent(ii, content)
-            dataTGraph1.SetBinError(ii, error)
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
-    dataTGraph1.SetMarkerSize(1);
-    dataTGraph1.SetLineColor(1);
-    dataTGraph1.SetLineWidth(2);
-    dataTGraph1.SetLineStyle(1)
-    dataTGraph1.SetMinimum(options.minY)
-    dataTGraph1.SetMaximum(options.maxY)
-    return dataTGraph1
-
-def rebin_data(template, folder, fin, fromHavester, errorBar=True) :
+def rebin_data(template, folder, fin, fromHavester, dict, errorBar=True) :
     # in the case errorBar=True does not draw markers,
     #in the case it is false it draws only markers but shifts the empty bins to negative
     if not fromHavester :
@@ -206,16 +183,16 @@ def rebin_data(template, folder, fin, fromHavester, errorBar=True) :
             if divideByBinWidth : bin_width = template.GetXaxis().GetBinWidth(ii+1)
             dataTGraph1.SetBinContent(ii, dataTGraph.GetBinContent(ii)/bin_width)
             dataTGraph1.SetBinError(ii, dataTGraph.GetBinError(ii)/bin_width)
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
+    dataTGraph1.SetMarkerColor(1)
+    dataTGraph1.SetMarkerStyle(20)
     if errorBar :
-        dataTGraph1.SetMarkerSize(0);
-    else : dataTGraph1.SetMarkerSize(1);
-    dataTGraph1.SetLineColor(1);
-    dataTGraph1.SetLineWidth(2);
+        dataTGraph1.SetMarkerSize(0)
+    else : dataTGraph1.SetMarkerSize(1)
+    dataTGraph1.SetLineColor(1)
+    dataTGraph1.SetLineWidth(2)
     dataTGraph1.SetLineStyle(1)
-    dataTGraph1.SetMinimum(options.minY)
-    dataTGraph1.SetMaximum(options.maxY)
+    dataTGraph1.SetMinimum(dict["minY"])
+    dataTGraph1.SetMaximum(dict["maxY"])
     return dataTGraph1
 
 def err_data(template, folder, fromHavester, errorBar=True) :
@@ -260,13 +237,13 @@ def err_data(template, folder, fromHavester, errorBar=True) :
             else :
                 dataTGraph1.SetBinContent(ii, -0.0)
         if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
+    dataTGraph1.SetMarkerColor(1)
+    dataTGraph1.SetMarkerStyle(20)
     if errorBar :
-        dataTGraph1.SetMarkerSize(0);
-    else : dataTGraph1.SetMarkerSize(1);
+        dataTGraph1.SetMarkerSize(0)
+    else : dataTGraph1.SetMarkerSize(1)
     dataTGraph1.SetLineWidth(2)
-    dataTGraph1.SetLineColor(1);
+    dataTGraph1.SetLineColor(1)
     dataTGraph1.SetLineStyle(1)
     return dataTGraph1
 
@@ -305,59 +282,36 @@ def err_dataCat(template, dataTGraph, folder, fromHavester) :
             else :
                 dataTGraph1.SetBinContent(ii, -0.0)
         if not dataTGraph1.GetSumw2N() : dataTGraph1.Sumw2()
-    dataTGraph1.SetMarkerColor(1);
-    dataTGraph1.SetMarkerStyle(20);
-    dataTGraph1.SetMarkerSize(1);
-    dataTGraph1.SetLineColor(1);
-    dataTGraph1.SetLineWidth(2);
+    dataTGraph1.SetMarkerColor(1)
+    dataTGraph1.SetMarkerStyle(20)
+    dataTGraph1.SetMarkerSize(1)
+    dataTGraph1.SetLineColor(1)
+    dataTGraph1.SetLineWidth(2)
     dataTGraph1.SetLineStyle(1)
     return dataTGraph1
 
 
-def do_hist_total_err(template, labelX, name_total, category) :
+def do_hist_total_err(template, folder, labelX, name_total, category, dict) :
     total_hist = fin.Get(folder+"/"+name_total)
     hist_total_err = template.Clone()
-    hist_total_err.GetYaxis().SetTitle("Data/pred.") #"#frac{Data - Expectation}{Expectation}");
-    hist_total_err.GetXaxis().SetTitleOffset(1.1);
-    hist_total_err.GetYaxis().SetTitleOffset(0.8);
-    hist_total_err.GetXaxis().SetTitleSize(0.105);
-    hist_total_err.GetYaxis().SetTitleSize(0.10);
-    hist_total_err.GetYaxis().SetLabelSize(0.105);
-    hist_total_err.GetXaxis().SetLabelSize(0.10);
-    hist_total_err.GetYaxis().SetTickLength(0.04);
-    hist_total_err.GetXaxis().SetLabelColor(1);
+    hist_total_err.GetYaxis().SetTitle("Data/pred.") #"#frac{Data - Expectation}{Expectation}")
+    hist_total_err.GetXaxis().SetTitleOffset(1.1)
+    hist_total_err.GetYaxis().SetTitleOffset(0.8)
+    hist_total_err.GetXaxis().SetTitleSize(0.105)
+    hist_total_err.GetYaxis().SetTitleSize(0.10)
+    hist_total_err.GetYaxis().SetLabelSize(0.105)
+    hist_total_err.GetXaxis().SetLabelSize(0.10)
+    hist_total_err.GetYaxis().SetTickLength(0.04)
+    hist_total_err.GetXaxis().SetLabelColor(1)
     hist_total_err.GetXaxis().SetTitle(labelX)
-    #hist_total_err.SetMarkerSize(0);
+    #hist_total_err.SetMarkerSize(0)
     hist_total_err.SetFillColorAlpha(12, 0.40)
     #hist_total_err.SetFillColorAlpha(12, 0.80)
     #hist_total_err.SetFillStyle(3244)
     hist_total_err.SetLineWidth(2)
-    hist_total_err.SetMarkerSize(0);
-    minYerr = -0.6
-    maxYerr = 2.85
-    if "3l_1tau" in category :
-         minYerr = 0.0
-         maxYerr = 5.35
-    if "2lss_1tau" in category :
-        minYerr = 0.0
-        maxYerr = 2.75
-    if "2l_2tau" in category :
-        minYerr = 0.0
-        maxYerr = 2.75
-    if "1l_2tau" in category :
-        minYerr = 0.59
-        maxYerr = 1.87
-    if "2lss_0tau" in category :
-        minYerr = 0.501
-        maxYerr = 1.59
-    if "3l_0tau" in category :
-        minYerr = 0.501
-        maxYerr = 1.59
-    if "4l" in category :
-        minYerr = 0.601
-        maxYerr = 2.19
-    hist_total_err.SetMinimum(minYerr)
-    hist_total_err.SetMaximum(maxYerr)
+    hist_total_err.SetMarkerSize(0)
+    hist_total_err.SetMinimum(dict[category]["minYerr"])
+    hist_total_err.SetMaximum(dict[category]["maxYerr"])
     for bin in xrange(0, hist_total_err.GetXaxis().GetNbins()) :
         hist_total_err.SetBinContent(bin+1, 1)
         if total_hist.GetBinContent(bin+1) > 0. :
@@ -371,21 +325,21 @@ def do_hist_total_err(template, labelX, name_total, category) :
 
 def do_hist_total_errCats(templatebin, bins, binlabels, labelX, name_total, category) :
     hist_total_err = template.Clone()
-    hist_total_err.GetYaxis().SetTitle("Data/pred.") #"#frac{Data - Expectation}{Expectation}");
-    hist_total_err.GetXaxis().SetLabelOffset(0.015);
-    hist_total_err.GetYaxis().SetTitleOffset(0.8);
-    hist_total_err.GetXaxis().SetTitleSize(0.105);
-    hist_total_err.GetYaxis().SetTitleSize(0.10);
-    hist_total_err.GetYaxis().SetLabelSize(0.105);
-    hist_total_err.GetXaxis().SetLabelSize(0.15);
-    hist_total_err.GetYaxis().SetTickLength(0.04);
-    hist_total_err.GetXaxis().SetLabelColor(1);
+    hist_total_err.GetYaxis().SetTitle("Data/pred.") #"#frac{Data - Expectation}{Expectation}")
+    hist_total_err.GetXaxis().SetLabelOffset(0.015)
+    hist_total_err.GetYaxis().SetTitleOffset(0.8)
+    hist_total_err.GetXaxis().SetTitleSize(0.105)
+    hist_total_err.GetYaxis().SetTitleSize(0.10)
+    hist_total_err.GetYaxis().SetLabelSize(0.105)
+    hist_total_err.GetXaxis().SetLabelSize(0.15)
+    hist_total_err.GetYaxis().SetTickLength(0.04)
+    hist_total_err.GetXaxis().SetLabelColor(1)
     hist_total_err.GetXaxis().SetTitle("")
     hist_total_err.GetXaxis().SetNdivisions(0)
-    hist_total_err.SetMarkerSize(0);
+    hist_total_err.SetMarkerSize(0)
     hist_total_err.SetFillColorAlpha(12, 0.40)
     hist_total_err.SetLineWidth(2)
-    hist_total_err.SetMarkerSize(0);
+    hist_total_err.SetMarkerSize(0)
     minYerr = -0.6
     maxYerr = 2.85
     if "3l" in category :
@@ -411,35 +365,35 @@ def addLabel_CMS_preliminary() :
     y0 = 0.953
     ypreliminary = 0.95
     xlumi = 0.67
-    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC");
-    label_cms.AddText("CMS");
-    label_cms.SetTextFont(61);
-    label_cms.SetTextAlign(13);
-    label_cms.SetTextSize(0.0575);
-    label_cms.SetTextColor(1);
-    label_cms.SetFillStyle(0);
-    label_cms.SetBorderSize(0);
-    label_preliminary = ROOT.TPaveText(x0 + 0.1050, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC");
-    label_preliminary.AddText("Preliminary");
-    label_preliminary.SetTextFont(52);
-    label_preliminary.SetTextAlign(13);
-    label_preliminary.SetTextSize(0.050);
-    label_preliminary.SetTextColor(1);
-    label_preliminary.SetFillStyle(0);
-    label_preliminary.SetBorderSize(0);
-    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0047, xlumi + 0.1900, y0 + 0.0510, "NDC");
-    label_luminosity.AddText("41.5 fb^{-1} (13 TeV)");
-    label_luminosity.SetTextFont(42);
-    label_luminosity.SetTextAlign(13);
-    label_luminosity.SetTextSize(0.045);
-    label_luminosity.SetTextColor(1);
-    label_luminosity.SetFillStyle(0);
-    label_luminosity.SetBorderSize(0);
+    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
+    label_cms.AddText("CMS")
+    label_cms.SetTextFont(61)
+    label_cms.SetTextAlign(13)
+    label_cms.SetTextSize(0.0575)
+    label_cms.SetTextColor(1)
+    label_cms.SetFillStyle(0)
+    label_cms.SetBorderSize(0)
+    label_preliminary = ROOT.TPaveText(x0 + 0.1050, ypreliminary - 0.0010, x0 + 0.2950, ypreliminary + 0.0500, "NDC")
+    label_preliminary.AddText("Preliminary")
+    label_preliminary.SetTextFont(52)
+    label_preliminary.SetTextAlign(13)
+    label_preliminary.SetTextSize(0.050)
+    label_preliminary.SetTextColor(1)
+    label_preliminary.SetFillStyle(0)
+    label_preliminary.SetBorderSize(0)
+    label_luminosity = ROOT.TPaveText(xlumi, y0 + 0.0047, xlumi + 0.1900, y0 + 0.0510, "NDC")
+    label_luminosity.AddText("41.5 fb^{-1} (13 TeV)")
+    label_luminosity.SetTextFont(42)
+    label_luminosity.SetTextAlign(13)
+    label_luminosity.SetTextSize(0.045)
+    label_luminosity.SetTextColor(1)
+    label_luminosity.SetFillStyle(0)
+    label_luminosity.SetBorderSize(0)
 
     return [label_cms, label_preliminary, label_luminosity]
 
 def finMaxMin(histSource) :
-    file = TFile(histSource+".root","READ");
+    file = TFile(histSource+".root","READ")
     file.cd()
     hSum = TH1F()
     for keyO in file.GetListOfKeys() :
@@ -453,8 +407,8 @@ def finMaxMin(histSource) :
     [hSum.GetBinLowEdge(hSum.FindFirstBinAbove(0.0)),  hSum.GetBinCenter(hSum.FindLastBinAbove (0.0))+hSum.GetBinWidth(hSum.FindLastBinAbove (0.0))/2.]]
 
 def getQuantiles(histoP,ntarget,xmax) :
-    histoP.Scale(1./histoP.Integral());
-    histoP.GetCumulative()#.Draw();
+    histoP.Scale(1./histoP.Integral())
+    histoP.GetCumulative()
     histoP.GetXaxis().SetRangeUser(0.,1.)
     histoP.GetYaxis().SetRangeUser(0.,1.)
     histoP.SetMinimum(0.0)
@@ -482,7 +436,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
     else :
         xmin=minmax[0][0]
         xmax=minmax[0][1]
-    file = TFile(local+"/"+histSource+".root","READ");
+    file = TFile(local+"/"+histSource+".root","READ")
     file.cd()
     histograms=[]
     histograms2=[]
@@ -492,7 +446,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
     for nkey, keyO in enumerate(file.GetListOfKeys()) :
        obj =  keyO.ReadObj()
        if type(obj) is not TH1F : continue
-       h2 = obj.Clone();
+       h2 = obj.Clone()
        factor=1.
        if  not h2.GetSumw2N() : h2.Sumw2()
        histograms.append(h2.Clone())
@@ -502,7 +456,7 @@ def rebinRegular(local, histSource, nbin, BINtype) :
            if not hSumAll.Integral()>0 : hSumAll=hSumDumb2.Clone()
            else : hSumAll.Add(hSumDumb2)
     name=histSource+"_"+str(nbin)+"bins_"+BINtype
-    fileOut  = TFile(local+"/"+name+".root", "recreate");
+    fileOut  = TFile(local+"/"+name+".root", "recreate")
     histo = TH1F()
     for nn, histogram in enumerate(histograms) :
         histogramCopy=histogram.Clone()
@@ -521,9 +475,9 @@ def rebinRegular(local, histSource, nbin, BINtype) :
         histo.Sumw2()
         for place in range(0,histogramCopy.GetNbinsX() + 1) :
             content =      histogramCopy.GetBinContent(place)
-            binErrorCopy = histogramCopy.GetBinError(place);
+            binErrorCopy = histogramCopy.GetBinError(place)
             newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinCenter(place))
-            binError =     histo.GetBinError(newbin);
+            binError =     histo.GetBinError(newbin)
             contentNew =   histo.GetBinContent(newbin)
             histo.SetBinContent(newbin, content+contentNew)
             histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
