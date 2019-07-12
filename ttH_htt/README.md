@@ -29,7 +29,7 @@ Those are certified to work for all the ttH channels,
 but the same core scripts should work as well for the HH analysis if one adds to the configs. This will be done in a posterior stage. 
 
 #TODO (Xanda): 
-Check closelly for the master10X KBFI analysis code + shape systematics
+Check closelly for the master10X KBFI analysis code + couplings scan + shape systematics problable naming modifications
 
 ==========================================================
 
