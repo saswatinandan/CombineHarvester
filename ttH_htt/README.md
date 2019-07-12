@@ -62,11 +62,14 @@ configs/plot_ranges_ttH.py
 ```
 
 #Note:
-The input of this script ia a KBFI format "prepareDatacards", as this calls inside the `WriteDatacards.py`, followed by a couple more of combine commands necessary to do prefit/postfit plots in a self contained naming convention cascade.
+The input of this script is one KBFI format "prepareDatacards", as this calls inside the `WriteDatacards.py`, followed by a couple more of combine commands necessary to do prefit/postfit plots in a self contained naming convention cascade. 
+
+#P.s.: 
+It takes one "prepareDatacards" and output one plot, this is not the optimal for the cases of NN subcategorization, for those see the warning bellow.
 
 ==========================================================
 
 #WARNING: 
-For the final combined results/plots/tables on the ttH analysis please refer to this repository, that takes as inputs only combine datacards (.txt) and is in line with the latest fit and plot options agreed for legacy paper.
+For the final combined results/plots/tables on the ttH analysis please refer to [this repository](https://github.com/acarvalh/signal_extraction_tH_ttH), that takes as inputs only combine datacards (.txt) and is in line with the latest fit and plot options agreed for legacy paper with the other groups.
 
 

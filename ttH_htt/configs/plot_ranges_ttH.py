@@ -12,7 +12,7 @@ def options_plot_ranges () :
         "0l_2tau"   : { "minY" : 0.07, "maxY" :  5000., "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
         "1l_1tau"   : { "minY" : 0.07, "maxY" :  5000., "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
         "WZctrl"    : { "minY" : 0.07, "maxY" :  5000., "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
-        "4l_0tau"   : { "minY" : -0.35, "maxY" :  13.9., "minYerr": 0.601, "maxYerr" : 2.19, "useLogPlot" : False},
-        "ZZctrl"    : { "minY" : -0.35, "maxY" :  13.9., "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
+        "4l_0tau"   : { "minY" : -0.35, "maxY" :  13.9, "minYerr": 0.601, "maxYerr" : 2.19, "useLogPlot" : False},
+        "ZZctrl"    : { "minY" : -0.35, "maxY" :  13.9, "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
     }
     return info_channel
