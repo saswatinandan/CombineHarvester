@@ -26,7 +26,7 @@ configs/list_syst.py
 
 - In the way that this file is loaded on the main script there is no need to recompile the folder if you change/add a systematics entry.
 
-- the specificities of each channel are entered as dictionary entries, eg here and here -- the structure/usage of those are expected to be self explanatory in the case you need to implement a new entry.
+- the specificities of each channel are entered as dictionary entries, eg [here for list of processes/channel](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/configs/list_syst.py#L76-L92) and [here for specipc systematics/channel/process](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/configs/list_syst.py#L95-L122) -- the structure/usage of those are expected to be self explanatory in the case you need to implement a new entry.
 
 #P.s.: 
 Those are certifyed to work for all the ttH channels, 
