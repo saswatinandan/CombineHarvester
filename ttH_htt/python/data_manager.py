@@ -1,6 +1,136 @@
 import ROOT
 import array
 import math
+import sys, os, re, shlex
+from subprocess import Popen, PIPE
+
+def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs_ttH, inputShapes, MC_proc, shape, noX_prefix ):
+    created_ln_to_shape_syst = []
+    created_shape_to_shape_syst = []
+    print ("Doing template to fake/gen tau systematics")
+    try : tfile = ROOT.TFile(inputShapes, "READ")
+    except : print ("Doesn't exist" + inputShapes)
+    outpuShape = inputShapes.replace(".root", "_genfakesyst.root")
+    tfileout = ROOT.TFile(outpuShape, "recreate")
+    tfileout.cd()
+    for ln_to_shape in specific_ln_shape_systs :
+        print ("==============================")
+        print ("Doing themplates to: " + ln_to_shape + " with value " + str(specific_ln_shape_systs[ln_to_shape]["value"]))
+        name_syst = ln_to_shape
+        print("From ln: " +  name_syst)
+        if not specific_ln_shape_systs[ln_to_shape]["correlated"] :
+            name_syst = ln_to_shape.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
+        for proc in MC_proc :
+            histUp = ROOT.TH1F()
+            histDo = ROOT.TH1F()
+            ## fixme: old cards does not have uniform naming convention to tH/VH -- it should be only continue to conversions
+            if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc : continue
+            print ("======")
+            for typeHist in ["faketau", "gentau"] :
+                if noX_prefix : histFind = "%s_%s" % (proc, typeHist)
+                else : histFind = "x_%s_%s" % (proc, typeHist)
+                try : hist = tfile.Get(histFind)
+                except : print ("Doesn't find" + histFind) 
+                print (histFind, hist.Integral())
+                # clone only the structure -- for the case of no shift
+                if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist :
+                    print (histFind + " Multiply up part by " + str(specific_ln_shape_systs[ln_to_shape]["value"]))  
+                    histUp = hist.Clone()
+                    histUp.Scale(specific_ln_shape_systs[ln_to_shape]["value"])
+                    print (histFind + " Multiply down part by " + str(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1)))
+                    histDo = hist.Clone()
+                    histDo.Scale(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1))
+                else : 
+                    print ("Adding " + histFind + " part ")
+                    histUp.Copy(hist)
+                    histDo.Copy(hist)
+                    histUp.Add(hist)
+                    histDo.Add(hist)
+            if noX_prefix : nameprocx = "%s_%s_shape" % (proc, name_syst)
+            else : nameprocx = "x_%s_%s_shape" % (proc, name_syst)
+            histUp.SetName("%sUp"   % (nameprocx))
+            histDo.SetName("%sDown" % (nameprocx))
+            histUp.Write()
+            histDo.Write()
+        created_ln_to_shape_syst += ["%s_shape" % name_syst]
+        if shape : 
+            for shape_to_shape in specific_shape_shape_systs :
+                print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
+                histUp = ROOT.TH1F()
+                histDo = ROOT.TH1F()
+                name_syst = shape_to_shape.replace("CMS_", "CMS_constructed_")
+                if not specific_shape_shape_systs[shape_to_shape]["correlated"] :
+                    name_syst = name_systreplace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
+                for proc in MC_proc :
+                    for typeHist in ["faketau", "gentau"] :
+                        histFindUp = "%s_%s_%sUp" % (proc, typeHist, shape_to_shape)
+                        try : histUp = tfile.Get(histFindUp)
+                        except : print ("Doesn't find" + histFindUp) 
+                        histFindDown = "%s_%s_%sDown" % (proc, typeHist, shape_to_shape)
+                        try : histDown = tfile.Get(histFindDown)
+                        except : print ("Doesn't find" + histFindDown)
+                        histUp.Add(histUp)
+                        histDo.Add(histDown)
+                    histUp.SetName("%s_%sUp"    % (proc, name_syst))
+                    histDo.SetName("%s_%sDown" % (proc, name_syst))
+                    histUp.Write()
+                    histDo.Write()
+                created_shape_to_shape_syst += [name_syst]  
+                print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )          
+    tfileout.Close()
+    print ("File with ln to shape syst: " +  outpuShape)
+
+    finalFile = outpuShape.replace(".root", "_all.root")
+    print ("File merged with fake/gen syst: ", finalFile)
+    head, tail = os.path.split(inputShapes)
+    print ('doing hadd in directory: ' + head)
+    p = Popen(shlex.split("hadd -f %s %s %s" % (finalFile, outpuShape, inputShapes)) , stdout=PIPE, stderr=PIPE, cwd=head) 
+    comboutput = p.communicate()[0]
+    #if "conversions" in MC_proc : MC_proc.remove("conversions")
+    ## fixme: old cards does not have uniform naming convention to tH/VH
+    MC_proc_less = list(set(list(MC_proc)) - set(["conversions", "tHq_hww", "tHW_hww"]))
+    for shape_syst in created_ln_to_shape_syst + created_shape_to_shape_syst :
+        cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
+        print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
+    return finalFile
+
+def lists_overlap(a, b):
+  sb = set(b)
+  return any(el in sb for el in a)
+
+def rename_tH(output_file, coupling, bins) :
+    test_name_tHq = "tHq_%s" % coupling
+    test_name_tHW = "tHW_%s" % coupling
+    tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
+    for b in bins :
+        for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
+            # this bellow would be interesting if we would know all the histogram names
+            #rootmv file:part1_*_part2 file:new_name
+            # https://root.cern.ch/how/how-quickly-inspect-content-file
+            obj0 =  keyO.ReadObj()
+            for nkey, key in enumerate(obj0.GetListOfKeys()) :
+                #tfileout.get()
+                obj =  key.ReadObj()
+                obj_name = key.GetName()
+                if type(obj) is not ROOT.TH1F : continue
+                if test_name_tHq in obj_name or test_name_tHW in obj_name : 
+                    if test_name_tHq in obj_name : test_name = test_name_tHq
+                    if test_name_tHW in obj_name : test_name = test_name_tHq
+                    new_name = obj_name.replace("_" + coupling,"")
+                    print ("renaming " +  obj_name + " to " + new_name)
+                    obj.SetName(new_name)
+                    tfileout.cd(b)
+                    obj.Write()
+                    tfileout.cd()
+    tfileout.Close()
+    f1 = open(output_file + ".txt", 'r').read()
+    f2 = open(output_file + ".txt", 'w')
+    m = f1.replace(test_name_tHq, "tHq")
+    m = m.replace(test_name_tHW, "tHW")
+    f2.write(m)
+
+def get_tH_weight_str(kt, kv):
+    return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm')
 
 # usage: file, path = splitPath(s)
 def splitPath(s) :
@@ -94,7 +224,6 @@ def rebin_totalCat(template, bins, folder, fin, divideByBinWidth, name_total) :
     hist.GetYaxis().SetTickLength(0.04)
     hist.GetXaxis().SetTickLength(0.04)
     return hist
-
 
 def rebin_hist(template, folder, fin, name, itemDict, divideByBinWidth) :
     print folder+"/"+name

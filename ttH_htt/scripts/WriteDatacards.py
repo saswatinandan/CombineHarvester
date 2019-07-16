@@ -4,7 +4,7 @@ import CombineHarvester.CombineTools.ch as ch
 import ROOT
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-#from CombineHarvester.ttH_htt.list_syst import *
+from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -13,7 +13,8 @@ parser.add_option("--inputShapes",    type="string",       dest="inputShapes", h
 parser.add_option("--channel",        type="string",       dest="channel",     help="Channel to assume (to get the correct set of syst)")
 parser.add_option("--cardFolder",     type="string",       dest="cardFolder",  help="Folder where to save the datacards (relative or full).\n Default: teste_datacards",  default="teste_datacards")
 parser.add_option("--analysis",       type="string",       dest="analysis",    help="Analysis type = 'ttH' or 'HH' (to know what to take as Higgs procs and naming convention of systematics), Default ttH", default="ttH")
-parser.add_option("--output_file",    type="string",       dest="output_file", help="Name of the output file.\n Default: the same of the input, substituing 'prepareDatacards' by 'datacard'", default="none")
+parser.add_option("--output_file",    type="string",       dest="output_file", help="Name of the output file.\n Default: the same of the input, substituing 'prepareDatacards' by 'datacard' (+ the coupling if the --couplings is used)", default="none")
+parser.add_option("--coupling",       type="string",       dest="coupling",    help="Coupling to take in tH.\n Default: do for SM, do not add couplings on output naming convention", default="none")
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  help="do not assume hist from prepareDatacards starts with 'x_' prefix", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
@@ -25,6 +26,8 @@ era         = options.era
 shape       = options.shapeSyst
 analysis    = options.analysis
 cardFolder  = options.cardFolder
+coupling    = options.coupling
+noX_prefix  = options.noX_prefix
 
 syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
 execfile(syst_file)
@@ -45,6 +48,11 @@ MC_proc = sum(higgs_procs,[]) + bkg_procs_from_MC
 print ("MC processes:")
 print ("BKG from MC   : ", bkg_procs_from_MC)
 print ("BKG from data : ", bkg_proc_from_data)
+
+if not (coupling == "none" or coupling == "kt_1_kv_1") :
+    higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
+    tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry] 
+    print ("tH_procs = ", tH_procs)
 print ("signal        : ", sum(higgs_procs,[]))
 
 ###########################################
@@ -89,7 +97,8 @@ for hsig in higgs_procs :
 
 ########################################
 # Higgs proc lnN syst 
-proc_with_scale_syst = ["ttH", "tH", "ttW"]
+if analysis == "ttH" : 
+    proc_with_scale_syst = ["ttH", "tH", "ttW"]
 for hsig in higgs_procs :
     if "ttH" in hsig[0] :
         cb.cp().process(hsig).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(lnSyst["pdf_Higgs_ttH"][2017]))
@@ -118,8 +127,8 @@ if "TTWW" in bkg_procs_from_MC :
 for proc in sum(higgs_procs,[]) :
     for key in higgsBR:
         if key in proc :
-            cb.cp().process(hsig).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR[key]))
-            print ("added " + "BR_%s" % key + " uncertanty to process: " + proc)
+            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR[key]))
+            print ("added " + "BR_%s" % key + " uncertanty to process: " + proc + " of value = " + str(higgsBR[key]))
 
 ########################################
 # th shape syst 
@@ -152,114 +161,43 @@ if shape :
 
 ########################################
 # Specific channels lnN syst
-specific_ln_systs_ttH
-for specific_syst in specific_ln_systs_ttH :
-    if specific_ln_systs_ttH[specific_syst]["proc"] == "MCproc" : 
+if analysis == "ttH" : 
+    specific_ln_systs       = specific_ln_systs_ttH
+
+for specific_syst in specific_ln_systs :
+    if channel not in specific_ln_systs[specific_syst]["channels"] :
+        continue
+    if specific_ln_systs[specific_syst]["proc"] == "MCproc" : 
         procs = MC_proc
+    elif not set(specific_ln_systs[specific_syst]["proc"]) <= set(bkg_proc_from_data + bkg_procs_from_MC) :
+        print ("skiped " + name_syst  + " as the channel does not contain the process: ", specific_ln_systs[specific_syst]["proc"])
+        continue
+    elif lists_overlap(specific_ln_systs[specific_syst]["proc"], bkg_proc_from_data + bkg_procs_from_MC):
+        intersection = list(set(list(specific_ln_systs[specific_syst]["proc"])) - set(bkg_proc_from_data + bkg_procs_from_MC))
+        procs = list(set(list(specific_ln_systs[specific_syst]["proc"])) - set(intersection))
     else : 
-        procs = specific_ln_systs_ttH[specific_syst]["proc"]
+        procs = specific_ln_systs[specific_syst]["proc"]
     name_syst = specific_syst
-    if not specific_ln_systs_ttH[specific_syst]["correlated"] :
+    if not specific_ln_systs[specific_syst]["correlated"] :
         name_syst = specific_syst.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
         # assuming that the syst for the HH analysis with have the label HHl
-    cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs_ttH[specific_syst]["value"]))
-    print ("added " + name_syst + " with value " + str(specific_ln_systs_ttH[specific_syst]["value"]) + " to processes: ",  specific_ln_systs_ttH[specific_syst]["proc"] )
+    cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
+    print ("added " + name_syst + " with value " + str(specific_ln_systs[specific_syst]["value"]) + " to processes: ",  specific_ln_systs[specific_syst]["proc"] )
 
 ########################################
 # Construct templates for fake/gentau syst if relevant
 finalFile = inputShapes
-created_ln_to_shape_syst = []
-created_shape_to_shape_syst = []
 if info_channel[channel]["isSMCSplit"] :
-    print ("Doing template to fake/gen tau systematics")
-    try : tfile = ROOT.TFile(inputShapes, "READ")
-    except : print ("Doesn't exist" + inputShapes)
-    outpuShape = inputShapes.replace(".root", "_genfakesyst.root")
-    tfileout = ROOT.TFile(outpuShape, "recreate")
-    tfileout.cd()
-    for ln_to_shape in specific_ln_shape_systs_ttH :
-        print ("==============================")
-        print ("Doing themplates to: " + ln_to_shape + " with value " + str(specific_ln_shape_systs_ttH[ln_to_shape]["value"]))
-        name_syst = ln_to_shape
-        print("From ln: " +  name_syst)
-        if not specific_ln_shape_systs_ttH[ln_to_shape]["correlated"] :
-            name_syst = ln_to_shape.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
-        for proc in MC_proc :
-            histUp = ROOT.TH1F()
-            histDo = ROOT.TH1F()
-            ## fixme: old cards does not have uniform naming convention to tH/VH
-            if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc : continue
-            print ("======")
-            for typeHist in ["faketau", "gentau"] :
-                histFind = "%s_%s" % (proc, typeHist)
-                try : hist = tfile.Get(histFind)
-                except : print ("Doesn't find" + histFind) 
-                print (histFind, hist.Integral())
-                # clone only the structure -- for the case of no shift
-                if specific_ln_shape_systs_ttH[ln_to_shape]["type"] == typeHist :
-                    print (histFind + " Multiply upper part by " + str(specific_ln_shape_systs_ttH[ln_to_shape]["value"]))  
-                    histUp = hist.Clone()
-                    histUp.Scale(specific_ln_shape_systs_ttH[ln_to_shape]["value"])
-                    print (histFind + " Multiply upper part by " + str(1 - (specific_ln_shape_systs_ttH[ln_to_shape]["value"] - 1)), histUp.Integral())
-                    histDo = hist.Clone()
-                    histDo.Scale(1 - (specific_ln_shape_systs_ttH[ln_to_shape]["value"] - 1))
-                else : 
-                    print ("Adding " + histFind + " part ")
-                    histUp.Copy(hist)
-                    histDo.Copy(hist)
-                    histUp.Add(hist)
-                    histDo.Add(hist)
-                    print (histDo.Integral())
-            histUp.SetName("%s_%s_shapeUp"    % (proc, name_syst))
-            histDo.SetName("%s_%s_shapeDown" % (proc, name_syst))
-            histUp.Write()
-            histDo.Write()
-        created_ln_to_shape_syst += ["%s_shape" % name_syst]
-        if shape : 
-            for shape_to_shape in specific_shape_shape_systs_ttH :
-                print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
-                histUp = ROOT.TH1F()
-                histDo = ROOT.TH1F()
-                name_syst = shape_to_shape.replace("CMS_", "CMS_constructed_")
-                if not specific_shape_shape_systs_ttH[shape_to_shape]["correlated"] :
-                    name_syst = name_systreplace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
-                for proc in MC_proc :
-                    for typeHist in ["faketau", "gentau"] :
-                        histFindUp = "%s_%s_%sUp" % (proc, typeHist, shape_to_shape)
-                        try : histUp = tfile.Get(histFindUp)
-                        except : print ("Doesn't find" + histFindUp) 
-                        histFindDown = "%s_%s_%sDown" % (proc, typeHist, shape_to_shape)
-                        try : histDown = tfile.Get(histFindDown)
-                        except : print ("Doesn't find" + histFindDown)
-                        histUp.Add(histUp)
-                        histDo.Add(histDown)
-                    histUp.SetName("%s_%sUp"    % (proc, name_syst))
-                    histDo.SetName("%s_%sDown" % (proc, name_syst))
-                    histUp.Write()
-                    histDo.Write()
-                created_shape_to_shape_syst += [name_syst]  
-                print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )          
-    tfileout.Close()
-    print ("File with ln to shape syst: " +  outpuShape)
-
-    finalFile = outpuShape.replace(".root", "_all.root")
-    print ("File merged with fake/gen syst: ", finalFile)
-    head, tail = os.path.split(inputShapes)
-    print ('doing hadd in directory: ' + head)
-    p = Popen(shlex.split("hadd -f %s %s %s" % (finalFile, outpuShape, inputShapes)) , stdout=PIPE, stderr=PIPE, cwd=head) 
-    comboutput = p.communicate()[0]
-    #if "conversions" in MC_proc : MC_proc.remove("conversions")
-    ## fixme: old cards does not have uniform naming convention to tH/VH
-    MC_proc_less = list(set(list(MC_proc)) - set(["conversions", "tHq_hww", "tHW_hww"]))
-    for shape_syst in created_ln_to_shape_syst + created_shape_to_shape_syst :
-        cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
-        print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
+    if analysis == "ttH" :  
+        specific_ln_shape_systs = specific_ln_shape_systs_ttH
+        specific_shape_shape_systs = specific_shape_shape_systs_ttH
+    finalFile = construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs, inputShapes , MC_proc, shape, noX_prefix )
 
 ########################################
 # bin by bin stat syst
 cb.cp().SetAutoMCStats(cb, 10)
 
-if options.noX_prefix :
+if noX_prefix :
     cb.cp().backgrounds().ExtractShapes(
         finalFile,
         "$PROCESS",
@@ -270,11 +208,11 @@ if options.noX_prefix :
         "$PROCESS_$SYSTEMATIC")
 else :
     cb.cp().backgrounds().ExtractShapes(
-        inputShapes,
+        finalFile,
         "x_$PROCESS",
         "x_$PROCESS_$SYSTEMATIC")
     cb.cp().signals().ExtractShapes(
-        inputShapes,
+        finalFile,
         "x_$PROCESS",
         "x_$PROCESS_$SYSTEMATIC")
 ########################################
@@ -303,18 +241,22 @@ if shape :
         cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
         print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
 
-#    bbb.MergeAndAdd(cb_et.cp().era(['8TeV']).bin_id([0, 1, 2]).process(['QCD','W','ZL','ZJ','VV','ZTT','TT']), cb)
 ########################################
 # output the card
-
-#output_file = options.output_file
 if options.output_file == "none" :
     output_file = cardFolder + "/" + str(os.path.basename(inputShapes)).replace(".root","").replace("prepareDatacards", "datacard")
 else :
     output_file = options.output_file
+
+if not (coupling == "none") :
+    output_file += "_" + coupling
+
 bins = cb.bin_set()
 for b in bins :
     print ("\n Output file: " + output_file + ".txt")
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
 
+if not (coupling == "none" or coupling == "kt_1_kv_1") :
+    print("Renaming tH processes (remove the coupling mention to combime)")
+    rename_tH(output_file, coupling, bins)
 sys.stdout.flush()
