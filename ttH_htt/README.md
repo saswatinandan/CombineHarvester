@@ -33,20 +33,21 @@ but the same core scripts should work as well for the HH analysis if one adds to
 #TODO (Xanda): 
 Check closelly for the master10X KBFI analysis code + couplings scan + shape systematics problable naming modifications
 
-==========================================================
-# Making limits/plots/impacts/GOF...
+# Making limits/plots/impacts/GOF/Yields from one "prepareDatacards"
 
 With the intention of testing locally if the datacard production was succesfull we also have an script that wraps all the necessary combine commands to have limits/plots/impacts/GOF... 
 
 This one is used as the command bellow exemplifies:
 
 ```
-python test/make_combine.py  --inputShapes /absolute/or/relative/path/to/prepareDatacards_favourite.root --doImpacts --channel 1l_2tau --odir /absolute/or/relative/path/of/folder/to/results
+python test/make_combine.py  --inputShapes /absolute/or/relative/path/to/prepareDatacards_favourite.root --doXXX --channel 1l_2tau --odir /absolute/or/relative/path/of/folder/to/results
 ```
 
-Please check it out the extensive list of command line descriptions and further options by running it with the --help option
+where `--doXXX` is a placeholder for the comand line you want to give, according with which 
+action you want to be computed. It is recomended to do one option/run.
 
-==========================================================
+Please check it out the extensive list of command line descriptions of the action options and further options by running it with the --help option
+
 ## Making plots only
 
 We do have an execulable `makePostFitPlots.py` to draw prefit/postfit plots that can be used as standalone (not on the commands wrapper `make_combine.py`). Please run the wrapper once with the option `--doPreFit` to see printed out an example of how to use it. Also do not hesitate on check `makePostFitPlots.py --help`
@@ -62,9 +63,9 @@ configs/plot_options.py
 
 - In the way that these two files are loaded on the main script there is no need to recompile the folder if you change/add a systematics entry.
 
-==========================================================
+# Making datacards.txt for kt/kv scans from "prepareDatacards"
 
-#WARNING: 
+
+# WARNING: 
 For the final combined results/plots/tables on the ttH analysis please refer to [this repository](https://github.com/acarvalh/signal_extraction_tH_ttH), that takes as inputs only combine datacards (.txt) and is in line with the latest fit and plot options agreed for legacy paper with the other groups.
-
 

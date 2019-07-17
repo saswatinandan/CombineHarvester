@@ -8,7 +8,7 @@ def lists_overlap(a, b):
   sb = set(b)
   return any(el in sb for el in a)
 
-def list_proc(syst_list, MC_proc, all_proc_bkg) :
+def list_proc(syst_list, MC_proc, all_proc_bkg, name_syst) :
     if syst_list["proc"] == "MCproc" : 
         procs = MC_proc
     elif not set(syst_list["proc"]) <= set(all_proc_bkg) :
@@ -649,7 +649,7 @@ def ReadLimits(limits_output):
 
 
 
-def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
+def PrintTables(cmb, uargs, filey, unblinded, labels, typeChannel, ColapseCat = []):
 
     c_cat = []
     sum_proc = []
@@ -663,7 +663,8 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
     bottom = r'Observed data & '
     for ll in xrange(len(labels)) :
         header = header + r'r@{$ \,\,\pm\,\, $}l|'
-        if blinded : bottom = bottom + r' \multicolumn{2}{c|}{$-$} '
+        if not unblinded : 
+            bottom = bottom + r' \multicolumn{2}{c|}{$-$} '
         else : bottom = bottom + r' \multicolumn{2}{c|}{$%g$} ' % (c_cat[ll].cp().GetObservedRate())
         if ll == len(labels) - 1 : bottom = bottom + r' \\'
         else : bottom = bottom + ' &'
@@ -671,7 +672,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
     bottom = bottom +"\n"
     filey.write(header)
 
-    if type == 'tau' :
+    if typeChannel == 'tau' :
         conversions = "conversions"
         flips = 'flips'
         fakes_data = 'fakes_data'
@@ -682,7 +683,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         \hline
         \hline"""+"\n")
 
-    if type == 'multilep2lss' :
+    if typeChannel == 'multilep2lss' :
         conversions = "Convs"
         flips = 'data_flips'
         fakes_data = 'data_fakes'
@@ -696,7 +697,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         \hline
         \hline"""+"\n")
 
-    if type == 'multilepCR2lss' :
+    if typeChannel == 'multilepCR2lss' :
         conversions = "Convs"
         flips = 'flips_data'
         fakes_data = 'data_fakes'
@@ -710,7 +711,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         \hline
         \hline"""+"\n")
 
-    if type == 'multilepCR3l4l' :
+    if typeChannel == 'multilepCR3l4l' :
         conversions = "Convs"
         flips = 'flips_data'
         fakes_data = 'data_fakes'
@@ -724,7 +725,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         \hline
         \hline"""+"\n")
 
-    if type == 'multilep3l4l' :
+    if typeChannel == 'multilep3l4l' :
         conversions = "Convs"
         flips = 'flips_data'
         fakes_data = 'data_fakes'
@@ -750,7 +751,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         'TTWW'
         ]
 
-    if 'multilep' in type :
+    if 'multilep' in typeChannel :
         tH = [
         'tHW_htt',
         'tHq_htt',
@@ -768,7 +769,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
             r'$\cPqt\PHiggs\PW$ $\PHiggs \to \cPZ\cPZ$  & '
             ]
 
-    if type == 'tau' :
+    if typeChannel == 'tau' :
         tH = [
         'tHq',
         'tHW'
@@ -784,7 +785,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
     ]
 
     singleCompMC = []
-    if type == 'tau' : singleCompMC = singleCompMC + ['EWK']
+    if typeChannel == 'tau' : singleCompMC = singleCompMC + ['EWK']
     singleCompMC = singleCompMC + [
         'TTZ',
         fakes_data,
@@ -794,7 +795,7 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
     ]
 
     singleCompMClabels = []
-    if type == 'tau' : singleCompMClabels = singleCompMClabels + ['$\PW\cPZ + \cPZ\cPZ$']
+    if typeChannel == 'tau' : singleCompMClabels = singleCompMClabels + ['$\PW\cPZ + \cPZ\cPZ$']
     singleCompMClabels = singleCompMClabels + [
         '$\cPqt\cPaqt\cPZ$',
         'Misidentified',
@@ -803,8 +804,8 @@ def PrintTables(cmb, uargs, filey, blinded, labels, type, ColapseCat = []):
         'Other'
     ]
 
-    if type == 'tau' : listTosum = [signals, TTWX, tH]
-    if 'multilep' in type : listTosum = [signals, TTWX, tH, EWK]
+    if typeChannel == 'tau' : listTosum = [signals, TTWX, tH]
+    if 'multilep' in typeChannel : listTosum = [signals, TTWX, tH, EWK]
     for todo in listTosum :
 
         sigsum = [0.0 for i in xrange(len(labels))]
