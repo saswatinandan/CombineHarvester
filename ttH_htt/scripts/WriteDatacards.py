@@ -4,7 +4,7 @@ import CombineHarvester.CombineTools.ch as ch
 import ROOT
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates
+from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -29,26 +29,29 @@ cardFolder  = options.cardFolder
 coupling    = options.coupling
 noX_prefix  = options.noX_prefix
 
+if not os.path.exists(cardFolder):
+    os.makedirs(cardFolder)
+
 syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
 execfile(syst_file)
 print ("syst values and channels options taken from: " +  syst_file)
 
-if not os.path.exists(cardFolder):
-    os.makedirs(cardFolder)
+info_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_channels.py"
+execfile(info_file)
+print ("list of signals/bkgs by channel taken from: " +  info_file)
 
-#####################################################
-# List processes -- do it externally
-
-bkg_proc_from_data = info_channel[channel]["bkg_proc_from_data"]
-bkg_procs_from_MC  = info_channel[channel]["bkg_procs_from_MC"]
-if analysis == "ttH" : higgs_procs = higgs_procs_ttH
-## add the H processes (that shall be marked as signal on the datacards)
-
+higgs_procs = list_channels(analysis)["higgs_procs"]
+list_channel_opt   = list_channels(analysis)["info_bkg_channel"]
+bkg_proc_from_data = list_channel_opt[channel]["bkg_proc_from_data"]
+bkg_procs_from_MC  = list_channel_opt[channel]["bkg_procs_from_MC"]
 MC_proc = sum(higgs_procs,[]) + bkg_procs_from_MC
 print ("MC processes:")
 print ("BKG from MC   : ", bkg_procs_from_MC)
 print ("BKG from data : ", bkg_proc_from_data)
 
+specific_syst_list = specific_syst(analysis, list_channel_opt)
+
+# if a coupling is done read the tH signal with that coupling on naming convention
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
     tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry] 
@@ -158,25 +161,28 @@ if shape :
     for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated  :
         cb.cp().process(MC_proc).AddSyst(cb,  MC_shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
+    ########################################
+    # channel specific estimated shape syst
+    specific_shape_systs = specific_syst_list[specific_shape]
+    for specific_syst in specific_shape_systs :
+        if channel not in specific_ln_systs[specific_syst]["channels"] :
+            continue
+        procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC)
+        if len(procs) == 0 : 
+            continue
+        cb.cp().process(procs).AddSyst(cb,  specific_syst, "shape", ch.SystMap()(1.0))
+        print ("added " + specific_syst + " as shape uncertainty to ", procs)
 
 ########################################
 # Specific channels lnN syst
-if analysis == "ttH" : 
-    specific_ln_systs       = specific_ln_systs_ttH
+specific_ln_systs  = specific_syst_list["specific_ln_systs"]
 
 for specific_syst in specific_ln_systs :
     if channel not in specific_ln_systs[specific_syst]["channels"] :
         continue
-    if specific_ln_systs[specific_syst]["proc"] == "MCproc" : 
-        procs = MC_proc
-    elif not set(specific_ln_systs[specific_syst]["proc"]) <= set(bkg_proc_from_data + bkg_procs_from_MC) :
-        print ("skiped " + name_syst  + " as the channel does not contain the process: ", specific_ln_systs[specific_syst]["proc"])
+    procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC)
+    if len(procs) == 0 : 
         continue
-    elif lists_overlap(specific_ln_systs[specific_syst]["proc"], bkg_proc_from_data + bkg_procs_from_MC):
-        intersection = list(set(list(specific_ln_systs[specific_syst]["proc"])) - set(bkg_proc_from_data + bkg_procs_from_MC))
-        procs = list(set(list(specific_ln_systs[specific_syst]["proc"])) - set(intersection))
-    else : 
-        procs = specific_ln_systs[specific_syst]["proc"]
     name_syst = specific_syst
     if not specific_ln_systs[specific_syst]["correlated"] :
         name_syst = specific_syst.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
@@ -187,10 +193,9 @@ for specific_syst in specific_ln_systs :
 ########################################
 # Construct templates for fake/gentau syst if relevant
 finalFile = inputShapes
-if info_channel[channel]["isSMCSplit"] :
-    if analysis == "ttH" :  
-        specific_ln_shape_systs = specific_ln_shape_systs_ttH
-        specific_shape_shape_systs = specific_shape_shape_systs_ttH
+if list_channel_opt[channel]["isSMCSplit"] :
+    specific_ln_shape_systs    = specific_syst_list["specific_ln_to_shape_systs"]
+    specific_shape_shape_systs = specific_syst_list["specific_shape_to_shape_systs"]
     finalFile = construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs, inputShapes , MC_proc, shape, noX_prefix )
 
 ########################################
