@@ -4,6 +4,23 @@ import math
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
 
+def lists_overlap(a, b):
+  sb = set(b)
+  return any(el in sb for el in a)
+
+def list_proc(syst_list, MC_proc, all_proc_bkg) :
+    if syst_list["proc"] == "MCproc" : 
+        procs = MC_proc
+    elif not set(syst_list["proc"]) <= set(all_proc_bkg) :
+        print ("skiped " + name_syst  + " as the channel does not contain the process: ", syst_list["proc"])
+        procs = []
+    elif lists_overlap(syst_list["proc"], all_proc_bkg):
+        intersection = list(set(list(syst_list["proc"])) - set(all_proc_bkg))
+        procs = list(set(list(syst_list["proc"])) - set(intersection))
+    else : 
+        procs = syst_list["proc"]
+    return procs
+
 def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs_ttH, inputShapes, MC_proc, shape, noX_prefix ):
     created_ln_to_shape_syst = []
     created_shape_to_shape_syst = []
@@ -93,10 +110,6 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
         cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
     return finalFile
-
-def lists_overlap(a, b):
-  sb = set(b)
-  return any(el in sb for el in a)
 
 def rename_tH(output_file, coupling, bins) :
     test_name_tHq = "tHq_%s" % coupling
@@ -225,14 +238,14 @@ def rebin_totalCat(template, bins, folder, fin, divideByBinWidth, name_total) :
     hist.GetXaxis().SetTickLength(0.04)
     return hist
 
-def rebin_hist(template, folder, fin, name, itemDict, divideByBinWidth) :
+def rebin_hist(template, folder, fin, name, itemDict, divideByBinWidth, legend) :
     print folder+"/"+name
     hist = fin.Get(folder+"/"+name)
     hist_rebin = template.Clone()
     hist_rebin.SetMarkerSize(0)
     hist_rebin.SetFillColor(itemDict["color"])
     hist_rebin.SetFillStyle(itemDict["fillStype"])
-    if not itemDict["label"] == "none" : legend1.AddEntry(hist_rebin, itemDict["label"], "f")
+    if not itemDict["label"] == "none" : legend.AddEntry(hist_rebin, itemDict["label"], "f")
     if itemDict["make border"] == True :  hist_rebin.SetLineColor(1)
     else : hist_rebin.SetLineColor(itemDict["color"])
     for ii in xrange(1, template.GetXaxis().GetNbins()+1) :
@@ -324,7 +337,7 @@ def rebin_data(template, folder, fin, fromHavester, dict, errorBar=True) :
     dataTGraph1.SetMaximum(dict["maxY"])
     return dataTGraph1
 
-def err_data(template, folder, fromHavester, errorBar=True) :
+def err_data(fin, template, folder, fromHavester, errorBar=True) :
     # in the case errorBar=True does not draw markers,
     #in the case it is false it draws only markers but shifts the empty bins to negative
     if not fromHavester :
@@ -420,7 +433,7 @@ def err_dataCat(template, dataTGraph, folder, fromHavester) :
     return dataTGraph1
 
 
-def do_hist_total_err(template, folder, labelX, name_total, category, dict) :
+def do_hist_total_err(fin, template, folder, labelX, name_total, category, dict) :
     total_hist = fin.Get(folder+"/"+name_total)
     hist_total_err = template.Clone()
     hist_total_err.GetYaxis().SetTitle("Data/pred.") #"#frac{Data - Expectation}{Expectation}")
@@ -439,8 +452,8 @@ def do_hist_total_err(template, folder, labelX, name_total, category, dict) :
     #hist_total_err.SetFillStyle(3244)
     hist_total_err.SetLineWidth(2)
     hist_total_err.SetMarkerSize(0)
-    hist_total_err.SetMinimum(dict[category]["minYerr"])
-    hist_total_err.SetMaximum(dict[category]["maxYerr"])
+    hist_total_err.SetMinimum(dict["minYerr"])
+    hist_total_err.SetMaximum(dict["maxYerr"])
     for bin in xrange(0, hist_total_err.GetXaxis().GetNbins()) :
         hist_total_err.SetBinContent(bin+1, 1)
         if total_hist.GetBinContent(bin+1) > 0. :

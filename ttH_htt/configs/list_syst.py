@@ -67,59 +67,46 @@ for btag_type_syst in btag_type_systs_correlated :
 ################################################
 # syst specific to processes
 
-sigs_ttH = ["ttH", "tHq", "tHW"]
-decays_ttH = ["hww", "hzz", "htt", "hzg", "hmm" ]
-#higgs_procs = [ [y + "_" + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
-higgs_procs_ttH = [ [y + "_" + x  for x in decays_ttH if not (x in ["hzz", "htt", "hzg", "hmm"] and y != "ttH")] for y in sigs_ttH]
-## add the H processes (that shall be marked as signal on the datacards)
+def specific_syst(analysis, list_channel_opt) :
+    if analysis == "ttH" :
+        # the "correlated" on the dictionary means correlated between years
+        # "MCproc" means that will take all the MC processes that appear for the channel that the datacard is being made for
+        specific_ln_systs = {
+            "CMS_ttHl_QF"               : {"value" : 1.3,  "correlated"   : True,  "proc" : ["flips_data"],          "channels" : [k for k,v in list_channel_opt.items() if "flips_data"  in v["bkg_proc_from_data"]]},  # for channels with "flips_data"
+            "CMS_ttHl_Convs"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["conversions"],         "channels" : [k for k,v in list_channel_opt.items() if "conversions" in v["bkg_procs_from_MC"]]},   # for channels with "conversions"
+            "CMS_ttHl_EWK"              : {"value" : 1.5,  "correlated"   : True,  "proc" : ["EWK"],                 "channels" : [k for k,v in list_channel_opt.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with "EWK"
+            "CMS_ttHl_Rares"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["Rares"],               "channels" : [k for k,v in list_channel_opt.items() if "Rares" in v["bkg_procs_from_MC"]]},         # for channels with "Rares"
+            "CMS_ttHl_trigger_leptau"   : {"value" : 1.03, "correlated"   : False, "proc" : "MCproc",                "channels" : ["1l_2tau"]},                                                                      # for channels with tau cross triggers  
+            "CMS_ttHl_trigger_uncorr"   : {"value" : 1.02, "correlated"   : False, "proc" : ["TTW", "TTZ", "Rares"], "channels" : ["2l_2tau", "2los_1tau", "2lss_1tau"]},                                            # for 2l_2tau / 2los_1tau / 2lss_1tau  --- check!
+            "CMS_ttHl_trigger"          : {"value" : 1.05, "correlated"   : False, "proc" : "MCproc",                "channels" : ["3l_1tau"]},                                                                      # for 3l_1tau
+            "CMS_ttHl_lepEff_elloose"   : {"value" : 1.02, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
+            "CMS_ttHl_lepEff_tight"     : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
+            "CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
+        }
 
-info_channel = {
-    "2lss_0tau" : { "bkg_proc_from_data" : ["fakes_data", "flips_data"], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False}, 
-    "ttWctrl"   : { "bkg_proc_from_data" : ["fakes_data", "flips_data"], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "2lss_1tau" : { "bkg_proc_from_data" : ["fakes_data", "flips_data"], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : True},
-    "3l_0tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "1l_2tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "ttZctrl"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "2l_2tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "3l_1tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : True}, 
-    "1l_2tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "2los_1tau" : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares", "conversions"], "isSMCSplit" : False},
-    "0l_2tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares"],                "isSMCSplit" : False},
-    "1l_1tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares"],                "isSMCSplit" : False},
-    "WZctrl"    : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares"],                "isSMCSplit" : False},
-    "4l_0tau"   : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares"],                "isSMCSplit" : False},
-    "ZZctrl"    : { "bkg_proc_from_data" : ["fakes_data"              ], "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "EWK", "Rares"],                "isSMCSplit" : False},
-}
+        # channel specific shape syst
+        specific_shape = {
+            "CMS_ttHl_trigger" : {"correlated" : False, "proc" : "MCproc", "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "1l_2tau", "3l_1tau"]))},                           # not for 1l_2tau / 2los_1tau / 3l_1tau
+        }
 
-# the "correlated" on the dictionary means correlated between years
-specific_ln_systs_ttH = {
-    "CMS_ttHl_QF"               : {"value" : 1.3,  "correlated"   : True,  "proc" : ["flips_data"],          "channels" : [k for k,v in info_channel.items() if "flips_data"  in v["bkg_proc_from_data"]]},  # for channels with "flips_data"
-    "CMS_ttHl_Convs"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["conversions"],         "channels" : [k for k,v in info_channel.items() if "conversions" in v["bkg_procs_from_MC"]]},   # for channels with "conversions"
-    "CMS_ttHl_EWK"              : {"value" : 1.5,  "correlated"   : True,  "proc" : ["EWK"],                 "channels" : [k for k,v in info_channel.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with "EWK"
-    "CMS_ttHl_Rares"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["Rares"],               "channels" : [k for k,v in info_channel.items() if "Rares" in v["bkg_procs_from_MC"]]},         # for channels with "Rares"
-    "CMS_ttHl_trigger_leptau"   : {"value" : 1.03, "correlated"   : False, "proc" : "MCproc",                "channels" : ["1l_2tau"]},                                                                      # for channels with tau cross triggers  
-    "CMS_ttHl_trigger_uncorr"   : {"value" : 1.02, "correlated"   : False, "proc" : ["TTW", "TTZ", "Rares"], "channels" : ["2l_2tau", "2los_1tau", "2lss_1tau"]},                                            # for 2l_2tau / 2los_1tau / 2lss_1tau  --- check!
-    "CMS_ttHl_trigger"          : {"value" : 1.05, "correlated"   : False, "proc" : "MCproc",                "channels" : ["3l_1tau"]},                                                                      # for 3l_1tau
-    "CMS_ttHl_lepEff_elloose"   : {"value" : 1.02, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(info_channel.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
-    "CMS_ttHl_lepEff_tight"     : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(info_channel.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
-    "CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(info_channel.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
-}
+        # shape for isMCsplit -- it will be added to the list of signals + "bkg_procs_from_MC" (excluding "conversions")
+        specific_ln_shape_systs = {
+            "CMS_ttHl_tauID"            : {"value" : 1.1, "correlated" : True,  "type" : "gentau" , "channels" : [n for n in list(list_channel_opt.keys()) if "1tau" in n or "2tau" in n ]},  # only for gentau
+            "CMS_ttHl_fakes_MC_tau"     : {"value" : 1.3, "correlated" : True,  "type" : "faketau", "channels" : [k for k,v in list_channel_opt.items() if v["isSMCSplit"]]},  # only for fake tau 
+        }
 
-# channel specific shape syst
-specific_shape_systs= {
-    "CMS_ttHl_trigger" : {"correlated" : False, "channels" : list(set(list(info_channel.keys())) - set(["2los_1tau", "1l_2tau", "3l_1tau"]))},                           # not for 1l_2tau / 2los_1tau / 3l_1tau
-}
+        specific_shape_shape_systs = {
+            "CMS_ttHl_FRjt_norm"  : {"correlated" : True, "type" : "faketau"},  ## only for faketau
+            "CMS_ttHl_FRjt_shape" : {"correlated" : True, "type" : "faketau"}, ## only for faketau
+        }
+    else : sys.exit("analysis " + analysis + " not implemented")
+    return {
+        "specific_ln_systs"             : specific_ln_systs,
+        "specific_shape"                : specific_shape,
+        "specific_ln_to_shape_systs"    : specific_ln_shape_systs,
+        "specific_shape_to_shape_systs" : specific_shape_shape_systs
 
-# shape for isMCsplit -- it will be added to the list of signals + "bkg_procs_from_MC" (excluding "conversions")
-specific_ln_shape_systs_ttH = {
-    "CMS_ttHl_tauID"            : {"value" : 1.1, "correlated" : True,  "type" : "gentau" , "channels" : [n for n in list(info_channel.keys()) if "1tau" in n or "2tau" in n ]},  # only for gentau
-    "CMS_ttHl_fakes_MC_tau"     : {"value" : 1.3, "correlated" : True,  "type" : "faketau", "channels" : [k for k,v in info_channel.items() if v["isSMCSplit"]]},  # only for fake tau 
-}
-
-specific_shape_shape_systs_ttH = {
-    "CMS_ttHl_FRjt_norm"  : {"correlated" : True, "type" : "faketau"},  ## only for faketau
-    "CMS_ttHl_FRjt_shape" : {"correlated" : True, "type" : "faketau"}, ## only for faketau
-}
+    }
 
 # proc by channels
 
