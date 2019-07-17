@@ -17,6 +17,7 @@ parser.add_option("--output_file",    type="string",       dest="output_file", h
 parser.add_option("--coupling",       type="string",       dest="coupling",    help="Coupling to take in tH.\n Default: do for SM, do not add couplings on output naming convention", default="none")
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  help="do not assume hist from prepareDatacards starts with 'x_' prefix", default=False)
+parser.add_option("--only_ttH_sig",   action="store_true", dest="only_ttH_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
@@ -28,6 +29,7 @@ analysis    = options.analysis
 cardFolder  = options.cardFolder
 coupling    = options.coupling
 noX_prefix  = options.noX_prefix
+only_ttH_sig = options.only_ttH_sig
 
 if not os.path.exists(cardFolder):
     os.makedirs(cardFolder)
@@ -54,9 +56,16 @@ specific_syst_list = specific_syst(analysis, list_channel_opt)
 # if a coupling is done read the tH signal with that coupling on naming convention
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
-    tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry] 
-    print ("tH_procs = ", tH_procs)
+    #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry] 
+    #print ("tH_procs = ", tH_procs)
 print ("signal        : ", sum(higgs_procs,[]))
+
+if only_ttH_sig :
+    print ("MC processes -- after chosing to mark as signal only ttH:")
+    bkg_procs_from_MC += [ entry for entry in sum(higgs_procs,[]) if "ttH_" not in  entry] 
+    higgs_procs        = [ entries for entries in higgs_procs if "ttH_" in entries[0] ] 
+    print ("BKG from MC   (new): ", bkg_procs_from_MC)
+    print ("signal        (new): ", higgs_procs)
 
 ###########################################
 # start the list of common systematics for all channels
@@ -77,31 +86,32 @@ print ("Adding lumi syt uncorrelated/year")
 cb.cp().signals().AddSyst(cb, "lumi_%s" % str(era), "lnN", ch.SystMap()(lnSyst["lumi"][2017]))
 
 #######################################
-print ("Adding rateParam")
-# normalizations floating individually (ttWW correlated with ttW and among signal types)
-# not relevant if you do the fit expliciting things on the text2ws maker -- but it does not hurt
-for proc in bkg_procs_from_MC  :
-    if "TTWW" in proc :
-        cb.cp().process([proc]).AddSyst(cb, 'scale_TTWW', 'rateParam', ch.SystMap()(("(@0)", "scale_TTW")))
-        print ("process: " + proc + " is proportonal to TTW")
-    else :
-        cb.cp().process([proc]).AddSyst(cb, "scale_%s" % proc, 'rateParam', ch.SystMap()(1.0))
-        print ("added rateparam to: " + proc)
-
-# correlate the rateparam amonf the Higgs processes 
-for hsig in higgs_procs :
-    for br, hsbr in enumerate(hsig) :
-        if br == 0 : 
-            cb.cp().process([hsbr]).AddSyst(cb, "scale_%s" % hsbr, 'rateParam', ch.SystMap()(1.0))
-            print ("added rateparam to: " + hsbr)
+if 0 > 1 : # FIXME: remind why we added that at some point
+    print ("Adding rateParam")
+    # normalizations floating individually (ttWW correlated with ttW and among signal types)
+    # not relevant if you do the fit expliciting things on the text2ws maker -- but it does not hurt
+    for proc in bkg_procs_from_MC  :
+        if "TTWW" in proc :
+            cb.cp().process([proc]).AddSyst(cb, 'scale_TTWW', 'rateParam', ch.SystMap()(("(@0)", "scale_TTW")))
+            print ("process: " + proc + " is proportonal to TTW")
         else :
-            cb.cp().process([proc]).AddSyst(cb, 'scale_%s' % hsbr, 'rateParam', ch.SystMap()(("(@0)", "scale_%s" % hsig[0])))
-            print ("process: " + hsbr + " is proportonal to", hsig[0])
+            cb.cp().process([proc]).AddSyst(cb, "scale_%s" % proc, 'rateParam', ch.SystMap()(1.0))
+            print ("added rateparam to: " + proc)
+
+    # correlate the rateparam amonf the Higgs processes 
+    for hsig in higgs_procs :
+        for br, hsbr in enumerate(hsig) :
+            if br == 0 : 
+                cb.cp().process([hsbr]).AddSyst(cb, "scale_%s" % hsbr, 'rateParam', ch.SystMap()(1.0))
+                print ("added rateparam to: " + hsbr)
+            else :
+                cb.cp().process([proc]).AddSyst(cb, 'scale_%s' % hsbr, 'rateParam', ch.SystMap()(("(@0)", "scale_%s" % hsig[0])))
+                print ("process: " + hsbr + " is proportonal to", hsig[0])
 
 ########################################
 # Higgs proc lnN syst 
-if analysis == "ttH" : 
-    proc_with_scale_syst = ["ttH", "tH", "ttW"]
+#if analysis == "ttH" : 
+#    proc_with_scale_syst = ["ttH", "tH", "ttW"]
 for hsig in higgs_procs :
     if "ttH" in hsig[0] :
         cb.cp().process(hsig).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(lnSyst["pdf_Higgs_ttH"][2017]))
@@ -167,7 +177,7 @@ if shape :
     for specific_syst in specific_shape_systs :
         if channel not in specific_ln_systs[specific_syst]["channels"] :
             continue
-        procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC)
+        procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
         if len(procs) == 0 : 
             continue
         cb.cp().process(procs).AddSyst(cb,  specific_syst, "shape", ch.SystMap()(1.0))
@@ -180,7 +190,7 @@ specific_ln_systs  = specific_syst_list["specific_ln_systs"]
 for specific_syst in specific_ln_systs :
     if channel not in specific_ln_systs[specific_syst]["channels"] :
         continue
-    procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC)
+    procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
     if len(procs) == 0 : 
         continue
     name_syst = specific_syst
