@@ -1,3 +1,7 @@
+### everthing that is marked as "uncorrelated" is renamed as: 
+### "CMS_ttHl" ->  "CMS_ttHl%s" % str(era).replace("20","")
+### where era = 2016/2017/2018
+
 # syst: theory and from MC generators - taken correlated between all years (check if that is what we want to do)
 lnSyst = {
     "lumi"            : {2016: 1.023,          2017: 1.023,          2018: 1.023},
@@ -50,8 +54,8 @@ for btag_type_syst in btag_type_systs_uncorrelated :
 
 # Common MC syst - taken uncorrelated/correlated between all years according with the name of the list
 MC_shape_systs_correlated = [
-    "CMS_ttHl_JES",
-    "CMS_ttHl_tauES",
+    "CMS_ttHl_JES",   # renamed to "CMS_scale_j"
+    "CMS_ttHl_tauES", # renamed to "CMS_scale_t"
     "CMS_ttHl_JER",
     "CMS_ttHl_UnclusteredEn",
 ]
