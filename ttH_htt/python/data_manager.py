@@ -63,13 +63,13 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                     histDo.Copy(hist)
                     histUp.Add(hist)
                     histDo.Add(hist)
-            if noX_prefix : nameprocx = "%s_%s_shape" % (proc, name_syst)
-            else : nameprocx = "x_%s_%s_shape" % (proc, name_syst)
+            if noX_prefix : nameprocx = "%s_%s" % (proc, name_syst)
+            else : nameprocx = "x_%s_%s" % (proc, name_syst)
             histUp.SetName("%sUp"   % (nameprocx))
             histDo.SetName("%sDown" % (nameprocx))
             histUp.Write()
             histDo.Write()
-        created_ln_to_shape_syst += ["%s_shape" % name_syst]
+        created_ln_to_shape_syst += ["%s" % name_syst]
         if shape : 
             for shape_to_shape in specific_shape_shape_systs :
                 print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
