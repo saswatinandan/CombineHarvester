@@ -1,9 +1,9 @@
 def list_channels(analysis) :
     if analysis == "ttH" :
-        sigs = ["ttH", "tHq", "tHW", "VH"]
+        sigs = ["ttH", "tHq", "tHW"] #, "VH"]
         decays = ["hww", "hzz", "htt", "hzg", "hmm" ]
-        higgs_procs = [ [y + "_" + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
-        #higgs_procs = [ [y + "_" + x  for x in decays if not (x in ["hzz", "htt", "hzg", "hmm"] and y != "ttH")] for y in sigs]
+        #higgs_procs = [ [y + "_" + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
+        higgs_procs = [ [y + "_" + x  for x in decays if not (x in ["hzz", "htt", "hzg", "hmm"] and y != "ttH")] for y in sigs]
         ## add the H processes (that shall be marked as signal on the datacards)
 
         info_channel = {

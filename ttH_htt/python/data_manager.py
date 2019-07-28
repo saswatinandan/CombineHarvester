@@ -42,7 +42,18 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             histDo = ROOT.TH1F()
             ## fixme: old cards does not have uniform naming convention to tH/VH -- it should be only continue to conversions
             if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc : continue
-            print ("======")
+            print ("================================================")
+            central = 0
+            central_calc = 0
+            if noX_prefix : histFind = "%s" % (proc)
+            else : histFind = "x_%s" % (proc)
+            try : hist = tfile.Get(histFind)
+            except : print ("Doesn't find" + histFind) 
+            histUp = hist.Clone()
+            histUp.Scale(0.)
+            histDo = hist.Clone()
+            histDo.Scale(0.)
+            central = hist.Integral()
             for typeHist in ["faketau", "gentau"] :
                 if noX_prefix : histFind = "%s_%s" % (proc, typeHist)
                 else : histFind = "x_%s_%s" % (proc, typeHist)
@@ -50,18 +61,18 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                 except : print ("Doesn't find" + histFind) 
                 print (histFind, hist.Integral())
                 # clone only the structure -- for the case of no shift
-                if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist :
-                    print (histFind + " Multiply up part by " + str(specific_ln_shape_systs[ln_to_shape]["value"]))  
-                    histUp = hist.Clone()
+                if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist : 
+                    histUp.Add(hist)
+                    central_calc += hist.Integral()
                     histUp.Scale(specific_ln_shape_systs[ln_to_shape]["value"])
-                    print (histFind + " Multiply down part by " + str(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1)))
-                    histDo = hist.Clone()
+                    print (histFind + " Multiply up part by " + str(specific_ln_shape_systs[ln_to_shape]["value"]), "Integral = " + str(histUp.Integral())) 
+                    histDo.Add(hist)
                     histDo.Scale(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1))
+                    print (histFind + " Multiply down part by " + str(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1)), "Integral = " + str(histDo.Integral()))
                 else : 
                     print ("Adding " + histFind + " part ")
-                    histUp.Copy(hist)
-                    histDo.Copy(hist)
-                    histUp.Add(hist)
+                    histUp.Add(hist) 
+                    central_calc += hist.Integral()
                     histDo.Add(hist)
             if noX_prefix : nameprocx = "%s_%s" % (proc, name_syst)
             else : nameprocx = "x_%s_%s" % (proc, name_syst)
@@ -69,16 +80,22 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             histDo.SetName("%sDown" % (nameprocx))
             histUp.Write()
             histDo.Write()
+            print("Central/gentau+faketau/Up/Down", central, central_calc, histUp.Integral(), histDo.Integral())
         created_ln_to_shape_syst += ["%s" % name_syst]
         if shape : 
             for shape_to_shape in specific_shape_shape_systs :
                 print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
                 histUp = ROOT.TH1F()
                 histDo = ROOT.TH1F()
+                histCentral = ROOT.TH1F()
+                central_calc = 0
                 name_syst = shape_to_shape.replace("CMS_", "CMS_constructed_")
                 if not specific_shape_shape_systs[shape_to_shape]["correlated"] :
                     name_syst = name_systreplace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
                 for proc in MC_proc :
+                    histFindCentral = "%s_%s" % (proc, typeHist)
+                    try : histCentral = tfile.Get(histCentral)
+                    except : print ("Doesn't find" + histFindCentral) 
                     for typeHist in ["faketau", "gentau"] :
                         histFindUp = "%s_%s_%sUp" % (proc, typeHist, shape_to_shape)
                         try : histUp = tfile.Get(histFindUp)
@@ -92,6 +109,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                     histDo.SetName("%s_%sDown" % (proc, name_syst))
                     histUp.Write()
                     histDo.Write()
+                    print("Central/Up/Down", histCentral.Integral(), histUp.Integral(), histDo.Integral())
                 created_shape_to_shape_syst += [name_syst]  
                 print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )          
     tfileout.Close()
