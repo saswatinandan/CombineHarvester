@@ -2,6 +2,7 @@
 import os, shlex
 from subprocess import Popen, PIPE
 
+# python test/do_kt_scans.py --inputShapes /afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/data_tth/prepareDatacards_1l_2tau_mvaOutput_plainKin_SUM_VT_noRebin_noNeg.root --channel 1l_2tau --cardFolder testPlots_master10X
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--inputShapes",    type="string",       dest="inputShapes", help="Full path of prepareDatacards.root")
@@ -15,44 +16,68 @@ func_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/dat
 execfile(func_file)
 
 tHweights = [
-  {"kt" : -1.0, "kv" : 1.0, "idx" : -1}, # the default (i.e. no weight)
-  {"kt" : -3.0, "kv" : 1.0, "idx" : 0},
-  {"kt" : -2.0, "kv" : 1.0, "idx" : 1},
-  {"kt" : -1.5, "kv" : 1.0, "idx" : 2},
-  {"kt" : -1.25, "kv" : 1.0, "idx" : 3},
-  {"kt" : -0.75, "kv" : 1.0, "idx" : 4},
-  {"kt" : -0.5, "kv" : 1.0, "idx" : 5},
-  {"kt" : -0.25, "kv" : 1.0, "idx" : 6},
-  {"kt" : 0.0, "kv" : 1.0, "idx" : 7},
-  {"kt" : 0.25, "kv" : 1.0, "idx" : 8},
-  {"kt" : 0.5, "kv" : 1.0, "idx" : 9},
-  {"kt" : 0.75, "kv" : 1.0, "idx" : 10},
-  {"kt" : 1.0, "kv" : 1.0, "idx" : 11},
-  {"kt" : 1.25, "kv" : 1.0, "idx" : 12},
-  {"kt" : 1.5, "kv" : 1.0, "idx" : 13},
-  {"kt" : 2.0, "kv" : 1.0, "idx" : 14},
-  {"kt" : 3.0, "kv" : 1.0, "idx" : 15},
-  {"kt" : -2.0, "kv" : 1.5, "idx" : 17},
-  {"kt" : -1.25, "kv" : 1.5, "idx" : 19},
-  {"kt" : -1.0, "kv" : 1.5, "idx" : 20},
-  {"kt" : -0.5, "kv" : 1.5, "idx" : 22},
-  {"kt" : -0.25, "kv" : 1.5, "idx" : 23},
-  {"kt" : 0.25, "kv" : 1.5, "idx" : 25},
-  {"kt" : 0.5, "kv" : 1.5, "idx" : 26},
-  {"kt" : 1.0, "kv" : 1.5, "idx" : 28},
-  {"kt" : 1.25, "kv" : 1.5, "idx" : 29},
-  {"kt" : 2.0, "kv" : 1.5, "idx" : 31},
-  {"kt" : -3.0, "kv" : 0.5, "idx" : 33},
-  {"kt" : -2.0, "kv" : 0.5, "idx" : 34},
-  {"kt" : -1.25, "kv" : 0.5, "idx" : 36},
-  {"kt" : 1.25, "kv" : 0.5, "idx" : 46},
-  {"kt" : 2.0, "kv" : 0.5, "idx" : 48},
-  {"kt" : 3.0, "kv" : 0.5, "idx" : 49}
+  {"kt" : -1.0, "kv" : 1.0, "cosa" : -10}, # the default (i.e. no weight)
+  {"kt" : -3.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -2.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -1.5, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -1.25, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -0.75, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -0.5, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -0.25, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 0.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 0.25, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 0.5, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 0.75, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 1.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 1.25, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 1.5, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 2.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : 3.0, "kv" : 1.0, "cosa" : -10},
+  {"kt" : -2.0, "kv" : 1.5, "cosa" : -10},
+  {"kt" : -1.25, "kv" : 1.5, "cosa" : -10},
+  {"kt" : -1.0, "kv" : 1.5, "cosa" : -10},
+  {"kt" : -0.5, "kv" : 1.5, "cosa" : -10},
+  {"kt" : -0.25, "kv" : 1.5, "cosa" : -10},
+  {"kt" : 0.25, "kv" : 1.5, "cosa" : -10},
+  {"kt" : 0.5, "kv" : 1.5, "cosa" : -10},
+  {"kt" : 1.0, "kv" : 1.5, "cosa" : -10},
+  {"kt" : 1.25, "kv" : 1.5, "cosa" : -10},
+  {"kt" : 2.0, "kv" : 1.5, "cosa" : -10},
+  {"kt" : -3.0, "kv" : 0.5, "cosa" : -10},
+  {"kt" : -2.0, "kv" : 0.5, "cosa" : -10},
+  {"kt" : -1.25, "kv" : 0.5, "cosa" : -10},
+  {"kt" : 1.25, "kv" : 0.5, "cosa" : -10},
+  {"kt" : 2.0, "kv" : 0.5, "cosa" : -10},
+  {"kt" : 3.0, "kv" : 0.5, "cosa" : -10},
+  {"kt" : 1.0, "kv" : -1.1111, "cosa" : -0.9},
+  {"kt" : 1.0, "kv" : -1.25, "cosa" : -0.8},
+  {"kt" : 1.0, "kv" : -1.42857, "cosa" : -0.7},
+  {"kt" : 1.0, "kv" : -1.6667, "cosa" : -0.6},
+  {"kt" : 1.0, "kv" : -2, "cosa" : -0.5},
+  {"kt" : 1.0, "kv" : -2.5, "cosa" : -0.4},
+  {"kt" : 1.0, "kv" : -3.333, "cosa" : -0.3},
+  {"kt" : 1.0, "kv" : -5, "cosa" : -0.2},
+  {"kt" : 1.0, "kv" : -10, "cosa" : -0.1},
+  {"kt" : 1.0, "kv" : -10000, "cosa" : 0.0001},
+  {"kt" : 1.0, "kv" : 10, "cosa" : 0.1},
+  {"kt" : 1.0, "kv" : 5, "cosa" : 0.2},
+  {"kt" : 1.0, "kv" : 3.333, "cosa" : 0.3},
+  {"kt" : 1.0, "kv" : 2.5, "cosa" : 0.4},
+  {"kt" : 1.0, "kv" : 2, "cosa" : 0.5},
+  {"kt" : 1.0, "kv" : 1.6667, "cosa" : 0.6},
+  {"kt" : 1.0, "kv" : 1.42857, "cosa" : 0.7},
+  {"kt" : 1.0, "kv" : 1.25, "cosa" : 0.8},
+  {"kt" : 1.0, "kv" : 1.1111, "cosa" : 0.9}
 ]
 
-list_couplings = [{"name" : get_tH_weight_str(entry["kt"], entry["kv"]), "ratio" : entry["kt"]/entry["kv"]} for entry in tHweights] 
+list_couplings = [
+  {
+    "name" : get_tH_weight_str(entry["kt"], entry["kv"], entry["cosa"]), "ratio" : entry["kt"]/entry["kv"]
+  } for entry in tHweights
+] 
 
-for entry in list_couplings :
+for ee, entry in enumerate(list_couplings) :
+    if ee < 50 : continue
     cmd = "WriteDatacards.py "
     cmd += " --inputShapes %s"  % options.inputShapes 
     cmd += " --channel %s"      % options.channel
@@ -62,6 +87,3 @@ for entry in list_couplings :
     cmd += " --coupling %s"     % entry["name"]
     cmd += " --era %s"          % options.era
     runCombineCmd(cmd)
-
-
-

@@ -162,8 +162,11 @@ def rename_tH(output_file, coupling, bins) :
     m = m.replace(test_name_tHW, "tHW")
     f2.write(m)
 
-def get_tH_weight_str(kt, kv):
-    return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm')
+def get_tH_weight_str(kt, kv, cosa = -10):
+    if cosa == -10 : 
+        return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm')
+    else :
+        return ("kt_%.3g_kv_%s*_cosa_%s*" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
 
 # usage: file, path = splitPath(s)
 def splitPath(s) :
