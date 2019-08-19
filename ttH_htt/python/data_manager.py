@@ -41,7 +41,8 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             histUp = ROOT.TH1F()
             histDo = ROOT.TH1F()
             ## fixme: old cards does not have uniform naming convention to tH/VH -- it should be only continue to conversions
-            if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc : continue
+            if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc or proc in ["tHq", "tHW", "VH"]: continue
+            #if  proc or "conversions" in proc or proc in ["tHq", "tHW", "VH"]: continue
             print ("================================================")
             central = 0
             central_calc = 0
@@ -133,7 +134,7 @@ def rename_tH(output_file, coupling, bins) :
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
     tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
-    for b in bins :
+    for bb in bins :
         for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
             # this bellow would be interesting if we would know all the histogram names
             #rootmv file:part1_*_part2 file:new_name
@@ -150,8 +151,9 @@ def rename_tH(output_file, coupling, bins) :
                     new_name = obj_name.replace("_" + coupling,"")
                     print ("renaming " +  obj_name + " to " + new_name)
                     obj.SetName(new_name)
-                    tfileout.cd(b)
+                    tfileout.cd(bb)
                     obj.Write()
+                    ROOT.gDirectory.Delete(obj_name+";1")
                     tfileout.cd()
     tfileout.Close()
     f1 = open(output_file + ".txt", 'r').read()
