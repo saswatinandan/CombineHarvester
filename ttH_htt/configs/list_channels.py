@@ -11,7 +11,11 @@ def list_channels(analysis) :
         ## add the H processes (that shall be marked as signal on the datacards)
 
         info_channel = {
-        "2lss_0tau" : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : [ "ttH" ], "isSMCSplit" : False},
+        "2lss_0tau" : {
+            "bkg_proc_from_data" : [ fakes, flips   ],
+            "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH", "TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT"],
+            "isSMCSplit" : False
+        },
         "ttWctrl"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
         "2lss_1tau" : {
             "bkg_proc_from_data" : [ fakes, flips   ],
