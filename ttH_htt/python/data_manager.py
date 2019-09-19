@@ -9,7 +9,7 @@ def lists_overlap(a, b):
   return any(el in sb for el in a)
 
 def list_proc(syst_list, MC_proc, all_proc_bkg, name_syst) :
-    if syst_list["proc"] == "MCproc" : 
+    if syst_list["proc"] == "MCproc" :
         procs = MC_proc
     elif not set(syst_list["proc"]) <= set(all_proc_bkg) :
         print ("skiped " + name_syst  + " as the channel does not contain the process: ", syst_list["proc"])
@@ -17,7 +17,7 @@ def list_proc(syst_list, MC_proc, all_proc_bkg, name_syst) :
     elif lists_overlap(syst_list["proc"], all_proc_bkg):
         intersection = list(set(list(syst_list["proc"])) - set(all_proc_bkg))
         procs = list(set(list(syst_list["proc"])) - set(intersection))
-    else : 
+    else :
         procs = syst_list["proc"]
     return procs
 
@@ -49,7 +49,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             if noX_prefix : histFind = "%s" % (proc)
             else : histFind = "x_%s" % (proc)
             try : hist = tfile.Get(histFind)
-            except : print ("Doesn't find" + histFind) 
+            except : print ("Doesn't find" + histFind)
             histUp = hist.Clone()
             histUp.Scale(0.)
             histDo = hist.Clone()
@@ -59,20 +59,20 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                 if noX_prefix : histFind = "%s_%s" % (proc, typeHist)
                 else : histFind = "x_%s_%s" % (proc, typeHist)
                 try : hist = tfile.Get(histFind)
-                except : print ("Doesn't find" + histFind) 
+                except : print ("Doesn't find" + histFind)
                 print (histFind, hist.Integral())
                 # clone only the structure -- for the case of no shift
-                if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist : 
+                if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist :
                     histUp.Add(hist)
                     central_calc += hist.Integral()
                     histUp.Scale(specific_ln_shape_systs[ln_to_shape]["value"])
-                    print (histFind + " Multiply up part by " + str(specific_ln_shape_systs[ln_to_shape]["value"]), "Integral = " + str(histUp.Integral())) 
+                    print (histFind + " Multiply up part by " + str(specific_ln_shape_systs[ln_to_shape]["value"]), "Integral = " + str(histUp.Integral()))
                     histDo.Add(hist)
                     histDo.Scale(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1))
                     print (histFind + " Multiply down part by " + str(1 - (specific_ln_shape_systs[ln_to_shape]["value"] - 1)), "Integral = " + str(histDo.Integral()))
-                else : 
+                else :
                     print ("Adding " + histFind + " part ")
-                    histUp.Add(hist) 
+                    histUp.Add(hist)
                     central_calc += hist.Integral()
                     histDo.Add(hist)
             if noX_prefix : nameprocx = "%s_%s" % (proc, name_syst)
@@ -83,7 +83,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             histDo.Write()
             print("Central/gentau+faketau/Up/Down", central, central_calc, histUp.Integral(), histDo.Integral())
         created_ln_to_shape_syst += ["%s" % name_syst]
-        if shape : 
+        if shape :
             for shape_to_shape in specific_shape_shape_systs :
                 print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
                 histUp = ROOT.TH1F()
@@ -96,11 +96,11 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                 for proc in MC_proc :
                     histFindCentral = "%s_%s" % (proc, typeHist)
                     try : histCentral = tfile.Get(histCentral)
-                    except : print ("Doesn't find" + histFindCentral) 
+                    except : print ("Doesn't find" + histFindCentral)
                     for typeHist in ["faketau", "gentau"] :
                         histFindUp = "%s_%s_%sUp" % (proc, typeHist, shape_to_shape)
                         try : histUp = tfile.Get(histFindUp)
-                        except : print ("Doesn't find" + histFindUp) 
+                        except : print ("Doesn't find" + histFindUp)
                         histFindDown = "%s_%s_%sDown" % (proc, typeHist, shape_to_shape)
                         try : histDown = tfile.Get(histFindDown)
                         except : print ("Doesn't find" + histFindDown)
@@ -111,8 +111,8 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                     histUp.Write()
                     histDo.Write()
                     print("Central/Up/Down", histCentral.Integral(), histUp.Integral(), histDo.Integral())
-                created_shape_to_shape_syst += [name_syst]  
-                print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )          
+                created_shape_to_shape_syst += [name_syst]
+                print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )
     tfileout.Close()
     print ("File with ln to shape syst: " +  outpuShape)
 
@@ -120,7 +120,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
     print ("File merged with fake/gen syst: ", finalFile)
     head, tail = os.path.split(inputShapes)
     print ('doing hadd in directory: ' + head)
-    p = Popen(shlex.split("hadd -f %s %s %s" % (finalFile, outpuShape, inputShapes)) , stdout=PIPE, stderr=PIPE, cwd=head) 
+    p = Popen(shlex.split("hadd -f %s %s %s" % (finalFile, outpuShape, inputShapes)) , stdout=PIPE, stderr=PIPE, cwd=head)
     comboutput = p.communicate()[0]
     #if "conversions" in MC_proc : MC_proc.remove("conversions")
     ## fixme: old cards does not have uniform naming convention to tH/VH
@@ -131,8 +131,13 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
     return finalFile
 
 def rename_tH(output_file, coupling, bins) :
+    print "entered renamiong"
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
+    test_name_VH = "VH"
+    test_name_TTWH = "TTWH"
+    test_name_TTZH = "TTZH"
+    test_name_HH = "HH"
     tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
     for bb in bins :
         for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
@@ -145,11 +150,38 @@ def rename_tH(output_file, coupling, bins) :
                 obj =  key.ReadObj()
                 obj_name = key.GetName()
                 if type(obj) is not ROOT.TH1F : continue
-                if test_name_tHq in obj_name or test_name_tHW in obj_name : 
-                    if test_name_tHq in obj_name : test_name = test_name_tHq
-                    if test_name_tHW in obj_name : test_name = test_name_tHq
-                    new_name = obj_name.replace("_" + coupling,"")
-                    print ("renaming " +  obj_name + " to " + new_name)
+                if test_name_tHq in obj_name\
+                    or test_name_tHW in obj_name :
+                    #or test_name_VH in obj_name\
+                    #or test_name_TTWH in obj_name\
+                    #or test_name_TTZH in obj_name\
+                    print (obj_name)
+                    if obj_name == "TTWH_hww" or obj_name == "TTZH_hww" : continue
+
+                    if (test_name_TTWH in obj_name) and not "_" in obj_name and coupling == "none":
+                        test_name = test_name_TTWH
+                        new_name = obj_name + "_hww"
+                        print ("renaming TTVH", new_name,  obj_name)
+                    elif (test_name_TTZH in obj_name) and not "_" in obj_name and coupling == "none":
+                        test_name = test_name_TTZH
+                        new_name = obj_name + "_hww"
+                        print ("renaming TTVH", new_name,  obj_name)
+                    elif test_name_VH in obj_name and coupling == "none":
+                        test_name = test_name_VH
+                        new_name = obj_name.replace("VH", "WH")
+                        print ("renaming VH", new_name,  obj_name)
+                    elif test_name_tHq in obj_name and not coupling == "none":
+                        test_name = test_name_tHq
+                        new_name = obj_name.replace("_" + coupling,"")
+                        print ("renaming " +  obj_name + " to " + new_name)
+                    elif test_name_tHW in obj_name and not coupling == "none":
+                        test_name = test_name_tHW
+                        new_name = obj_name.replace("_" + coupling,"")
+                        print ("renaming " +  obj_name + " to " + new_name)
+
+
+                    print ("renaming", new_name,  obj_name)
+
                     obj.SetName(new_name)
                     tfileout.cd(bb)
                     obj.Write()
@@ -160,13 +192,16 @@ def rename_tH(output_file, coupling, bins) :
     f2 = open(output_file + ".txt", 'w')
     m = f1.replace(test_name_tHq, "tHq")
     m = m.replace(test_name_tHW, "tHW")
+    #m = m.replace("VH_", "WH_")
+    #m = m.replace("TTWH", "TTWH_hww")
+    #m = m.replace("TTZH", "TTZH_hww")
     f2.write(m)
 
 def get_tH_weight_str(kt, kv, cosa = -10):
-    if cosa == -10 : 
+    if cosa == -10 :
         return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm')
     else :
-        return ("kt_%.3g_kv_%s*_cosa_%s*" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
+        return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
 
 # usage: file, path = splitPath(s)
 def splitPath(s) :
@@ -220,7 +255,7 @@ def rebin_total(template, folder, fin, divideByBinWidth, name_total, dict) :
         #    ## just this bin went wrong on Havester combo of processes..
         #    ## I calculated the error by hand as quadratic sum of processes -- just for this bin
         #    hist.SetBinError(ii, 4.5)
-        #else : 
+        #else :
         hist.SetBinError(ii, total_hist.GetBinError(ii)/bin_width)
     hist.GetXaxis().SetTitleOffset(0.55)
     hist.GetXaxis().SetLabelColor(10)
@@ -686,7 +721,7 @@ def PrintTables(cmb, uargs, filey, unblinded, labels, typeChannel, ColapseCat = 
     bottom = r'Observed data & '
     for ll in xrange(len(labels)) :
         header = header + r'r@{$ \,\,\pm\,\, $}l|'
-        if not unblinded : 
+        if not unblinded :
             bottom = bottom + r' \multicolumn{2}{c|}{$-$} '
         else : bottom = bottom + r' \multicolumn{2}{c|}{$%g$} ' % (c_cat[ll].cp().GetObservedRate())
         if ll == len(labels) - 1 : bottom = bottom + r' \\'
