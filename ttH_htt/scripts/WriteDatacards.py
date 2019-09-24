@@ -31,6 +31,8 @@ coupling    = options.coupling
 noX_prefix  = options.noX_prefix
 only_ttH_sig = options.only_ttH_sig
 
+print("shape", shape)
+
 if not os.path.exists(cardFolder):
     os.makedirs(cardFolder)
 
@@ -53,6 +55,7 @@ if not (coupling == "none" or coupling == "kt_1_kv_1") :
     #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry]
     #print ("tH_procs = ", tH_procs)
 higgs_procs_plain = sum(higgs_procs,[])
+print("higgs_procs_plain", higgs_procs_plain)
 
 # check a threshold on processes
 bkg_proc_from_data = make_threshold(0.02, bkg_proc_from_data,  inputShapes)
@@ -61,11 +64,14 @@ higgs_procs_plain  = make_threshold(0.02, higgs_procs_plain, inputShapes)
 
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
 print ("MC processes:")
-print ("BKG from MC   : ", bkg_procs_from_MC)
-print ("BKG from data : ", bkg_proc_from_data)
-print ("signal        : ", higgs_procs_plain)
+print ("BKG from MC  (old)  : ", bkg_procs_from_MC)
+print ("BKG from data (old) : ", bkg_proc_from_data)
+print ("signal        (old ): ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
+print("list_channel_opt", list_channel_opt)
+print("analysis", analysis)
+print ("specific_syst_list : ", specific_syst_list)
 
 if only_ttH_sig :
     print ("MC processes -- after chosing to mark as signal only ttH:")
@@ -121,6 +127,7 @@ if 0 > 1 : # FIXME: remind why we added that at some point
 # Higgs proc lnN syst
 #if analysis == "ttH" :
 #    proc_with_scale_syst = ["ttH", "tH", "ttW"]
+print("higgs_procs", higgs_procs)
 for hsig in higgs_procs :
     if "ttH" in hsig[0] :
         cb.cp().process(hsig).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(lnSyst["pdf_Higgs_ttH"][2017]))
@@ -182,7 +189,9 @@ if shape :
         print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
     ########################################
     # channel specific estimated shape syst
+    #print("specific_shape", specific_shape)
     specific_shape_systs = specific_syst_list[specific_shape]
+    print("specific_shape_systs", specific_syst_list[specific_shape])
     for specific_syst in specific_shape_systs :
         if channel not in specific_ln_systs[specific_syst]["channels"] :
             continue
@@ -284,5 +293,4 @@ rename_tH(output_file, "none", bins)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
     rename_tH(output_file, coupling, bins)
-
 sys.stdout.flush()

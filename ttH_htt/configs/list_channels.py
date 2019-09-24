@@ -12,8 +12,8 @@ def list_channels(analysis) :
 
         info_channel = {
         "2lss_0tau" : {
-            "bkg_proc_from_data" : [ fakes, flips   ],
-            "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH", "TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT"],
+            "bkg_proc_from_data" : [ "fakes_data", "flips_data"   ], ## Not using "fakes_mc/flips_mc" since fakes_data/flips_data is available in Xandra's 2lss datacard
+            "bkg_procs_from_MC"  : ["TTW", "TTZ", "TTWW", "TT", "Rares", "EWK", "conversions"], ## based on available processes in Xandra's 2lss datacard 
             "isSMCSplit" : False
         },
         "ttWctrl"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
@@ -23,7 +23,11 @@ def list_channels(analysis) :
             "isSMCSplit" : False
             },
         "3l_0tau"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
-        "1l_2tau"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
+        "1l_2tau"   : { 
+                "bkg_proc_from_data" : [ fakes            ], ## Using fakes_mc since no fakes_data present in Xandra's 1l_2tau datacard  
+                "bkg_procs_from_MC"  : ["TTW", "TTZ", "TTWW", "TT", "Rares", "EWK", conversions, "TTWH", "TTZH", "HH", "WZ", "ZZ"], 
+                "isSMCSplit" : False
+        },
         "ttZctrl"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
         "2l_2tau"   : {
             "bkg_proc_from_data" : [ fakes       ],
