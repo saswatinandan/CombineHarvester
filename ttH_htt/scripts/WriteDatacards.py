@@ -52,7 +52,15 @@ if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
     #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry]
     #print ("tH_procs = ", tH_procs)
+
 higgs_procs_plain = sum(higgs_procs,[])
+if only_ttH_sig :
+    print ("MC processes -- after chosing to mark as signal only ttH:")
+    bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "ttH_" not in  entry]
+    higgs_procs        = [ entries for entries in higgs_procs if "ttH_" in entries[0] ]
+    print ("BKG from MC   (new): ", bkg_procs_from_MC)
+    print ("signal        (new): ", higgs_procs)
+    higgs_procs_plain = sum(higgs_procs,[])
 
 # check a threshold on processes
 bkg_proc_from_data = make_threshold(0.02, bkg_proc_from_data,  inputShapes)
@@ -66,13 +74,6 @@ print ("BKG from data : ", bkg_proc_from_data)
 print ("signal        : ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
-
-if only_ttH_sig :
-    print ("MC processes -- after chosing to mark as signal only ttH:")
-    bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "ttH_" not in  entry]
-    higgs_procs        = [ entries for entries in higgs_procs if "ttH_" in entries[0] ]
-    print ("BKG from MC   (new): ", bkg_procs_from_MC)
-    print ("signal        (new): ", higgs_procs)
 
 ###########################################
 # start the list of common systematics for all channels
