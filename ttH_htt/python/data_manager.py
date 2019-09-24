@@ -203,6 +203,20 @@ def get_tH_weight_str(kt, kv, cosa = -10):
     else :
         return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
 
+def make_threshold(threshold, proc_list, file_input) :
+    tfileout = ROOT.TFile(file_input, "READ")
+    for proc in proc_list :
+        histo = tfileout.Get(proc)
+        try : integral = histo.Integral()
+        except :
+            print ("there was no process %s in the prepareDatacard" % proc )
+            proc_list = list(set(list(proc_list)) - set([proc]))
+            continue
+        if integral < threshold :
+            print ("there was no sufficient yield of process %s (integral = %s)" % (proc, str(integral)) )
+            proc_list = list(set(list(proc_list)) - set([proc]))
+    return proc_list
+
 # usage: file, path = splitPath(s)
 def splitPath(s) :
     f = os.path.basename(s)
