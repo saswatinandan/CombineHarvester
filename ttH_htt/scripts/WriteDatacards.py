@@ -46,7 +46,7 @@ higgs_procs = list_channels(analysis)["higgs_procs"]
 list_channel_opt   = list_channels(analysis)["info_bkg_channel"]
 bkg_proc_from_data = list_channel_opt[channel]["bkg_proc_from_data"]
 bkg_procs_from_MC  = list_channel_opt[channel]["bkg_procs_from_MC"]
-print (higgs_procs)
+
 # if a coupling is done read the tH signal with that coupling on naming convention
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
@@ -63,10 +63,12 @@ if only_ttH_sig :
     higgs_procs_plain = sum(higgs_procs,[])
 
 # check a threshold on processes
+print ("do not add a process to datacard if the yield is smaller than 0.02")
 bkg_proc_from_data = make_threshold(0.02, bkg_proc_from_data,  inputShapes)
 bkg_procs_from_MC  = make_threshold(0.02, bkg_procs_from_MC, inputShapes)
 higgs_procs_plain  = make_threshold(0.02, higgs_procs_plain, inputShapes)
 
+print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
 print ("MC processes:")
 print ("BKG from MC   : ", bkg_procs_from_MC)
