@@ -1,4 +1,4 @@
-### everthing that is marked as "uncorrelated" is renamed as: 
+### everthing that is marked as "uncorrelated" is renamed as:
 ### "CMS_ttHl" ->  "CMS_ttHl%s" % str(era).replace("20","")
 ### where era = 2016/2017/2018
 
@@ -38,15 +38,15 @@ fake_shape_systs_uncorrelated = [
     "CMS_ttHl_Clos_m_shape",
     "CMS_ttHl_Clos_t_shape",
     "CMS_ttHl_Clos_e_norm",
-    "CMS_ttHl_Clos_m_norm", 
+    "CMS_ttHl_Clos_m_norm",
     "CMS_ttHl_Clos_t_norm",
 ]
 MC_shape_systs_uncorrelated = []
 btag_type_systs_uncorrelated = [
-    "HFStats1", 
-    "HFStats2", 
-    "LFStats1", 
-    "LFStats2", 
+    "HFStats1",
+    "HFStats2",
+    "LFStats1",
+    "LFStats2",
 ]
 for btag_type_syst in btag_type_systs_uncorrelated :
     MC_shape_systs_uncorrelated += ["CMS_ttHl_btag_%s" % btag_type_syst]
@@ -59,9 +59,9 @@ MC_shape_systs_correlated = [
     "CMS_ttHl_UnclusteredEn",
 ]
 btag_type_systs_correlated = [
-    "HF", 
-    "LF", 
-    "cErr1", 
+    "HF",
+    "LF",
+    "cErr1",
     "cErr2"
 ]
 for btag_type_syst in btag_type_systs_correlated :
@@ -72,7 +72,6 @@ for btag_type_syst in btag_type_systs_correlated :
 
 def specific_syst(analysis, list_channel_opt) :
     if analysis == "ttH" :
-        print ([n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ])
         # the "correlated" on the dictionary means correlated between years
         # "MCproc" means that will take all the MC processes that appear for the channel that the datacard is being made for
         specific_ln_systs = {
@@ -89,8 +88,8 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n ]},
             "CMS_eff_t"                 : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ]},
             "CMS_ttHl_lepEff_elloose"   : {"value" : 1.02, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
-            "CMS_ttHl_lepEff_etight"    : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"       
-            "CMS_ttHl_lepEff_mtight"    : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"       
+            "CMS_ttHl_lepEff_etight"    : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
+            "CMS_ttHl_lepEff_mtight"    : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
         }
 
         # channel specific shape syst
@@ -103,7 +102,7 @@ def specific_syst(analysis, list_channel_opt) :
         # shape for isMCsplit -- it will be added to the list of signals + "bkg_procs_from_MC" (excluding "conversions")
         specific_ln_shape_systs = {
             "CMS_eff_t"             : {"value" : 1.05, "correlated" : True,  "type" : "gentau" , "channels" : [k for k,v in list_channel_opt.items() if v["isSMCSplit"]]},  # only for gentau
-            "CMS_ttHl_FRjtMC_shape" : {"value" : 1.3,  "correlated" : True,  "type" : "faketau", "channels" : [k for k,v in list_channel_opt.items() if v["isSMCSplit"]]},  # only for fake tau 
+            "CMS_ttHl_FRjtMC_shape" : {"value" : 1.3,  "correlated" : True,  "type" : "faketau", "channels" : [k for k,v in list_channel_opt.items() if v["isSMCSplit"]]},  # only for fake tau
         }
 
         specific_shape_shape_systs = {
@@ -119,4 +118,3 @@ def specific_syst(analysis, list_channel_opt) :
     }
 
 # proc by channels
-
