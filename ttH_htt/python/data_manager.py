@@ -131,7 +131,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
     return finalFile
 
 def rename_tH(output_file, coupling, bins) :
-    print "entered renamiong"
+    print "entered renaming"
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
     test_name_VH = "VH"

@@ -23,13 +23,23 @@ lnSyst = {
 ## --- Table-17 (B_bsm = 0 case, "ATLAS+CMS measured" column) in HIG-15-002-paper-v14.pdf ---------------- ##
 ## --- In cases where 1-sigma intervals are given, we take mid-point of the interval compatible with SM -- ##
 ## --- as the central value --- ##    
-higgsBR = {
+higgsBR_exptl = {
     "hww" : 1.26, # kappa_W is 0.87 (+0.13) (-0.09) -> Expt. Unc. on H->WW BR: 2*sqrt(((0.149)^2 + (0.103)^2)/2) = 2*0.128 = 26% 
     "hzz" : 1.18, # kappa_Z = 1.035 +0.095 -0.095 -> Expt. Unc. on H->ZZ BR: 2*sqrt(((0.091)^2 + (0.091)^2)/2) =  2*0.091 = 18%
     "htt" : 1.31, # kappa_tau = 0.84 (+0.15)(-0.11) -> Expt. Unc. on H->tautau BR: 2*sqrt(((0.178)^2 + (0.131)^2)/2) = 2*0.156 = 31%
     "hzg" : 1.0,  # Not observed yet but upper bounds available 
     "hmm" : 1.0,  # Not observed yet but upper bounds available 
     "hbb" : 1.89, # kappa_b = 0.49 (+0.27)(-0.15) -> Expt. Unc. on H->bb BR: 2*sqrt(((0.550)^2 + (0.306)^2)/2) = 2*0.445 = 89%
+}
+
+## --- Values taken from LHCHXWG TWiki: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR
+higgsBR_theo = {
+    "hww" : 1.0154,
+    "hzz" : 1.0154,
+    "htt" : 1.0165,
+    "hzg" : 1.0582,
+    "hmm" : 1.0168,
+    "hbb" : 1.0126,
 }
 
 # Common fakes syst - taken uncorrelated/correlated between all years according with the name of the list

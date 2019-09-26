@@ -18,6 +18,7 @@ parser.add_option("--coupling",       type="string",       dest="coupling",    h
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  help="do not assume hist from prepareDatacards starts with 'x_' prefix", default=False)
 parser.add_option("--only_ttH_sig",   action="store_true", dest="only_ttH_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
+parser.add_option("--use_Exptl_HiggsBR_Uncs",   action="store_true", dest="use_Exptl_HiggsBR_Uncs",help="Use the exprimental measured Higgs BR Unc.s instead of theoretical ones", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
@@ -30,6 +31,11 @@ cardFolder  = options.cardFolder
 coupling    = options.coupling
 noX_prefix  = options.noX_prefix
 only_ttH_sig = options.only_ttH_sig
+use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
+if use_Exptl_HiggsBR_Uncs: 
+    print("Using Experimental Unc.s on Higgs BRs")
+else: 
+    print("Using Theoretical Unc.s on Higgs BRs")
 
 print("shape", shape)
 
@@ -92,7 +98,7 @@ cats = [
     (1, "%s_%s" % (analysis, channel))
     ]
 masses = ["*"]
-cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
+#cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], bkg_proc_from_data + bkg_procs_from_MC, cats, False)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 
@@ -156,11 +162,19 @@ if "TTWW" in bkg_procs_from_MC :
 
 ########################################
 # BR syst
-for proc in higgs_procs_plain :
-    for key in higgsBR:
-        if key in proc :
-            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR[key]))
-            print ("added " + "BR_%s" % key + " uncertanty to process: " + proc + " of value = " + str(higgsBR[key]))
+if use_Exptl_HiggsBR_Uncs:
+    for proc in higgs_procs_plain :
+        for key in higgsBR_exptl:
+            if key in proc :
+                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_exptl[key]))
+                print ("added " + "BR_%s" % key + " Experimental uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
+else:
+    for proc in higgs_procs_plain :
+        for key in higgsBR_theo:
+            if key in proc :
+                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_theo[key]))
+                print ("added " + "BR_%s" % key + " Theoretical uncertanity to process: " + proc + " of value = " + str(higgsBR_theo[key]))
+
 
 ########################################
 # th shape syst
