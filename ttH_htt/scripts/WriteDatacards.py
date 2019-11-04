@@ -18,6 +18,9 @@ parser.add_option("--coupling",       type="string",       dest="coupling",    h
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  help="do not assume hist from prepareDatacards starts with 'x_' prefix", default=False)
 parser.add_option("--only_ttH_sig",   action="store_true", dest="only_ttH_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
+parser.add_option("--only_tHq_sig",   action="store_true", dest="only_tHq_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
+parser.add_option("--only_BKG_sig",   action="store_true", dest="only_BKG_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
+
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
@@ -30,6 +33,8 @@ cardFolder  = options.cardFolder
 coupling    = options.coupling
 noX_prefix  = options.noX_prefix
 only_ttH_sig = options.only_ttH_sig
+only_tHq_sig = options.only_tHq_sig
+only_BKG_sig = options.only_BKG_sig
 
 if not os.path.exists(cardFolder):
     os.makedirs(cardFolder)
@@ -53,7 +58,7 @@ if not (coupling == "none" or coupling == "kt_1_kv_1") :
     #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry]
     #print ("tH_procs = ", tH_procs)
 
-higgs_procs_plain = sum(higgs_procs,[])
+higgs_procs_plain = sum(higgs_procs,[]) #+ ["ttH"]
 if only_ttH_sig :
     print ("MC processes -- after chosing to mark as signal only ttH:")
     bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "ttH_" not in  entry]
@@ -61,12 +66,27 @@ if only_ttH_sig :
     print ("BKG from MC   (new): ", bkg_procs_from_MC)
     print ("signal        (new): ", higgs_procs)
     higgs_procs_plain = sum(higgs_procs,[])
+elif only_tHq_sig :
+    print ("MC processes -- after chosing to mark as signal only ttH:")
+    bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "tHq_" not in  entry]
+    higgs_procs        = [ entries for entries in higgs_procs if "tHq_" in entries[0] ]
+    print ("BKG from MC   (new): ", bkg_procs_from_MC)
+    print ("signal        (new): ", higgs_procs)
+    higgs_procs_plain = sum(higgs_procs,[])
+elif only_BKG_sig :
+    print ("MC processes -- after chosing to mark as signal only ttH:")
+    bkg_procs_from_MC = [ entry for entry in bkg_procs_from_MC if not "TTW" in entry and not "TTZ" in entry ]
+    bkg_procs_from_MC += sum(higgs_procs,[])
+    #higgs_procs        = [ entries for entries in bkg_procs_from_MC if "TTW" in entry or "TTZ" in entry ]
+    print ("BKG from MC   (new): ", bkg_procs_from_MC)
+    print ("signal        (new): ", ["TTW", "TTZ"])
+    higgs_procs_plain = ["TTW", "TTZ"] #higgs_procs
 
 # check a threshold on processes
-print ("do not add a process to datacard if the yield is smaller than 0.02")
-bkg_proc_from_data = make_threshold(0.02, bkg_proc_from_data,  inputShapes)
-bkg_procs_from_MC  = make_threshold(0.02, bkg_procs_from_MC, inputShapes)
-higgs_procs_plain  = make_threshold(0.02, higgs_procs_plain, inputShapes)
+print ("do not add a process to datacard if the yield is smaller than 0.01")
+bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes)
+bkg_procs_from_MC  = make_threshold(0.01, bkg_procs_from_MC, inputShapes)
+higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes)
 
 print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
@@ -86,7 +106,7 @@ cats = [
     (1, "%s_%s" % (analysis, channel))
     ]
 masses = ["*"]
-cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
+#cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], bkg_proc_from_data + bkg_procs_from_MC, cats, False)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 
@@ -268,6 +288,18 @@ if shape :
         cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
         print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
 
+def scaleBy(proc):
+    # scale tHq by 3 and WZ by 2
+    if "tHq" in proc.process() :
+        proc.set_rate(proc.rate()*3)
+        print ("scale " +   str(proc.process()) +  " by " + str(3))
+    #if "WZ"  in proc.process() :
+    #     proc.set_rate(proc.rate()*2)
+    #     print ("scale " +   str(proc.process()) +  " by " + str(2))
+    #    p.set_signal(True)
+
+print ("placeholder for 2lss 1tau processes ")
+cb.ForEachProc(scaleBy)
 ########################################
 # output the card
 if options.output_file == "none" :
@@ -287,5 +319,6 @@ rename_tH(output_file, "none", bins)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
     rename_tH(output_file, coupling, bins)
+
 
 sys.stdout.flush()
