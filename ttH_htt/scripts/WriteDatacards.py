@@ -20,7 +20,7 @@ parser.add_option("--noX_prefix",     action="store_true", dest="noX_prefix",  h
 parser.add_option("--only_ttH_sig",   action="store_true", dest="only_ttH_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
 parser.add_option("--only_tHq_sig",   action="store_true", dest="only_tHq_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
 parser.add_option("--only_BKG_sig",   action="store_true", dest="only_BKG_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
-
+parser.add_option("--use_Exptl_HiggsBR_Uncs",   action="store_true", dest="use_Exptl_HiggsBR_Uncs",help="Use the exprimental measured Higgs BR Unc.s instead of theoretical ones", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
@@ -35,6 +35,11 @@ noX_prefix  = options.noX_prefix
 only_ttH_sig = options.only_ttH_sig
 only_tHq_sig = options.only_tHq_sig
 only_BKG_sig = options.only_BKG_sig
+use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
+if use_Exptl_HiggsBR_Uncs:
+    print("Using Experimental Unc.s on Higgs BRs")
+else:
+    print("Using Theoretical Unc.s on Higgs BRs")
 
 if not os.path.exists(cardFolder):
     os.makedirs(cardFolder)
@@ -58,7 +63,8 @@ if not (coupling == "none" or coupling == "kt_1_kv_1") :
     #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry]
     #print ("tH_procs = ", tH_procs)
 
-higgs_procs_plain = sum(higgs_procs,[]) #+ ["ttH"]
+higgs_procs_plain = sum(higgs_procs,[])
+
 if only_ttH_sig :
     print ("MC processes -- after chosing to mark as signal only ttH:")
     bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "ttH_" not in  entry]
@@ -82,6 +88,7 @@ elif only_BKG_sig :
     print ("signal        (new): ", ["TTW", "TTZ"])
     higgs_procs_plain = ["TTW", "TTZ"] #higgs_procs
 
+
 # check a threshold on processes
 print ("do not add a process to datacard if the yield is smaller than 0.01")
 bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes)
@@ -91,11 +98,14 @@ higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes)
 print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
 print ("MC processes:")
-print ("BKG from MC   : ", bkg_procs_from_MC)
-print ("BKG from data : ", bkg_proc_from_data)
-print ("signal        : ", higgs_procs_plain)
+print ("BKG from MC  (old)  : ", bkg_procs_from_MC)
+print ("BKG from data (old) : ", bkg_proc_from_data)
+print ("signal        (old ): ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
+print("list_channel_opt", list_channel_opt)
+print("analysis", analysis)
+print ("specific_syst_list : ", specific_syst_list)
 
 ###########################################
 # start the list of common systematics for all channels
@@ -144,6 +154,7 @@ if 0 > 1 : # FIXME: remind why we added that at some point
 # Higgs proc lnN syst
 #if analysis == "ttH" :
 #    proc_with_scale_syst = ["ttH", "tH", "ttW"]
+print("higgs_procs", higgs_procs)
 for hsig in higgs_procs :
     if "ttH" in hsig[0] :
         cb.cp().process(hsig).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(lnSyst["pdf_Higgs_ttH"][2017]))
@@ -169,11 +180,19 @@ if "TTWW" in bkg_procs_from_MC :
 
 ########################################
 # BR syst
-for proc in higgs_procs_plain :
-    for key in higgsBR:
-        if key in proc :
-            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR[key]))
-            print ("added " + "BR_%s" % key + " uncertanty to process: " + proc + " of value = " + str(higgsBR[key]))
+if use_Exptl_HiggsBR_Uncs:
+    for proc in higgs_procs_plain :
+        for key in higgsBR_exptl:
+            if key in proc :
+                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_exptl[key]))
+                print ("added " + "BR_%s" % key + " Experimental uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
+else:
+    for proc in higgs_procs_plain :
+        for key in higgsBR_theo:
+            if key in proc :
+                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_theo[key]))
+                print ("added " + "BR_%s" % key + " Theoretical uncertanity to process: " + proc + " of value = " + str(higgsBR_theo[key]))
+
 
 ########################################
 # th shape syst
@@ -205,7 +224,9 @@ if shape :
         print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
     ########################################
     # channel specific estimated shape syst
+    #print("specific_shape", specific_shape)
     specific_shape_systs = specific_syst_list[specific_shape]
+    print("specific_shape_systs", specific_syst_list[specific_shape])
     for specific_syst in specific_shape_systs :
         if channel not in specific_ln_systs[specific_syst]["channels"] :
             continue
@@ -319,6 +340,5 @@ rename_tH(output_file, "none", bins)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
     rename_tH(output_file, coupling, bins)
-
 
 sys.stdout.flush()

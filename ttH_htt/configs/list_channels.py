@@ -28,7 +28,7 @@ def list_channels(analysis) :
             "isSMCSplit" : False
         },
         "1l_2tau"   : {
-            "bkg_proc_from_data" : [ "fakes_mc"       ],
+            "bkg_proc_from_data" : [ fakes       ],
             "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "EWK", "Rares", "WZ", "ZZ", "TT", "TTWH", "TTZH", "HH",], #
             "isSMCSplit" : False
             },
