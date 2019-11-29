@@ -193,7 +193,7 @@ def rename_tH(output_file, coupling, bins, no_data, all_procs) :
                     obj.Write()
                     ROOT.gDirectory.Delete(obj_name+";1")
                     tfileout.cd()
-                if obj_name in all_procs and no_data :
+                if obj_name in all_procs and no_data and not "H" in obj_name :
                     if not data_obs.Integral()>0 :
                         data_obs = obj.Clone()
                     else :
