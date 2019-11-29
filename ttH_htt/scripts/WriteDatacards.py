@@ -21,6 +21,8 @@ parser.add_option("--only_ttH_sig",   action="store_true", dest="only_ttH_sig",h
 parser.add_option("--only_tHq_sig",   action="store_true", dest="only_tHq_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
 parser.add_option("--only_BKG_sig",   action="store_true", dest="only_BKG_sig",help="consider only ttH as signal on the datacard -- for single channel tests", default=False)
 parser.add_option("--use_Exptl_HiggsBR_Uncs",   action="store_true", dest="use_Exptl_HiggsBR_Uncs",help="Use the exprimental measured Higgs BR Unc.s instead of theoretical ones", default=False)
+parser.add_option("--no_data",        action="store_true", dest="no_data",     help="Do not read data_obs, fill it as it would be the sum of the processes (some combine checks ask for it)", default=False)
+parser.add_option("--fake_mc",        action="store_true", dest="fake_mc",     help="Use fakes and flips from MC", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
 
@@ -35,6 +37,8 @@ noX_prefix  = options.noX_prefix
 only_ttH_sig = options.only_ttH_sig
 only_tHq_sig = options.only_tHq_sig
 only_BKG_sig = options.only_BKG_sig
+fake_mc      = options.fake_mc
+no_data      = options.no_data
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
 if use_Exptl_HiggsBR_Uncs:
     print("Using Experimental Unc.s on Higgs BRs")
@@ -52,16 +56,14 @@ info_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/li
 execfile(info_file)
 print ("list of signals/bkgs by channel taken from: " +  info_file)
 
-higgs_procs = list_channels(analysis)["higgs_procs"]
-list_channel_opt   = list_channels(analysis)["info_bkg_channel"]
+higgs_procs = list_channels(analysis, fake_mc)["higgs_procs"]
+list_channel_opt   = list_channels(analysis, fake_mc)["info_bkg_channel"]
 bkg_proc_from_data = list_channel_opt[channel]["bkg_proc_from_data"]
 bkg_procs_from_MC  = list_channel_opt[channel]["bkg_procs_from_MC"]
 
 # if a coupling is done read the tH signal with that coupling on naming convention
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
-    #tH_procs = [ entry for entry in entries if "tHq_" in entry or "tHW_" in entry]
-    #print ("tH_procs = ", tH_procs)
 
 higgs_procs_plain = sum(higgs_procs,[])
 
@@ -98,14 +100,12 @@ higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes)
 print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
 print ("MC processes:")
-print ("BKG from MC  (old)  : ", bkg_procs_from_MC)
-print ("BKG from data (old) : ", bkg_proc_from_data)
-print ("signal        (old ): ", higgs_procs_plain)
+print ("BKG from MC  (original)  : ", bkg_procs_from_MC)
+print ("BKG from data (original) : ", bkg_proc_from_data)
+print ("signal        (original): ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
-print("list_channel_opt", list_channel_opt)
-print("analysis", analysis)
-print ("specific_syst_list : ", specific_syst_list)
+print("analysis type        :", analysis)
 
 ###########################################
 # start the list of common systematics for all channels
@@ -124,7 +124,7 @@ cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 #######################################
 print ("Adding lumi syt uncorrelated/year")
 # check if we keep the lumis/era correlated or not
-cb.cp().signals().AddSyst(cb, "lumi_%s" % str(era), "lnN", ch.SystMap()(lnSyst["lumi"][2017]))
+cb.cp().signals().AddSyst(cb, "lumi_%s" % str(era), "lnN", ch.SystMap()(lumiSyst[era]))
 
 #######################################
 # FIXME: one of the syst is logUniform -- fix
@@ -151,48 +151,33 @@ if 0 > 1 : # FIXME: remind why we added that at some point
                 print ("process: " + hsbr + " is proportonal to", hsig[0])
 
 ########################################
-# Higgs proc lnN syst
-#if analysis == "ttH" :
-#    proc_with_scale_syst = ["ttH", "tH", "ttW"]
-print("higgs_procs", higgs_procs)
-for hsig in higgs_procs :
-    if "ttH" in hsig[0] :
-        cb.cp().process(hsig).AddSyst(cb, "pdf_Higgs_ttH", "lnN", ch.SystMap()(lnSyst["pdf_Higgs_ttH"][2017]))
-        cb.cp().process(hsig).AddSyst(cb, "QCDscale_ttH",  "lnN", ch.SystMap()(lnSyst["QCDscale_ttH"][2017]))
-    if "tHq" in hsig[0] or "tHW" in hsig[0] :
-        cb.cp().process(hsig).AddSyst(cb, "pdf_qg",       "lnN", ch.SystMap()(lnSyst["pdf_qg"][2017]))
-        cb.cp().process(hsig).AddSyst(cb, "QCDscale_tH",  "lnN", ch.SystMap()(lnSyst["QCDscale_tH"][2017]))
-    ### add pdf and qcd scale if HH
-
-########################################
-print ("Adding theory syst (pdf/QCD scale) -- correlated between years ")
-# BKG proc theory lnN syst
-if "TTZ" in bkg_procs_from_MC :
-    cb.cp().process(["TTZ"]).AddSyst(cb, "pdf_gg",        "lnN", ch.SystMap()(lnSyst["pdf_gg"][2017]))
-    cb.cp().process(["TTZ"]).AddSyst(cb, "QCDscale_ttZ",  "lnN", ch.SystMap()(lnSyst["QCDscale_ttZ"][2017]))
-if "TTW" in bkg_procs_from_MC :
-    cb.cp().process(["TTW"]).AddSyst(cb, "pdf_qqbar",     "lnN", ch.SystMap()(lnSyst["pdf_qqbar"][2017]))
-    cb.cp().process(["TTW"]).AddSyst(cb, "QCDscale_ttW",  "lnN", ch.SystMap()(lnSyst["QCDscale_ttW"][2017]))
-if "TTWW" in bkg_procs_from_MC :
-    cb.cp().process(["TTWW"]).AddSyst(cb, "pdf_TTWW",       "lnN", ch.SystMap()(lnSyst["pdf_TTWW"][2017]))
-    cb.cp().process(["TTWW"]).AddSyst(cb, "QCDscale_ttWW",  "lnN", ch.SystMap()(lnSyst["QCDscale_ttWW"][2017]))
-### add more BKGs if more processes have specific PDF/scale systematics
+# add theory systematics
+for specific_syst in theory_ln_Syst :
+    procs = theory_ln_Syst[specific_syst]["proc"]
+    if len(procs) == 0 :
+        continue
+    if "HH" in procs[0] :
+        for decay in list_channels(analysis, fake_mc)["decays_hh"] :
+            procs = procs + [procs[0] + decay]
+    elif "H" in procs[0] :
+        for decay in list_channels(analysis, fake_mc)["decays"] :
+            procs = procs + [procs[0] + decay]
+    else :
+        if procs[0] not in bkg_procs_from_MC :
+            continue
+    cb.cp().process(procs).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", procs)
 
 ########################################
 # BR syst
-if use_Exptl_HiggsBR_Uncs:
-    for proc in higgs_procs_plain :
-        for key in higgsBR_exptl:
-            if key in proc :
-                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_exptl[key]))
-                print ("added " + "BR_%s" % key + " Experimental uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
-else:
-    for proc in higgs_procs_plain :
-        for key in higgsBR_theo:
-            if key in proc :
-                cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_theo[key]))
-                print ("added " + "BR_%s" % key + " Theoretical uncertanity to process: " + proc + " of value = " + str(higgsBR_theo[key]))
 
+for proc in higgs_procs_plain :
+    if use_Exptl_HiggsBR_Uncs: BRs = higgsBR_exptl
+    else :  BRs = higgsBR_theo
+    for key in BRs:
+        if key in proc :
+            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_exptl[key]))
+            print ("added " + "BR_%s" % key + " uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
 
 ########################################
 # th shape syst
@@ -228,9 +213,9 @@ if shape :
     specific_shape_systs = specific_syst_list[specific_shape]
     print("specific_shape_systs", specific_syst_list[specific_shape])
     for specific_syst in specific_shape_systs :
-        if channel not in specific_ln_systs[specific_syst]["channels"] :
+        if channel not in specific_syst_list[specific_syst]["channels"] :
             continue
-        procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
+        procs = list_proc(specific_syst_list[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
         if len(procs) == 0 :
             continue
         cb.cp().process(procs).AddSyst(cb,  specific_syst, "shape", ch.SystMap()(1.0))
@@ -319,8 +304,8 @@ def scaleBy(proc):
     #     print ("scale " +   str(proc.process()) +  " by " + str(2))
     #    p.set_signal(True)
 
-print ("placeholder for 2lss 1tau processes ")
-cb.ForEachProc(scaleBy)
+#print ("placeholder for 2lss 1tau processes ")
+#cb.ForEachProc(scaleBy)
 ########################################
 # output the card
 if options.output_file == "none" :
