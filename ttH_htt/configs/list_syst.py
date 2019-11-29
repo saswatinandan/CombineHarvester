@@ -3,18 +3,37 @@
 ### where era = 2016/2017/2018
 
 # syst: theory and from MC generators - taken correlated between all years (check if that is what we want to do)
-lnSyst = {
-    "lumi"            : {2016: 1.023,          2017: 1.023,          2018: 1.023},
-    "pdf_Higgs_ttH"   : {2016: 1.036,          2017: 1.036,          2018: 1.036},
-    "QCDscale_ttH"    : {2016: (0.907, 1.058), 2017: (0.907, 1.058), 2018: (0.907, 1.058)},
-    "pdf_qg"          : {2016: 1.027,          2017: 1.027,          2018: 1.027},
-    "QCDscale_tH"     : {2016: (0.939, 1.046), 2017: (0.939, 1.046), 2018: (0.939, 1.046)},
-    "pdf_qqbar"       : {2016: 1.04,           2017: 1.04,           2018: 1.04},
-    "QCDscale_ttW"    : {2016: (0.885, 1.129), 2017: (0.885, 1.129), 2018: (0.885, 1.129)},
-    "pdf_TTWW"        : {2016: 1.03,           2017: 1.03,           2018: 1.03},
-    "QCDscale_ttWW"   : {2016: (0.891, 1.081), 2017: (0.891, 1.081), 2018: (0.891, 1.081)},
-    "pdf_gg"          : {2016: 0.966,          2017: 0.966,          2018: 0.966},
-    "QCDscale_ttZ"    : {2016: (0.904, 1.112), 2017: (0.904, 1.112), 2018: (0.904, 1.112)},
+lumiSyst = {2016: 1.026,          2017: 1.023,          2018: 1.023}
+theory_ln_Syst = {
+    "pdf_Higgs_ttH"               : {"value": 1.036,              "proc" : ["ttH"]},
+    "QCDscale_ttH"                : {"value": (0.907 , 1.058),    "proc" : ["ttH"]},
+    "pdf_tHq"                     : {"value": 1.027,              "proc" : ["tHq"]},
+    "QCDscale_tHq"                : {"value": (0.939 , 1.046),    "proc" : ["tHq"]},
+    "pdf_tHW"                     : {"value": 1.027,              "proc" : ["tHW"]},
+    "QCDscale_tHW"                : {"value": (0.939 , 1.046),    "proc" : ["tHW"]},
+    "pdf_TTW"                     : {"value": 1.04,               "proc" : ["TTW"]},
+    "QCDscale_ttW"                : {"value": (0.885 , 1.129),    "proc" : ["TTW"]},
+    "pdf_TTWW"                    : {"value": 1.03,               "proc" : ["TTWW"]},
+    "QCDscale_ttWW"               : {"value": (0.891 , 1.081),    "proc" : ["TTWW"]},
+    "pdf_TTZ"                     : {"value": 0.966,              "proc" : ["TTZ"]},
+    "QCDscale_TTZ"                : {"value": (0.904 , 1.112),    "proc" : ["TTZ"]},
+    "CMS_ttHl_WZ_theo"            : {"value": 1.07,               "proc" : ["WZ"]},
+    "pdf_ttjets"                  : {"value": 1.04,               "proc" : ["TT"]},
+    "QCDscale_ttjets"             : {"value": (0.996 , 1.035),    "proc" : ["TT"]},
+    "TopmassUnc_ttjets"           : {"value": 1.03,               "proc" : ["TT"]},
+    "pdf_DY"                      : {"value": 1.04,               "proc" : ["DY"]},
+    "QCDscale_DY"                 : {"value": 1.01,               "proc" : ["DY"]},
+    "pdf_HH"                      : {"value": 1.04,               "proc" : ["HH"]},
+    "QCDscale_HH"                 : {"value": (0.95 , 1.022),     "proc" : ["HH"]},
+    "TopmassUnc_HH"               : {"value": 1.026,              "proc" : ["HH"]},
+    "QCDscale_WH"                 : {"value": (0.95 , 1.07),      "proc" : ["WH"]},
+    "pdf_WH"                      : {"value": 1.019,              "proc" : ["WH"]},
+    "QCDscale_ZH"                 : {"value": (0.962 , 1.031),    "proc" : ["ZH"]},
+    "pdf_ZH"                      : {"value": 1.016,              "proc" : ["ZH"]},
+    "pdf_qqH"                     : {"value": 1.021,              "proc" : ["qqH"]},
+    "QCDscale_qqH"                : {"value": (0.96 , 1.03),      "proc" : ["ggH"]},
+    "pdf_ggH"                     : {"value": 1.031,              "proc" : ["ggH"]},
+    "QCDscale_ggH"                : {"value": (0.924 , 1.081),    "proc" : ["ggH"]}
     }
 
 ## --- BR(H->XX)/BR_sm(H->XX) = (kappa_X)^2 -------------------------------------------------------------- ##
@@ -22,14 +41,20 @@ lnSyst = {
 ## --- Measured kappa_X values used below taken from Run-1 coupling combination (HIG-15-002) ------------- ##
 ## --- Table-17 (B_bsm = 0 case, "ATLAS+CMS measured" column) in HIG-15-002-paper-v14.pdf ---------------- ##
 ## --- In cases where 1-sigma intervals are given, we take mid-point of the interval compatible with SM -- ##
-## --- as the central value --- ##    
+## --- as the central value --- ##
 higgsBR_exptl = {
-    "hww" : 1.26, # kappa_W is 0.87 (+0.13) (-0.09) -> Expt. Unc. on H->WW BR: 2*sqrt(((0.149)^2 + (0.103)^2)/2) = 2*0.128 = 26% 
+    "hww" : 1.26, # kappa_W is 0.87 (+0.13) (-0.09) -> Expt. Unc. on H->WW BR: 2*sqrt(((0.149)^2 + (0.103)^2)/2) = 2*0.128 = 26%
     "hzz" : 1.18, # kappa_Z = 1.035 +0.095 -0.095 -> Expt. Unc. on H->ZZ BR: 2*sqrt(((0.091)^2 + (0.091)^2)/2) =  2*0.091 = 18%
     "htt" : 1.31, # kappa_tau = 0.84 (+0.15)(-0.11) -> Expt. Unc. on H->tautau BR: 2*sqrt(((0.178)^2 + (0.131)^2)/2) = 2*0.156 = 31%
-    "hzg" : 1.0,  # Not observed yet but upper bounds available 
-    "hmm" : 1.0,  # Not observed yet but upper bounds available 
+    "hzg" : 1.0,  # Not observed yet but upper bounds available
+    "hmm" : 1.0,  # Not observed yet but upper bounds available
     "hbb" : 1.89, # kappa_b = 0.49 (+0.27)(-0.15) -> Expt. Unc. on H->bb BR: 2*sqrt(((0.550)^2 + (0.306)^2)/2) = 2*0.445 = 89%
+    "tttt" : 1.0330,
+    "zzzz" : 1.0308,
+    "wwww" : 1.0308,
+    "wwzz" : 1.0308,
+    "ttzz" : 1.0319,
+    "ttww" : 1.0319
 }
 
 ## --- Values taken from LHCHXWG TWiki: https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageBR
@@ -40,6 +65,12 @@ higgsBR_theo = {
     "hzg" : 1.0582,
     "hmm" : 1.0168,
     "hbb" : 1.0126,
+    "tttt" : 1.0330,
+    "zzzz" : 1.0308,
+    "wwww" : 1.0308,
+    "wwzz" : 1.0308,
+    "ttzz" : 1.0319,
+    "ttww" : 1.0319
 }
 
 # Common fakes syst - taken uncorrelated/correlated between all years according with the name of the list
@@ -126,5 +157,3 @@ def specific_syst(analysis, list_channel_opt) :
         "specific_ln_to_shape_systs"    : specific_ln_shape_systs,
         "specific_shape_to_shape_systs" : specific_shape_shape_systs
     }
-
-# proc by channels
