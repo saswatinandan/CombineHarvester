@@ -116,7 +116,8 @@ cats = [
     (1, "%s_%s" % (analysis, channel))
     ]
 masses = ["*"]
-#cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
+if not no_data :
+    cb.AddObservations(["*"], ["%sl" % analysis], ["13TeV"], ["*"], cats)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], bkg_proc_from_data + bkg_procs_from_MC, cats, False)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 
@@ -294,6 +295,8 @@ if shape :
         cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
         print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
 
+
+### reminiscent of doing cards with wrong XS normalization, leave it here in case we need again
 def scaleBy(proc):
     # scale tHq by 3 and WZ by 2
     if "tHq" in proc.process() :
@@ -306,6 +309,7 @@ def scaleBy(proc):
 
 #print ("placeholder for 2lss 1tau processes ")
 #cb.ForEachProc(scaleBy)
+
 ########################################
 # output the card
 if options.output_file == "none" :
@@ -321,9 +325,9 @@ for b in bins :
     print ("\n Output file: " + output_file + ".txt")
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
 
-rename_tH(output_file, "none", bins)
+rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
-    rename_tH(output_file, coupling, bins)
+    rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data)
 
 sys.stdout.flush()
