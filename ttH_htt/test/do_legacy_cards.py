@@ -9,7 +9,8 @@ from io import open
 exec(open(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py").read())
 
 output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_MVAs/"
-eras_to_do = ["2018"]
+eras_to_do = ["2018", "2017", "2016"]
+make_cards = False
 
 cards_MVA = {
     "2lss_0tau_ee_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_ee.root"},
@@ -65,20 +66,21 @@ cards_SVA = {
 }
 
 for era in eras_to_do :
-    for key in cards_MVA :
-        print (key)
-        print (cards_MVA[key])
-        cmd = "WriteDatacards.py "
-        cmd += "--inputShapes %s " % (cards_MVA[key]["shapes"].replace("2018", era))
-        cmd += "--channel %s "     % (cards_MVA[key]["channel"].replace("2018", era))
-        cmd += "--cardFolder %s "  % output_cards
-        cmd += "--noX_prefix  "
-        if not "ctrl" in key :
-            cmd += "--no_data "
-        cmd += "--era %s" % str(era)
-        cmd += " --output_file %s/ttH_%s_%s" % (output_cards, key, era)
-        # cmd += "--shapeSyst " ### for first tests
-        runCombineCmd(cmd)
+    if make_cards :
+        for key in cards_MVA :
+            print (key)
+            print (cards_MVA[key])
+            cmd = "WriteDatacards.py "
+            cmd += "--inputShapes %s " % (cards_MVA[key]["shapes"].replace("2018", era))
+            cmd += "--channel %s "     % (cards_MVA[key]["channel"].replace("2018", era))
+            cmd += "--cardFolder %s "  % output_cards
+            cmd += "--noX_prefix  "
+            if not "ctrl" in key :
+                cmd += "--no_data "
+            cmd += "--era %s" % str(era)
+            cmd += " --output_file %s/ttH_%s_%s" % (output_cards, key, era)
+            # cmd += "--shapeSyst " ### for first tests
+            runCombineCmd(cmd)
     #######################
     # combine cards to make plots -- the order of lists of flavours is important
     if "3l_cr_eee" in list(cards_MVA.keys()) :
@@ -92,34 +94,34 @@ for era in eras_to_do :
         cmd = "combineCards.py "
         for node in ["Rest", "ttH", "ttW", "tHQ"] :
           for flavor in ["ee", "em", "mm"] :
-            cmd += "2lss_0tau_%s_%snode=ttH_2lss_0tau_%s_%snode" % (flavor, node, flavor, node, era)
+            cmd += " ttH_2lss_0tau_%s_%snode=ttH_2lss_0tau_%s_%snode.txt" % (flavor, node, flavor, node, era)
         cmd += " > ttH_2lss_0tau_%snode_%s.txt" % (node, era)
         runCombineCmd(cmd, output_cards)
     #
     if "3l_0tau_rest_eee" in list(cards_MVA.keys()) :
-        cmd = "combineCards.py "
         for node in ["ttH", "tH"] :
+          cmd = "combineCards.py "
           for flavor in ["bt", "bl"] :
-            cmd += "3l_0tau_%s_%s=ttH_3l_0tau_%s_%s" % (node, flavor, node, flavor, era)
-        cmd += " > ttH_3l_0tau_%s_%s.txt" % (node, era)
-        runCombineCmd(cmd, output_cards)
+            cmd += " ttH_3l_0tau_%s_%s=ttH_3l_0tau_%s_%s_%s.txt" % (node, flavor, node, flavor, era)
+          cmd += " > ttH_3l_0tau_%s_%s.txt" % (node, era)
+          runCombineCmd(cmd, output_cards)
         cmd = "combineCards.py "
         for flavor in ["eee", "eem", "emm", "mmm"] :
-            cmd += "3l_0tau_rest_%s=ttH_3l_0tau_rest_%s" % (flavor, flavor, era)
+            cmd += " ttH_3l_0tau_rest_%s=ttH_3l_0tau_rest_%s_%s.txt" % (flavor, flavor, era)
         cmd += " > ttH_3l_0tau_rest_%s.txt" % (era)
         runCombineCmd(cmd, output_cards)
     #
     if "2lss_1tau_rest" in list(cards_MVA.keys()) :
         cmd = "combineCards.py "
         for node in ["ttH", "tH", "rest"] :
-            cmd += "2lss_1tau_%s=ttH_2lss_0tau_%s_%s" % (node, node, era)
+            cmd += "ttH_2lss_1tau_%s=ttH_2lss_0tau_%s_%s.txt" % (node, node, era)
         cmd += " > ttH_2lss_1tau_%s.txt" % (era)
         runCombineCmd(cmd, output_cards)
     ##################################
     # combine all cards to make fits / era
     cmd = "combineCards.py "
     for key in list(cards_MVA.keys()) :
-        cmd += " %s=ttH_%s_%s.txt" % (key, output_cards, key, era)
+        cmd += " ttH_%s=ttH_%s_%s.txt" % (key, key, era)
     cmd += " > ttH_multilep_%s.txt" % (era)
     runCombineCmd(cmd, output_cards)
 ############################################
