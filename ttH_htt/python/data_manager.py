@@ -132,8 +132,8 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
     return finalFile
 
-def rename_tH(output_file, coupling, bins) :
-    print "entered renaming"
+def rename_tH(output_file, coupling, bins, no_data, all_procs) :
+    print "Post Manipulate cards (if needed)"
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
     test_name_VH = "VH"
@@ -141,7 +141,11 @@ def rename_tH(output_file, coupling, bins) :
     test_name_TTZH = "TTZH"
     test_name_HH = "HH"
     tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
+    integral_data = []
+    no_data = no_data and coupling == "none"
     for bb in bins :
+        data_obs = ROOT.TH1F()
+        #data_obs.SetName("data_obs")
         for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
             # this bellow would be interesting if we would know all the histogram names
             #rootmv file:part1_*_part2 file:new_name
@@ -189,15 +193,53 @@ def rename_tH(output_file, coupling, bins) :
                     obj.Write()
                     ROOT.gDirectory.Delete(obj_name+";1")
                     tfileout.cd()
+                if obj_name in all_procs and no_data :
+                    if not data_obs.Integral()>0 :
+                        data_obs = obj.Clone()
+                    else :
+                        data_obs.Add(obj.Clone())
+                    print ("data_obs += " + obj_name)
+        if no_data :
+            tfileout.cd(bb)
+            data_obs.SetName("data_obs")
+            data_obs.Write()
+            tfileout.cd()
+        integral_data = integral_data + [data_obs.Integral()]
     tfileout.Close()
-    f1 = open(output_file + ".txt", 'r').read()
-    f2 = open(output_file + ".txt", 'w')
+    outfile = output_file + ".txt"
+    f1 = open(outfile, 'r').read()
+    f2 = open(outfile, 'w')
     m = f1.replace(test_name_tHq, "tHq")
     m = m.replace(test_name_tHW, "tHW")
     #m = m.replace("VH_", "WH_")
     #m = m.replace("TTWH", "TTWH_hww")
     #m = m.replace("TTZH", "TTZH_hww")
     f2.write(m)
+    f2.close()
+    if no_data :
+        if len(integral_data) != len(bins) :
+            print ("len(integral_data) != len(bins)", len(integral_data) , len(bins))
+        countobs = 0
+        print ("Writting data_obs as the sum of processes")
+        with open(outfile) as in_file:
+            buf = in_file.readlines()
+        with open(output_file + ".txt", "w") as fp:
+            for cnt, line in enumerate(buf):
+              fp.write(buf[cnt])
+              if "shapes *" in buf[cnt] :
+                countobs += 1
+                #print("Line {}: {}".format(cnt, buf[cnt]))
+              if "--" in line and countobs > 0 :
+                  countobs = 0
+                  fp.write("bin           ")
+                  for bb in bins :  fp.write(bb + "   ")
+                  fp.write("\n")
+                  fp.write("observation   ")
+                  for obs in integral_data :  fp.write( "%f   " % obs ) # round(obs,1)
+                  fp.write("\n")
+                  fp.write("--------------------------------------------------------------------------------\n")
+
+
 
 def get_tH_weight_str(kt, kv, cosa = -10):
     if cosa == -10 :
@@ -765,7 +807,7 @@ def rebinRegular(
                print ("h2.Integral:", h2.Integral())
                if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
                if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
-               if h2.GetName().find("signal") ==-1 and h2.GetName().find("data_obs") ==-1:
+               if h2.GetName().find("H") ==-1 and h2.GetName().find("data_obs") ==-1  : # and not h2.GetName().find("DY") ==-1
                    #hSumDumb2 = obj # h2_rebin #
                    if not hSumAll.Integral()>0 :
                        hSumAll=h2.Clone()
@@ -790,20 +832,12 @@ def rebinRegular(
                 nameHisto=histogramCopy.GetName()
                 histogram.SetName(histogramCopy.GetName())
                 histogramCopy.SetName(histogramCopy.GetName())
-                #nameHisto = nameHisto + ("_rebin%i_%s" % (nbins,BINtype))
-                #else : nameHisto=h2.GetName()
-                #histogramCopy.SetBit(ROOT.TH1F.kCanRebin)
-                #if histogramCopy.GetName() == "fakes_data" or histogramCopy.GetName() =="TTZ" or histogramCopy.GetName() =="TTW" or histogramCopy.GetName() =="TTWW" or histogramCopy.GetName() == "EWK" :
-                #print ("not rebinned",histogramCopy.GetName(),histogramCopy.Integral())
                 if BINtype=="none" :
                     histo=histogramCopy.Clone()
                     histo.SetName(nameHisto)
                 elif BINtype=="ranged" or BINtype=="regular" :
                     histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
                 elif BINtype=="quantiles" :
-                    #print ("hSumAll.Integral: ", hSumAll.Integral(), ", hFakes.Integral: ",hFakes.Integral())
-                    #nbinsQuant= getQuantiles(hFakes,nbins,xmax) # getQuantiles(hSumAll,nbins,xmax) ## nbins+1 if first quantile is zero
-                    #print ("Bins by quantiles",nbins,nbinsQuant)
                     xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
                     histo=TH1F( nameHisto, nameHisto , nbins , nbinsQuant) # nbins+1 if first is zero
                 elif BINtype=="mTauTauVis" :
@@ -819,17 +853,13 @@ def rebinRegular(
                     contentNew =   histo.GetBinContent(newbin)
                     histo.SetBinContent(newbin, content+contentNew)
                     histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
-                    #if histogramCopy.GetBinCenter(place) > 0.174 and  content>0 and bdtType=="1B" and nbins==20 : print ("overflow bin", histogramCopy.GetBinCenter(place),content,nameHisto)
-                #if not histo.GetSumw2N() : histo.Sumw2()
                 if BINtype=="none" :
                     histo=histogramCopy.Clone()
                     histo.SetName(nameHisto)
                 elif BINtype=="ranged" or BINtype=="regular" :
                     histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
                 elif BINtype=="quantiles" :
-                    #print ("hSumAll", hSumAll.Integral(), hFakes.Integral())
                     nbinsQuant= getQuantiles(hSumAll,nbins,xmax) # getQuantiles(hSumAll,nbins,xmax) ## nbins+1 if first quantile is zero
-                    #print ("Bins by quantiles",nbins,nbinsQuant)
                     xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
                     histo=TH1F( nameHisto, nameHisto , nbins , nbinsQuant) # nbins+1 if first is zero
                 elif BINtype=="mTauTauVis" :
@@ -845,10 +875,6 @@ def rebinRegular(
                     contentNew =   histo.GetBinContent(newbin)
                     histo.SetBinContent(newbin, content+contentNew)
                     histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
-                    #if histogramCopy.GetBinCenter(place) > 0.174 and  content>0 and bdtType=="1B" and nbins==20 : print ("overflow bin", histogramCopy.GetBinCenter(place),content,nameHisto)
-                #if not histo.GetSumw2N() : histo.Sumw2()
-                #if "fakes_data" in histogramCopy.GetName() or "TTZ" in histogramCopy.GetName() or "TTW" in histogramCopy.GetName() or "EWK" in histogramCopy.GetName()  :
-                    #print ("rebinned",histo.GetName(),histo.Integral())
                 if "fakes_data" in histo.GetName() and nkey == 0 :
                     ratio=1.
                     ratioP=1.
@@ -954,7 +980,7 @@ def rebinRegular(
     print ("isMoreThan02", isMoreThan02, bin_isMoreThan02)
     return [errOcontTTLast,errOcontTTPLast,errOcontSUMLast,errOcontSUMPLast,lastQuant,xmaxQuant,xminQuant, bin_isMoreThan02]
 
-def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget):
+def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget, sendToCondor):
     print ("ReadLimits:: bdtType: ",bdtType,", nbin:",nbin,", BINtype: ",BINtype,", channel: ",channel,", local: ",local,", ",nstart,", ntarget: ",ntarget)
     central=[]
     do1=[]
@@ -965,8 +991,8 @@ def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget):
         # ttH_2lss_1taumvaOutput_2lss_MEM_1D_nbin_9.log
         if nstart==-1 : shapeVariable=bdtType
         elif nstart==0 :
-            if channel in ["4l_0tau", "2lss_1tau", "2l_2tau", "1l_2tau", "3l_1tau", "3l_0tau"] :
-                shapeVariable='datacard_'+bdtType+'_'+str(nbins)+"bins"
+            if channel in ["4l_0tau", "2lss_1tau", "2l_2tau", "1l_2tau", "1l_1tau", "3l_1tau", "3l_0tau", "0l_2tau", "2los_1tau"] and not sendToCondor:
+                shapeVariable=bdtType+'_'+str(nbins)+"bins" # 'datacard_'+
             elif channel in [ "0l_2tau"]:
                 #print ("read", bdtType+'_'+str(nbins)+"bins_"+BINtype)
                 shapeVariable=bdtType+'_'+str(nbins)+"bins_"+BINtype
@@ -975,12 +1001,13 @@ def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget):
         else : shapeVariable=options.variables+'_from'+str(nstart)+'_to_'+str(nbins)
         #if BINtype=="ranged" : shapeVariable=shapeVariable+"_ranged"
         #if BINtype=="quantiles" : shapeVariable=shapeVariable+"_quantiles"
-        if channel in [ "0l_2tau"] :
+        if channel in [ "0l_2tau"] and sendToCondor :
             #mvaOutput_0l_2tau_deeptauVTight_9bins_regular.3502010.0.out
             datacardFile_output = glob.glob(os.path.join(local, "%s*.out" % (shapeVariable)))[0]
             #print("read", glob.glob(os.path.join(local, "%s*.out" % (shapeVariable))))
         else :
-            datacardFile_output = os.path.join(local, "%s.log" % (shapeVariable))
+            #datacardFile_output = os.path.join(local, "%s.log" % (shapeVariable))
+            datacardFile_output = glob.glob(os.path.join(local, "*%s*.log" % (shapeVariable)))[0]
         if channel == "hh_3l":
             datacardFile_output = os.path.join(local, "hh_3l_%s.log" % shapeVariable)
         if nn==0 : print ("reading ", datacardFile_output)
