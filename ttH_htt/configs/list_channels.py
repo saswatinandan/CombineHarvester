@@ -1,6 +1,6 @@
 def list_channels(analysis, fake_mc) :
     if analysis == "ttH" :
-        sigs = ["ttH", "tHq", "tHW", "WH", "ZH"]
+        sigs = ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH"]
         decays = ["_hww", "_hzz", "_htt", "_hzg", "_hmm" ]
         decays_hh = ["_tttt", "_zzzz", "_wwww", "_ttzz", "_ttww", "_zzww"  ]
         higgs_procs = [ [y + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
@@ -15,6 +15,16 @@ def list_channels(analysis, fake_mc) :
 
         info_channel = {
         "2lss_0tau" : {
+            "bkg_proc_from_data" : [ fakes  , flips  ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT", "ggH", "qqH", "TTWH", "TTZH",  "HH",],
+            "isSMCSplit" : False
+        },
+        "4lctrl" : {
+            "bkg_proc_from_data" : [ fakes  , flips  ],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT", "ggH", "qqH", "TTWH", "TTZH",  "HH",],
+            "isSMCSplit" : False
+        },
+        "3lctrl" : {
             "bkg_proc_from_data" : [ fakes  , flips  ],
             "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT", "ggH", "qqH", "TTWH", "TTZH",  "HH",],
             "isSMCSplit" : False
