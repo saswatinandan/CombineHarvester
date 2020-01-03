@@ -3,7 +3,8 @@
 ### where era = 2016/2017/2018
 
 # syst: theory and from MC generators - taken correlated between all years (check if that is what we want to do)
-lumiSyst = {2016: 1.026,          2017: 1.023,          2018: 1.023}
+lumiSyst = {2016: 1.022,          2017: 1.020,          2018: 1.015}
+lumiSyst_corr = {2016: 1.014,          2017: 1.013,          2018: 1.021}
 theory_ln_Syst = {
     "pdf_Higgs_ttH"               : {"value": 1.036,              "proc" : ["ttH"]},
     "QCDscale_ttH"                : {"value": (0.907 , 1.058),    "proc" : ["ttH"]},
@@ -82,7 +83,9 @@ fake_shape_systs_uncorrelated = [
     "CMS_ttHl_Clos_m_norm",
     "CMS_ttHl_Clos_t_norm",
 ]
-MC_shape_systs_uncorrelated = []
+MC_shape_systs_uncorrelated = [
+
+]
 btag_type_systs_uncorrelated = [
     "HFStats1",
     "HFStats2",
@@ -94,10 +97,20 @@ for btag_type_syst in btag_type_systs_uncorrelated :
 
 # Common MC syst - taken uncorrelated/correlated between all years according with the name of the list
 MC_shape_systs_correlated = [
-    "CMS_ttHl_JES",   # renamed to "CMS_scale_j"
-    "CMS_ttHl_tauES", # renamed to "CMS_scale_t"
+    #"CMS_ttHl_JES",   # renamed to "CMS_scale_j"
     "CMS_ttHl_JER",
     "CMS_ttHl_UnclusteredEn",
+    "MET_Resp",
+    "CMS_ttHl_l1PreFire",
+    "CMS_ttHl_pileup",
+    #### JEC_regrouped
+    "CMS_ttHl_JESAbsolute",
+    "CMS_ttHl_JESBBEC1",
+    "CMS_ttHl_JESEC2Up",
+    "CMS_ttHl_JESFlavorQCD",
+    "CMS_ttHl_JESHF",
+    "CMS_ttHl_JESRelativeBal",
+
 ]
 btag_type_systs_correlated = [
     "HF",
@@ -108,6 +121,14 @@ btag_type_systs_correlated = [
 for btag_type_syst in btag_type_systs_correlated :
     MC_shape_systs_correlated += ["CMS_ttHl_btag_%s" % btag_type_syst]
 
+## --- Xanda: add to WriteDatacards Era -> era
+JES_shape_systs_Uncorrelated = [
+    "CMS_ttHl_JESAbsolute_Era",
+    "CMS_ttHl_JESBBEC1_Era",
+    "CMS_ttHl_JESEC2_Era",
+    "CMS_ttHl_JESRelativeSample_Era",
+    "CMS_ttHl_JESHF_Era"
+]
 ################################################
 # syst specific to processes
 
@@ -134,10 +155,56 @@ def specific_syst(analysis, list_channel_opt) :
         }
 
         # channel specific shape syst
+        HH_proc = ["HH_tttt",  "HH_zzzz",  "HH_wwww",  "HH_ttzz",  "HH_ttww",  "HH_zzww", "HH_bbtt", "HH_bbww", "HH_bbzz" , "HH"]
+        ttH_proc = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hzg", "ttH_hzz"]
+        tHq_proc = ["tHq_htt", "tHq_hww", "tHq_hzz"]
+        tHW_proc = ["tHW_htt", "tHW_hww", "tHW_hzz"]
         specific_shape = {
-            "CMS_ttHl_trigger"        : {"correlated" : False, "proc" : "MCproc", "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau", "1l_2tau", "1l_1tau", "3l_1tau"]))},   # not for 1l_2tau / 2los_1tau / 3l_1tau
-            "CMS_ttHl_trigger_leptau" : {"correlated" : False, "proc" : "MCproc", "channels" : ["1l_2tau", "1l_1tau"]},
-            "CMS_ttHl_trigger_tau"    : {"correlated" : False, "proc" : "MCproc", "channels" : ["0l_2tau"]},
+            "CMS_ttHl_trigger"              : {"correlated" : False, "proc" : "MCproc", "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau", "1l_2tau", "1l_1tau", "3l_1tau"]))},   # not for 1l_2tau / 2los_1tau / 3l_1tau
+            "CMS_ttHl_trigger_leptau"       : {"correlated" : False, "proc" : "MCproc", "channels" : ["1l_2tau", "1l_1tau"]},
+            "CMS_ttHl_trigger_tau"          : {"correlated" : False, "proc" : "MCproc", "channels" : ["0l_2tau"]},
+            "CMS_ttHl_tauIDSF"              : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n or "1tau" in n ]},
+            "CMS_ttHl_tauES"                : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]}, # renamed to "CMS_scale_t"
+            ###########################
+            "CMS_ttHl_FRe_shape_pt"         : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRe_shape_norm"       : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRe_shape_eta_barrel" : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRm_shape_pt"         : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRm_shape_norm"       : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRm_shape_eta_barrel" : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRjt_norm"            : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
+            "CMS_ttHl_FRjt_shape"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
+            "CMS_ttHl_FRet_shift"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
+            ###################
+            "CMS_ttHl_electronER"           : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_electronESEndcap"     : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_electronESBarrel"     : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_muonER"               : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_muonESBarrel1"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_muonESBarrel2"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_muonESEndcap1"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_muonESEndcap2Up"      : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            #################
+            "CMS_ttHl_DYMCReweighting"      : {"correlated" : False, "proc" : ["DY"], "channels" : ["0l_2tau", "1l_1tau"]},
+            "CMS_ttHl_DYMCNormScaleFactors" : {"correlated" : False, "proc" : ["DY"], "channels" : ["0l_2tau", "1l_1tau"]},
+            "CMS_ttHl_topPtReweighting"     : {"correlated" : False, "proc" : ["TT"], "channels" : ["0l_2tau", "1l_1tau"]},
+            ######## theory
+            "CMS_ttHl_thu_shape_ttH_x1"     : {"correlated" : False, "proc" : ttH_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in ttH_proc)]},
+            "CMS_ttHl_thu_shape_ttH_y1"     : {"correlated" : False, "proc" : ttH_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in ttH_proc)]},
+            "CMS_ttHl_thu_shape_tHq_x1"     : {"correlated" : False, "proc" : tHq_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHq_proc)]},
+            "CMS_ttHl_thu_shape_tHq_y1"     : {"correlated" : False, "proc" : tHq_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHq_proc)]},
+            "CMS_ttHl_thu_shape_tHW_x1"     : {"correlated" : False, "proc" : tHW_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHW_proc)]},
+            "CMS_ttHl_thu_shape_tHW_y1"     : {"correlated" : False, "proc" : tHW_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHW_proc)]},
+            "CMS_ttHl_thu_shape_ttW_x1"     : {"correlated" : False, "proc" : ["TTW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_ttW_y1"     : {"correlated" : False, "proc" : ["TTW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_ttZ_x1"     : {"correlated" : False, "proc" : ["TTZ"], "channels" : [k for k,v in list_channel_opt.items() if "TTZ" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_ttZ_y1"     : {"correlated" : False, "proc" : ["TTZ"], "channels" : [k for k,v in list_channel_opt.items() if "TTZ" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_HH_x1"      : {"correlated" : False, "proc" : HH_proc, "channels" : [k for k,v in list_channel_opt.items()  if any(i in v["bkg_procs_from_MC"] for i in HH_proc)]},
+            "CMS_ttHl_thu_shape_HH_y1"      : {"correlated" : False, "proc" : HH_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in HH_proc)]},
+            "CMS_ttHl_thu_shape_DY_x1"      : {"correlated" : False, "proc" : ["DY"], "channels" : [k for k,v in list_channel_opt.items() if "DY" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_DY_y1"      : {"correlated" : False, "proc" : ["DY"], "channels" : [k for k,v in list_channel_opt.items() if "DY" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_TT_x1"      : {"correlated" : False, "proc" : ["TT"], "channels" : [k for k,v in list_channel_opt.items() if "TT" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_TT_y1"      : {"correlated" : False, "proc" : ["TT"], "channels" : [k for k,v in list_channel_opt.items() if "TT" in v["bkg_procs_from_MC"]]},
         }
 
         # shape for isMCsplit -- it will be added to the list of signals + "bkg_procs_from_MC" (excluding "conversions")

@@ -205,18 +205,18 @@ if shape :
         print ("added " + fake_shape_syst + " as shape uncertainty to " + "fakes_data")
     ########################################
     # MC estimated shape syst
-    for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated  :
+    for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated + JES_shape_systs_Uncorrelated :
         cb.cp().process(MC_proc).AddSyst(cb,  MC_shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
     ########################################
     # channel specific estimated shape syst
     #print("specific_shape", specific_shape)
-    specific_shape_systs = specific_syst_list[specific_shape]
-    print("specific_shape_systs", specific_syst_list[specific_shape])
+    specific_shape_systs = specific_syst_list["specific_shape"]
+    print("specific_shape_systs", specific_syst_list['specific_shape_to_shape_systs'])
     for specific_syst in specific_shape_systs :
-        if channel not in specific_syst_list[specific_syst]["channels"] :
+        if channel not in specific_shape_systs[specific_syst]["channels"] :
             continue
-        procs = list_proc(specific_syst_list[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
+        procs = list_proc(specific_shape_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
         if len(procs) == 0 :
             continue
         cb.cp().process(procs).AddSyst(cb,  specific_syst, "shape", ch.SystMap()(1.0))
@@ -282,6 +282,10 @@ if shape :
     # MC estimated shape syst
     for MC_shape_syst in MC_shape_systs_uncorrelated :
         MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
+        cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
+        print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
+    for MC_shape_syst in JES_shape_systs_Uncorrelated :
+        MC_shape_syst_era = MC_shape_syst.replace("_Era", str(era))
         cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
         print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
 
