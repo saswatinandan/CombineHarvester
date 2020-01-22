@@ -36,20 +36,21 @@ BINtype    = options.BINtype
 
 if channel == "2lss_1tau" : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2lss_1tau_datacards.py")
 if channel == "1l_2tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_1l_2tau_datacards.py")
+if channel == "1l_1tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_1l_1tau_datacards.py")
 if channel == "2l_2tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2l_2tau_datacards.py")
 if channel == "3l_1tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_3l_1tau_datacards.py")
 if channel == "0l_2tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_0l_2tau_datacards.py")
 if channel == "2lss_0tau" : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2lss_0tau_datacards.py")
 if channel == "4l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_4l_0tau_datacards.py")
 if channel == "3l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_3l_0tau_datacards.py")
-if channel == "2los_1tau" : sys.exit("Please make the corresponding input card")
+if channel == "2los_1tau" : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2los_1tau_datacards.py")
 if channel == "hh_bb2l"   : sys.exit("Please make the corresponding input card")
 if channel == "hh_bb1l"   : sys.exit("Please make the corresponding input card")
 
 info = read_from()
 print ("/afs/cern.ch/work/a/acarvalh/CMSSW_10_2_10/src/tth-bdt-training/python/data_manager.py")
 
-sendToCondor = True
+sendToCondor = False
 ToSubmit = " "
 if sendToCondor :
     ToSubmit = " --job-mode condor --sub-opt '+MaxRuntime = 1800' --task-name"
@@ -60,9 +61,10 @@ bdtTypesToDoLabel=[]
 bdtTypesToDoFile=[]
 
 import shutil,subprocess
+proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"]],shell=True,stdout=subprocess.PIPE)
+out = proc.stdout.read()
 proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"] + "/prepareDatacards_rebined"],shell=True,stdout=subprocess.PIPE)
-proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"] + "/datacard_rebined"],shell=True,stdout=subprocess.PIPE)
-
+#proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"] + "/datacard_rebined"],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
 #local = workingDir + "/deeptauWPS/" + info["label"]
 local = workingDir + "/deeptauWPS/" + info["label"] + "/prepareDatacards_rebined"
@@ -138,7 +140,7 @@ if not doLimits and not drawLimits:
     #if BINtype == "regular" : maxplot = 0.3 #0.02
     #elif BINtype == "mTauTauVis" : maxplot=200.
     #else : maxplot =1.0 # 0.35
-    maxplot = 0.5
+    maxplot = 1.2
     plt.axis((min(binstoDo),max(binstoDo),0,maxplot*1.2))
     #line_up, = plt.plot(binstoDo,linestyle='-',marker='o', color='k',label="fake-only")
     #line_down, = ax.plot(binstoDo,linestyle='--',marker='x', color='k',label="fake+ttV+EWK")
@@ -200,7 +202,7 @@ if doLimits :
         cmd += "--inputShapes %s.root " % (inputbin)
         cmd += "--channel %s " % channel
         cmd += "--cardFolder %s " % local
-        cmd += "--noX_prefix --era 2017 --only_ttH_sig "
+        cmd += "--noX_prefix --era 2018 --no_data --only_ttH_sig " # --only_BKG_sig --only_tHq_sig --fake_mc 
         runCombineCmd(cmd)
         if 0 > 1 :
             ######################
@@ -250,7 +252,7 @@ if drawLimits :
     file = open(namefig+".csv","w")
     #maxlim =-99.
     for nn, source in enumerate(sources) :
-        limits=ReadLimits(bdtTypesToDoFile[nn], binstoDo, BINtype, channel, local, 0, 0)
+        limits=ReadLimits(bdtTypesToDoFile[nn], binstoDo, BINtype, channel, local, 0, 0, sendToCondor)
         print (len(binstoDo),len(limits[0]))
         print 'binstoDo= ', binstoDo
         print limits[0]
@@ -274,7 +276,7 @@ if drawLimits :
     ax.set_ylabel('limits')
     maxsum=0
     if channel in ["0l_2tau", "4l_0tau", "2los_1tau", "hh_bb2l"] :
-        maxlim = 10.5
+        maxlim = 11.5
         minlim = 1.4
     elif channel in ["hh_bb1l"] : maxlim = 200.
     elif channel in ["2l_2tau"] :
@@ -287,7 +289,7 @@ if drawLimits :
         #minlim = 40.
         #maxlim = 1.6
         #minlim = 0.4
-        maxlim = 3.5
+        maxlim = 11.5
         minlim = 0.4
         #maxlim = 19.
         #minlim = 4.0

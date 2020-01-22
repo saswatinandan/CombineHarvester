@@ -14,7 +14,7 @@ def read_from():
     ch_nickname = "4l_OS"
 
     originalBinning=100
-    nbinRegular = np.arange(1, 11)
+    nbinRegular = np.arange(2, 3)
     nbinQuant = [2] #np.arange(5, 6)s
 
     maxlim = 2.0
@@ -33,3 +33,4 @@ def read_from():
     }
 
     return output
+    # 2018:

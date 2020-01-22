@@ -1,19 +1,17 @@
 def read_from():
 
     withFolder = False
-    label = "3l_0tau_central_deepVSjVLoose_veto_master_cards_withWZ_2_2019Oct09_2016"
-    mom="/afs/cern.ch/work/a/acarvalh/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/"+label+"/prepareDatacards/"
+    label = "3l_0tau_central_DNN_legacy_100bins_2018_20Dec2019"
+    mom="/home//acaan/ttHAnalysis/2018/" + label + "/datacards/3l/prepareDatacards/"
     bdtTypes = [
     #"mvaDiscr_3l"
-    "output_NN_sig_2p5_rest_2_th_2p5_withWZ",
-    "output_NN_sig_2_rest_2p5_th_2_withWZ",
-    "output_NN_sig_2_rest_2_th_2_withWZ"
+    "output_NN"
     #"output_NN_3l_ttH_tH_3cat_v8"
     ]
     # If there are subcategories construct the list of files to read based on their naming convention
-    cateDraw_type = [ "tH", "ttH"] # "rest"] #
-    cateDraw_btag = ["bl", "bt"]
-    cateDraw_flavour = [ "eee" , "eem" ,"mmm", "emm"] #
+    cateDraw_type = [ "tH", ] #   "rest"   "ttH",
+    cateDraw_btag = [ "bl", ] # "bt"
+    cateDraw_flavour = [ "eee" , "eem", "emm", "mmm",  ] #
     bdtTypes_exp = []
     for bdtType in bdtTypes :
         if "output_" in bdtType :
@@ -21,7 +19,7 @@ def read_from():
                 for cat_btag in cateDraw_btag :
                     for cat_flav in cateDraw_flavour :
                         if catType == "rest" :
-                                if cat_flav == "eee" :
+                                if cat_flav in cateDraw_flavour :
                                     bdtTypes_exp += [ bdtType + "_" + catType + "_" + cat_flav ]
                                 else :
                                     bdtTypes_exp += [ bdtType + "_" + catType + "_" + cat_flav + "_" + cat_btag]
@@ -37,7 +35,7 @@ def read_from():
 
     originalBinning=100
     nbinRegular = np.arange(10, 12)
-    nbinQuant = np.arange(1, 8)
+    nbinQuant = np.arange(5, 6)
 
     maxlim = 2.0
 
