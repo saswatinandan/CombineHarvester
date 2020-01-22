@@ -49,41 +49,41 @@ tHweights = [
   {"kt" : 1.25, "kv" : 0.5, "cosa" : -10},
   {"kt" : 2.0, "kv" : 0.5, "cosa" : -10},
   {"kt" : 3.0, "kv" : 0.5, "cosa" : -10},
-  {"kt" : 1.0, "kv" : -1.1111, "cosa" : -0.9},
-  {"kt" : 1.0, "kv" : -1.25, "cosa" : -0.8},
-  {"kt" : 1.0, "kv" : -1.42857, "cosa" : -0.7},
-  {"kt" : 1.0, "kv" : -1.6667, "cosa" : -0.6},
-  {"kt" : 1.0, "kv" : -2, "cosa" : -0.5},
-  {"kt" : 1.0, "kv" : -2.5, "cosa" : -0.4},
-  {"kt" : 1.0, "kv" : -3.333, "cosa" : -0.3},
-  {"kt" : 1.0, "kv" : -5, "cosa" : -0.2},
-  {"kt" : 1.0, "kv" : -10, "cosa" : -0.1},
-  {"kt" : 1.0, "kv" : -10000, "cosa" : 0.0001},
-  {"kt" : 1.0, "kv" : 10, "cosa" : 0.1},
-  {"kt" : 1.0, "kv" : 5, "cosa" : 0.2},
-  {"kt" : 1.0, "kv" : 3.333, "cosa" : 0.3},
-  {"kt" : 1.0, "kv" : 2.5, "cosa" : 0.4},
-  {"kt" : 1.0, "kv" : 2, "cosa" : 0.5},
-  {"kt" : 1.0, "kv" : 1.6667, "cosa" : 0.6},
-  {"kt" : 1.0, "kv" : 1.42857, "cosa" : 0.7},
-  {"kt" : 1.0, "kv" : 1.25, "cosa" : 0.8},
-  {"kt" : 1.0, "kv" : 1.1111, "cosa" : 0.9}
+  #{"kt" : 1.0, "kv" : -1.1111, "cosa" : -0.9},
+  #{"kt" : 1.0, "kv" : -1.25, "cosa" : -0.8},
+  #{"kt" : 1.0, "kv" : -1.42857, "cosa" : -0.7},
+  #{"kt" : 1.0, "kv" : -1.6667, "cosa" : -0.6},
+  #{"kt" : 1.0, "kv" : -2, "cosa" : -0.5},
+  #{"kt" : 1.0, "kv" : -2.5, "cosa" : -0.4},
+  #{"kt" : 1.0, "kv" : -3.333, "cosa" : -0.3},
+  #{"kt" : 1.0, "kv" : -5, "cosa" : -0.2},
+  #{"kt" : 1.0, "kv" : -10, "cosa" : -0.1},
+  #{"kt" : 1.0, "kv" : -10000, "cosa" : 0.0001},
+  #{"kt" : 1.0, "kv" : 10, "cosa" : 0.1},
+  #{"kt" : 1.0, "kv" : 5, "cosa" : 0.2},
+  #{"kt" : 1.0, "kv" : 3.333, "cosa" : 0.3},
+  #{"kt" : 1.0, "kv" : 2.5, "cosa" : 0.4},
+  #{"kt" : 1.0, "kv" : 2, "cosa" : 0.5},
+  #{"kt" : 1.0, "kv" : 1.6667, "cosa" : 0.6},
+  #{"kt" : 1.0, "kv" : 1.42857, "cosa" : 0.7},
+  #{"kt" : 1.0, "kv" : 1.25, "cosa" : 0.8},
+  #{"kt" : 1.0, "kv" : 1.1111, "cosa" : 0.9}
 ]
 
 list_couplings = [
   {
     "name" : get_tH_weight_str(entry["kt"], entry["kv"], entry["cosa"]), "ratio" : entry["kt"]/entry["kv"]
   } for entry in tHweights
-] 
+]
 
 for ee, entry in enumerate(list_couplings) :
-    if ee < 50 : continue
     cmd = "WriteDatacards.py "
-    cmd += " --inputShapes %s"  % options.inputShapes 
+    cmd += " --inputShapes %s"  % options.inputShapes
     cmd += " --channel %s"      % options.channel
     cmd += " --cardFolder %s"   % options.cardFolder
     if options.shapeSyst : cmd += " --shapeSyst"
     cmd += " --noX_prefix"
     cmd += " --coupling %s"     % entry["name"]
     cmd += " --era %s"          % options.era
+    cmd += " --no_data"
     runCombineCmd(cmd)

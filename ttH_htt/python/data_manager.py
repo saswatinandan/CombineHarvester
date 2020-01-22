@@ -6,6 +6,23 @@ import sys, os, re, shlex
 from subprocess import Popen, PIPE
 import glob
 
+def extract_thu(proc, coupling) :
+    import pandas
+    tagf = coupling.replace('p', '.').replace('m','-').replace('kt_', "")
+    ct,cv = tuple(map(float, tagf.split('_kv_')))
+    print("kt = "+ str(ct), "kv = " + str(cv))
+    ###
+    filethu = syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/data/%s_thuncertainties.txt" % proc
+    data = pandas.read_csv(filethu, sep = ' ')
+    data.dropna(inplace=True)
+    data=data.astype(float)
+    return {
+    "pdf"   : 1. + round( data.loc[(data.cf == ct) & (data.cv == cv)]["pdfunc+[%]"].values[0]*0.01, 3),
+    "qcdup" : 1. + round(data.loc[(data.cf == ct) & (data.cv == cv)]["scaleunc+[%]"].values[0]*0.01, 3),
+    "qcddo" : 1. + round(data.loc[(data.cf == ct) & (data.cv == cv)]["scaleunc-[%]"].values[0]*0.01, 3)
+    }
+
+
 def lists_overlap(a, b):
   sb = set(b)
   return any(el in sb for el in a)

@@ -24,6 +24,8 @@ parser.add_option("--use_Exptl_HiggsBR_Uncs",   action="store_true", dest="use_E
 parser.add_option("--no_data",        action="store_true", dest="no_data",     help="Do not read data_obs, fill it as it would be the sum of the processes (some combine checks ask for it)", default=False)
 parser.add_option("--fake_mc",        action="store_true", dest="fake_mc",     help="Use fakes and flips from MC", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
+parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      help="Cards for studies with tH kinematics have specifics", default=False)
+
 (options, args) = parser.parse_args()
 
 inputShapes = options.inputShapes
@@ -39,6 +41,7 @@ only_tHq_sig = options.only_tHq_sig
 only_BKG_sig = options.only_BKG_sig
 fake_mc      = options.fake_mc
 no_data      = options.no_data
+tH_kin       = options.tH_kin
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
 if use_Exptl_HiggsBR_Uncs:
     print("Using Experimental Unc.s on Higgs BRs")
@@ -141,7 +144,7 @@ if 0 > 1 : # FIXME: remind why we added that at some point
             cb.cp().process([proc]).AddSyst(cb, "scale_%s" % proc, 'rateParam', ch.SystMap()(1.0))
             print ("added rateparam to: " + proc)
 
-    # correlate the rateparam amonf the Higgs processes
+    # correlate the rateparam among the Higgs processes
     for hsig in higgs_procs :
         for br, hsbr in enumerate(hsig) :
             if br == 0 :
@@ -161,6 +164,8 @@ for specific_syst in theory_ln_Syst :
         for decay in list_channels(analysis, fake_mc)["decays_hh"] :
             procs = procs + [procs[0] + decay]
     elif "H" in procs[0] :
+        if tH_kin and ("tHq" in procs[0] or "tHW" in procs[0]) :
+            continue
         for decay in list_channels(analysis, fake_mc)["decays"] :
             procs = procs + [procs[0] + decay]
     else :
@@ -181,22 +186,24 @@ for proc in higgs_procs_plain :
             print ("added " + "BR_%s" % key + " uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
 
 ########################################
-# th shape syst
-if shape :
-    for hsig in higgs_procs :
-        if "ttH" in hsig[0] :
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttH_x1" % analysis, "shape", ch.SystMap()(1.0))
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttH_y1" % analysis, "shape", ch.SystMap()(1.0))
-            print ("Adding TH-like shape syst for ttH process -- correlated between years")
-        if "TTW" in bkg_procs_from_MC :
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttW_x1" % analysis, "shape", ch.SystMap()(1.0))
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttW_y1" % analysis, "shape", ch.SystMap()(1.0))
-            print ("Adding TH-like shape syst for ttW process -- correlated between years")
-        if "TTZ" in bkg_procs_from_MC :
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttZ_x1" % analysis, "shape", ch.SystMap()(1.0))
-            cb.cp().process([proc]).AddSyst(cb,  "CMS_%sl_thu_shape_ttZ_y1" % analysis, "shape", ch.SystMap()(1.0))
-            print ("Adding TH-like shape syst for ttZ process -- correlated between years")
+# specifics for cards with tH-kinematics
+if tH_kin :
+    for proc in ["TTW", "TTZ"] :
+        cb.cp().process([proc]).AddSyst(cb, "CMS_ttHl_%s_lnU" % proc, "lnU", ch.SystMap()(2.0))
+        print ("added", "CMS_ttHl_%s_lnU" % proc)
+    from CombineHarvester.ttH_htt.data_manager import extract_thu
+    for proc in ["tHq", "tHW"] :
+        # https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/tHQ_cross_sections.txt
+        # https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/tHW_cross_sections.txt
+        thuncertainty = extract_thu(proc, coupling)
+        procdecays = [proc + "_" + coupling + "_htt" , proc + "_" + coupling + "_hzz", proc + "_" + coupling + "_hww"]
+        cb.cp().process(procdecays).AddSyst(cb, "pdf_%s" % proc, "lnU", ch.SystMap()(thuncertainty["pdf"]))
+        print ("added", "pdf_%s" % proc, thuncertainty["pdf"])
+        cb.cp().process(procdecays).AddSyst(cb, "QCDscale_%s" % proc, "lnU", ch.SystMap()((thuncertainty["qcddo"], thuncertainty["qcdup"])))
+        print ("added", "QCDscale_%s" % proc, (thuncertainty["qcddo"], thuncertainty["qcdup"]))
 
+
+########################################
 if shape :
     ########################################
     # fakes shape syst -- all uncorrelated
@@ -236,7 +243,10 @@ for specific_syst in specific_ln_systs :
     if not specific_ln_systs[specific_syst]["correlated"] :
         name_syst = specific_syst.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
         # assuming that the syst for the HH analysis with have the label HHl
-    cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
+    if "lnU" in name_syst :
+        cb.cp().process(procs).AddSyst(cb,  name_syst, "lnU", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
+    else :
+        cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
     print ("added " + name_syst + " with value " + str(specific_ln_systs[specific_syst]["value"]) + " to processes: ",  specific_ln_systs[specific_syst]["proc"] )
 
 ########################################
@@ -295,9 +305,10 @@ if shape :
     cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_tauES", "CMS_scale_t")
     print ("renamed CMS_ttHl_tauES to CMS_scale_t to the MC processes ")
 
-    for shape_syst in created_shape_to_shape_syst :
-        cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
-        print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
+    #for shape_syst in created_shape_to_shape_syst :
+    #    cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
+    #    print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
+    # Xanda: FIXME for isMCsplit
 
 
 ### reminiscent of doing cards with wrong XS normalization, leave it here in case we need again
