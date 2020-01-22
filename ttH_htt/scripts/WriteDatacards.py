@@ -124,7 +124,6 @@ if not no_data :
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], bkg_proc_from_data + bkg_procs_from_MC, cats, False)
 cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 
-
 #######################################
 print ("Adding lumi syt uncorrelated/year")
 # check if we keep the lumis/era correlated or not
@@ -176,7 +175,6 @@ for specific_syst in theory_ln_Syst :
 
 ########################################
 # BR syst
-
 for proc in higgs_procs_plain :
     if use_Exptl_HiggsBR_Uncs: BRs = higgsBR_exptl
     else :  BRs = higgsBR_theo
@@ -188,6 +186,7 @@ for proc in higgs_procs_plain :
 ########################################
 # specifics for cards with tH-kinematics
 if tH_kin :
+    MC_proc = [ proc.replace(coupling, "") for proc in MC_proc ]
     for proc in ["TTW", "TTZ"] :
         cb.cp().process([proc]).AddSyst(cb, "CMS_ttHl_%s_lnU" % proc, "lnU", ch.SystMap()(2.0))
         print ("added", "CMS_ttHl_%s_lnU" % proc)
@@ -201,7 +200,6 @@ if tH_kin :
         print ("added", "pdf_%s" % proc, thuncertainty["pdf"])
         cb.cp().process(procdecays).AddSyst(cb, "QCDscale_%s" % proc, "lnU", ch.SystMap()((thuncertainty["qcddo"], thuncertainty["qcdup"])))
         print ("added", "QCDscale_%s" % proc, (thuncertainty["qcddo"], thuncertainty["qcdup"]))
-
 
 ########################################
 if shape :
