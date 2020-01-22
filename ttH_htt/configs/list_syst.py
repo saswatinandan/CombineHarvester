@@ -100,10 +100,9 @@ MC_shape_systs_correlated = [
     #"CMS_ttHl_JES",   # renamed to "CMS_scale_j"
     "CMS_ttHl_JER",
     "CMS_ttHl_UnclusteredEn",
-    "MET_Resp",
-    "CMS_ttHl_l1PreFire",
+    ##"CMS_ttHl_l1PreFire", -- should be 2016/2017 not 2018
     "CMS_ttHl_pileup",
-    #### JEC_regrouped
+    #### JEC_regrouped -- shoule be
     "CMS_ttHl_JESAbsolute",
     "CMS_ttHl_JESBBEC1",
     "CMS_ttHl_JESEC2Up",
@@ -121,7 +120,6 @@ btag_type_systs_correlated = [
 for btag_type_syst in btag_type_systs_correlated :
     MC_shape_systs_correlated += ["CMS_ttHl_btag_%s" % btag_type_syst]
 
-## --- Xanda: add to WriteDatacards Era -> era
 JES_shape_systs_Uncorrelated = [
     "CMS_ttHl_JESAbsolute_Era",
     "CMS_ttHl_JESBBEC1_Era",
@@ -165,25 +163,16 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_trigger_tau"          : {"correlated" : False, "proc" : "MCproc", "channels" : ["0l_2tau"]},
             "CMS_ttHl_tauIDSF"              : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n or "1tau" in n ]},
             "CMS_ttHl_tauES"                : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]}, # renamed to "CMS_scale_t"
-            ###########################
+            ########################### addSyst...
             "CMS_ttHl_FRe_shape_pt"         : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_FRe_shape_norm"       : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_FRe_shape_eta_barrel" : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_FRm_shape_pt"         : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_FRm_shape_norm"       : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_FRm_shape_eta_barrel" : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_FRjt_norm"            : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
-            "CMS_ttHl_FRjt_shape"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
-            "CMS_ttHl_FRet_shift"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},## not isMCsplit
-            ###################
-            "CMS_ttHl_electronER"           : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_electronESEndcap"     : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_electronESBarrel"     : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_muonER"               : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_muonESBarrel1"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_muonESBarrel2"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_muonESEndcap1"        : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
-            "CMS_ttHl_muonESEndcap2Up"      : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
+            "CMS_ttHl_FRjt_norm"            : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] and not ("0l_2tau" in k or "1l_1tau" in k)]},## not isMCsplit ## FIXME: check and not ("0l_2tau" in k or "1l_1tau" in k)
+            "CMS_ttHl_FRjt_shape"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] and not ("0l_2tau" in k or "1l_1tau" in k)]},## not isMCsplit
+            "CMS_ttHl_FRet_shift"           : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if  ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] and not ("0l_2tau" in k or "1l_1tau" in k) ]},## not isMCsplit
             #################
             "CMS_ttHl_DYMCReweighting"      : {"correlated" : False, "proc" : ["DY"], "channels" : ["0l_2tau", "1l_1tau"]},
             "CMS_ttHl_DYMCNormScaleFactors" : {"correlated" : False, "proc" : ["DY"], "channels" : ["0l_2tau", "1l_1tau"]},
