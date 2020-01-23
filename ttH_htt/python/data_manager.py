@@ -40,7 +40,7 @@ def list_proc(syst_list, MC_proc, all_proc_bkg, name_syst) :
         procs = syst_list["proc"]
     return procs
 
-def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs_ttH, inputShapes, MC_proc, shape, noX_prefix ):
+def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs, inputShapes, MC_proc, shape, noX_prefix ):
     created_ln_to_shape_syst = []
     created_shape_to_shape_syst = []
     print ("Doing template to fake/gen tau systematics")
@@ -60,7 +60,11 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
             histUp = ROOT.TH1F()
             histDo = ROOT.TH1F()
             ## fixme: old cards does not have uniform naming convention to tH/VH -- it should be only continue to conversions
-            if "tHq" in proc or "tHW" in proc or "VH" in proc or "conversions" in proc or proc in ["tHq", "tHW", "VH"]: continue
+            if "Convs" in proc :
+                try : hist = tfile.Get(histFind)
+                except : print ("Doesn't find" + histFind)
+                hist.Write()
+                continue
             #if  proc or "conversions" in proc or proc in ["tHq", "tHW", "VH"]: continue
             print ("================================================")
             central = 0
@@ -79,6 +83,8 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                 else : histFind = "x_%s_%s" % (proc, typeHist)
                 try : hist = tfile.Get(histFind)
                 except : print ("Doesn't find" + histFind)
+                try : integral  = hist.Integral()
+                except : print ("Can't calculate integral" + histFind)
                 print (histFind, hist.Integral())
                 # clone only the structure -- for the case of no shift
                 if specific_ln_shape_systs[ln_to_shape]["type"] == typeHist :
@@ -105,31 +111,48 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
         if shape :
             for shape_to_shape in specific_shape_shape_systs :
                 print ("Doing themplates to: " + shape_to_shape + " (originally shape) " )
-                histUp = ROOT.TH1F()
-                histDo = ROOT.TH1F()
-                histCentral = ROOT.TH1F()
                 central_calc = 0
+                histCentral = ROOT.TH1F()
                 name_syst = shape_to_shape.replace("CMS_", "CMS_constructed_")
                 if not specific_shape_shape_systs[shape_to_shape]["correlated"] :
                     name_syst = name_systreplace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
                 for proc in MC_proc :
+                    if "Convs" in proc :
+                        histFindCentral = "%s" % (proc)
+                        try : histCentral = tfile.Get(histFindCentral)
+                        except : print ("Doesn't find" + histFindCentral)
+                        histCentral.Write()
+                        continue
                     histFindCentral = "%s_%s" % (proc, typeHist)
-                    try : histCentral = tfile.Get(histCentral)
+                    try : histCentral = tfile.Get(histFindCentral)
                     except : print ("Doesn't find" + histFindCentral)
+                    try : integral = histCentral.Integral()
+                    except : print ("Doesn't find integral" + histFindCentral)
+                    histUp = ROOT.TH1F("%s_clone" % histCentral.GetName(),
+                             histCentral.GetTitle(),
+                             histCentral.GetNbinsX(),
+                             histCentral.GetXaxis().GetXbins().GetArray())
+                    histDo = ROOT.TH1F("%s_clone2" % histCentral.GetName(),
+                             histCentral.GetTitle(),
+                             histCentral.GetNbinsX(),
+                             histCentral.GetXaxis().GetXbins().GetArray())
                     for typeHist in ["faketau", "gentau"] :
+                        histUpLoc = ROOT.TH1F()
+                        histDoLoc = ROOT.TH1F()
                         histFindUp = "%s_%s_%sUp" % (proc, typeHist, shape_to_shape)
-                        try : histUp = tfile.Get(histFindUp)
+                        try : histUpLoc = tfile.Get(histFindUp)
                         except : print ("Doesn't find" + histFindUp)
                         histFindDown = "%s_%s_%sDown" % (proc, typeHist, shape_to_shape)
-                        try : histDown = tfile.Get(histFindDown)
+                        try : histDoLoc = tfile.Get(histFindDown)
                         except : print ("Doesn't find" + histFindDown)
-                        histUp.Add(histUp)
-                        histDo.Add(histDown)
+                        print (histFindCentral, histFindDown, histFindUp)
+                        histUp.Add(histUpLoc)
+                        histDo.Add(histDoLoc)
                     histUp.SetName("%s_%sUp"    % (proc, name_syst))
                     histDo.SetName("%s_%sDown" % (proc, name_syst))
                     histUp.Write()
                     histDo.Write()
-                    print("Central/Up/Down", histCentral.Integral(), histUp.Integral(), histDo.Integral())
+                    print("Central/Up/Down", tfile.Get(proc).Integral(), histUp.Integral(), histDo.Integral())
                 created_shape_to_shape_syst += [name_syst]
                 print ("constructed up/do templates from : " + shape_to_shape + " and saved as "+ name_syst )
     tfileout.Close()
@@ -143,7 +166,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
     comboutput = p.communicate()[0]
     #if "conversions" in MC_proc : MC_proc.remove("conversions")
     ## fixme: old cards does not have uniform naming convention to tH/VH
-    MC_proc_less = list(set(list(MC_proc)) - set(["conversions", "tHq_hww", "tHW_hww"]))
+    MC_proc_less = list(set(list(MC_proc)) - set(["Convs"]))
     for shape_syst in created_ln_to_shape_syst + created_shape_to_shape_syst :
         cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")

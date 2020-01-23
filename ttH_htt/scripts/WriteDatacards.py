@@ -185,8 +185,9 @@ for proc in higgs_procs_plain :
 
 ########################################
 # specifics for cards with tH-kinematics
-if tH_kin :
-    MC_proc = [ proc.replace(coupling, "") for proc in MC_proc ]
+if tH_kin : # [k for k,v in list_channel_opt.items()
+    MC_proc = [ procc.replace(coupling+"_", "") for procc in MC_proc ]
+    print (coupling+"_", "MC_proc", MC_proc)
     for proc in ["TTW", "TTZ"] :
         cb.cp().process([proc]).AddSyst(cb, "CMS_ttHl_%s_lnU" % proc, "lnU", ch.SystMap()(2.0))
         print ("added", "CMS_ttHl_%s_lnU" % proc)
