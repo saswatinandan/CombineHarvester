@@ -7,10 +7,16 @@ from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--inputShapes",    type="string",       dest="inputShapes", help="Full path of prepareDatacards.root")
 parser.add_option("--channel",        type="string",       dest="channel",     help="Channel to assume (to get the correct set of syst)")
+parser.add_option("--channel_to_card",        type="string",       dest="channel_to_card",     help="Channel to assume naming the output datacard in case of subcategories",  default="none")
 parser.add_option("--cardFolder",     type="string",       dest="cardFolder",  help="Folder where to save the datacards (relative or full).\n Default: teste_datacards",  default="teste_datacards")
 parser.add_option("--shapeSyst",      action="store_true", dest="shapeSyst",   help="Do apply the shape systematics. Default: False", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 (options, args) = parser.parse_args()
+
+if options.channel_to_card == "none" :
+    channel_to_card = options.channel
+else :
+    channel_to_card = options.channel_to_card
 
 func_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py"
 execfile(func_file)
@@ -80,10 +86,12 @@ for ee, entry in enumerate(list_couplings) :
     cmd = "WriteDatacards.py "
     cmd += " --inputShapes %s"  % options.inputShapes
     cmd += " --channel %s"      % options.channel
-    cmd += " --cardFolder %s"   % options.cardFolder
+    #cmd += " --cardFolder %s"   % options.cardFolder
     if options.shapeSyst : cmd += " --shapeSyst"
     cmd += " --noX_prefix"
     cmd += " --coupling %s"     % entry["name"]
     cmd += " --era %s"          % options.era
     cmd += " --no_data"
+    cmd += " --tH_kin"
+    cmd += " --output_file %s/ttH_%s_%s" % (options.cardFolder, channel_to_card, options.era)
     runCombineCmd(cmd)

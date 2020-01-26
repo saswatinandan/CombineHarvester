@@ -159,7 +159,7 @@ def specific_syst(analysis, list_channel_opt) :
         tHW_proc = ["tHW_htt", "tHW_hww", "tHW_hzz"]
         specific_shape = {
             "CMS_ttHl_trigger"              : {"correlated" : False, "proc" : "MCproc", "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau", "1l_2tau", "1l_1tau", "3l_1tau"]))},   # not for 1l_2tau / 2los_1tau / 3l_1tau
-            "CMS_ttHl_trigger "             : {"correlated" : False, "proc" : "MCproc", "channels" : ["1l_2tau", "1l_1tau"]},
+            "CMS_ttHl_trigger"             : {"correlated" : False, "proc" : "MCproc", "channels" : ["1l_2tau", "1l_1tau"]},
             "CMS_ttHl_trigger"              : {"correlated" : False, "proc" : "MCproc", "channels" : ["0l_2tau"]},
             "CMS_ttHl_tauIDSF"              : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n or "1tau" in n ]},
             "CMS_ttHl_tauES"                : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]}, # renamed to "CMS_scale_t"

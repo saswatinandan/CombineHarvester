@@ -33,7 +33,7 @@ def list_channels(analysis, fake_mc) :
         "2lss_1tau" : {
             "bkg_proc_from_data" : [ fakes , flips ], #
             "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT", "HH"],
-            "isSMCSplit" : False
+            "isSMCSplit" : True
             },
         "3l_0tau"   : {
             "bkg_proc_from_data" : [ fakes  ],
@@ -53,7 +53,7 @@ def list_channels(analysis, fake_mc) :
         "3l_1tau"   : {
             "bkg_proc_from_data" : [ fakes, flips   ],
             "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT", "HH",],
-            "isSMCSplit" : False
+            "isSMCSplit" : True
             },
         "2los_1tau" : {
             "bkg_proc_from_data" : [ fakes, flips   ],
