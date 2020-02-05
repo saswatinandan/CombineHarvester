@@ -1,10 +1,10 @@
 def list_channels(analysis, fake_mc) :
     if analysis == "ttH" :
-        sigs = ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH", "TTWH", "TTZH", ]
+        sigs = ["ttH", "tHq", "tHW", "WH", "ZH", "ggH", "qqH" ] # , "TTWH", "TTZH",
         decays = ["_hww", "_hzz", "_htt", "_hzg", "_hmm" ]
         decays_hh = ["_tttt", "_zzzz", "_wwww", "_ttzz", "_ttww", "_zzww"  ]
         higgs_procs = [ [y + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
-        higgs_procs = higgs_procs + [["HH" + x  for x in decays_hh]]
+        #higgs_procs = higgs_procs + [["HH" + x  for x in decays_hh]]
         conversions = "Convs"
         #print (higgs_procs)
         if fake_mc :

@@ -172,7 +172,55 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
     return finalFile
 
-def rename_tH(output_file, coupling, bins, no_data, all_procs) :
+def rename_tH_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
+    print "Post Manipulate cards (if needed)"
+    print (output_file)
+    test_name_tHq = "tHq_%s" % coupling
+    test_name_tHW = "tHW_%s" % coupling
+    test_name_ttH = "ttH_%s" % coupling
+    tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
+    integral_data = []
+    no_data = no_data and coupling == "none"
+    for bb in bins :
+        data_obs = ROOT.TH1F()
+        #data_obs.SetName("data_obs")
+        for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
+            obj =  keyO.ReadObj()
+            obj_name = keyO.GetName()
+            if test_name_tHq in obj_name or test_name_tHW in obj_name or test_name_ttH in obj_name :
+                if test_name_tHq in obj_name and not coupling == "none":
+                    #test_name = test_name_tHq
+                    new_name = obj_name.replace("_" + coupling,"").replace("p0", "")
+                    print ("renaming " +  obj_name + " to " + new_name)
+                elif test_name_tHW in obj_name and not coupling == "none":
+                    #test_name = test_name_tHW
+                    new_name = obj_name.replace("_" + coupling,"").replace("p0", "")
+                    print ("renaming " +  obj_name + " to " + new_name)
+                elif test_name_ttH in obj_name and not coupling == "none":
+                    #test_name = test_name_ttH
+                    new_name = obj_name.replace("_" + coupling,"").replace("p0", "")
+                    print ("renaming " +  obj_name + " to " + new_name)
+                print ("renaming", new_name,  obj_name)
+                obj.SetName(new_name)
+                tfileout.cd()
+                obj.Write()
+                ROOT.gDirectory.Delete(obj_name+";1")
+                tfileout.cd()
+    tfileout.Close()
+    outfile = output_file + ".txt"
+    f1 = open(outfile, 'r').read()
+    f2 = open(outfile, 'w')
+    m = f1.replace(test_name_tHq, "tHq")
+    m = m.replace(test_name_tHW, "tHW")
+    m = m.replace(test_name_ttH, "ttH")
+    #m = f1.replace(test_name_tHq.replace("p0", ""), "tHq")
+    #m = m.replace(test_name_tHW.replace("p0", ""), "tHW")
+    #m = m.replace(test_name_ttH.replace("p0", ""), "ttH")
+    f2.write(m)
+    f2.close()
+
+
+def rename_tH(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
     print "Post Manipulate cards (if needed)"
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
@@ -203,7 +251,6 @@ def rename_tH(output_file, coupling, bins, no_data, all_procs) :
                     #or test_name_TTZH in obj_name\
                     print (obj_name)
                     if obj_name == "TTWH_hww" or obj_name == "TTZH_hww" : continue
-
                     if (test_name_TTWH in obj_name) and not "_" in obj_name and coupling == "none":
                         test_name = test_name_TTWH
                         new_name = obj_name + "_hww"
@@ -224,8 +271,6 @@ def rename_tH(output_file, coupling, bins, no_data, all_procs) :
                         test_name = test_name_tHW
                         new_name = obj_name.replace("_" + coupling,"")
                         print ("renaming " +  obj_name + " to " + new_name)
-
-
                     print ("renaming", new_name,  obj_name)
 
                     obj.SetName(new_name)
@@ -237,13 +282,35 @@ def rename_tH(output_file, coupling, bins, no_data, all_procs) :
                     if not data_obs.Integral()>0 :
                         data_obs = obj.Clone()
                     else :
-                        data_obs.Add(obj.Clone())
-                    print ("data_obs += " + obj_name)
+                        if data_obs.Integral() > 0.01 :
+                            data_obs.Add(obj.Clone())
+                            print ("data_obs += " + obj_name, obj.Integral())
         if no_data :
+            # make sure that the Higgs proc we take as the SM
+            tfileSM = ROOT.TFile(preparedatacard, "READ")
+            for signal in ["ttH", "tHq", "tHW", "ZH", "WH", "ggH", "qqH", "TTWH", "TTZH"] :
+                for decay in ["hww", "htt", "hzz"] :
+                    try : obj = tfileSM.Get(signal+"_"+decay)
+                    except : continue
+                    try : intproc = obj.Integral()
+                    except : continue
+                    if intproc > 0.01 :
+                        data_obs.Add(obj.Clone())
+                        print ("data_obs += (SM) " + obj.GetName(), obj.Integral())
+            for decay in ["tttt", "zzzz", "wwww", "ttzz", "ttww", "zzww"] :
+                try : obj = tfileSM.Get("HH_"+decay)
+                except : continue
+                try : intproc = obj.Integral()
+                except : continue
+                if intproc > 0.01 :
+                    data_obs.Add(obj.Clone())
+                    print ("data_obs += (SM) " + obj.GetName(), intproc)
+            preparedatacard
             tfileout.cd(bb)
             data_obs.SetName("data_obs")
             data_obs.Write()
             tfileout.cd()
+        print ("sum fake data_obs", data_obs.Integral())
         integral_data = integral_data + [data_obs.Integral()]
     tfileout.Close()
     outfile = output_file + ".txt"
@@ -283,9 +350,22 @@ def rename_tH(output_file, coupling, bins, no_data, all_procs) :
 
 def get_tH_weight_str(kt, kv, cosa = -10):
     if cosa == -10 :
-        return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm')
+        return ("kt_%.3g_kv_%.3g" % (kt, kv)).replace('.', 'p').replace('-', 'm') #.replace('kv_1', 'kv_1p0').replace('1_', '1p0_').replace('2_', '2p0_').replace('3_', '3p0_').replace('0_', '0p0_')
     else :
         return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
+
+def get_tH_weight_str_out(kt, kv, cosa = -10):
+    if cosa == -10 :
+        return ("kt_%.3g_kv_%.3gA" % (kt, kv)).replace('.', 'p').replace('-', 'm').replace('kv_1A', 'kv_1p0A').replace('_m1_', '_m1p0_').replace('_m2_', '_m2p0_').replace('_m3_', '_m3p0_').replace('_1_', '_1p0_').replace('_2_', '_2p0_').replace('_3_', '_3p0_').replace('_0_', '_0p0_').replace('_m1_', '_m1p0_').replace('_m2_', '_m2p0_').replace('_m3_', '_m3p0_')
+    else :
+        return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p').replace('-', 'm')
+
+def get_tH_weight_str_out_clara(kt, kv, cosa = -10):
+    if cosa == -10 :
+        return ("ct_%.3g_cv_%.3gA" % (kt, kv)).replace('.', 'p').replace('cv_1A', 'cv_1p0A').replace('_-1_', '_-1p0_').replace('_-2_', '_-2p0_').replace('_-3_', '_-3p0_').replace('_1_', '_1p0_').replace('_2_', '_2p0_').replace('_3_', '_3p0_').replace('_0_', '_0p0_').replace('_-1_', '_-1p0_').replace('_-2_', '_-2p0_').replace('_-3_', '_-3p0_')
+    else :
+        return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p')
+
 
 def make_threshold(threshold, proc_list, file_input) :
     tfileout = ROOT.TFile(file_input, "READ")

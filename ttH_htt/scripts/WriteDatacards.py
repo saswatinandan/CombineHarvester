@@ -170,7 +170,11 @@ for specific_syst in theory_ln_Syst :
     else :
         if procs[0] not in bkg_procs_from_MC :
             continue
-    cb.cp().process(procs).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    if specific_syst == "pdf_qg_2" :
+        specific_syst_use = "pdf_qg"
+    else :
+        specific_syst_use = specific_syst
+    cb.cp().process(procs).AddSyst(cb,  specific_syst_use, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
     print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", procs)
 
 ########################################
@@ -180,8 +184,12 @@ for proc in higgs_procs_plain :
     else :  BRs = higgsBR_theo
     for key in BRs:
         if key in proc :
-            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(higgsBR_exptl[key]))
-            print ("added " + "BR_%s" % key + " uncertanity to process: " + proc + " of value = " + str(higgsBR_exptl[key]))
+            cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(BRs[key]))
+            print ("added " + "BR_%s" % key + " uncertanity to process: " + proc + " of value = " + str(BRs[key]))
+    if "ttH" in proc or "ZH" in proc or "WH" in proc :
+        key = "hbb"
+        cb.cp().process([proc]).AddSyst(cb, "BR_%s" % key, "lnN", ch.SystMap()(BRs[key]))
+        print ("added " + "BR_%s" % key + " uncertanity to process: " + proc + " of value = " + str(BRs[key]))
 
 ########################################
 # specifics for cards with tH-kinematics
@@ -197,10 +205,10 @@ if tH_kin : # [k for k,v in list_channel_opt.items()
         # https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/tHW_cross_sections.txt
         thuncertainty = extract_thu(proc, coupling)
         procdecays = [proc + "_" + coupling + "_htt" , proc + "_" + coupling + "_hzz", proc + "_" + coupling + "_hww"]
-        cb.cp().process(procdecays).AddSyst(cb, "pdf_%s" % proc, "lnU", ch.SystMap()(thuncertainty["pdf"]))
-        print ("added", "pdf_%s" % proc, thuncertainty["pdf"])
-        cb.cp().process(procdecays).AddSyst(cb, "QCDscale_%s" % proc, "lnU", ch.SystMap()((thuncertainty["qcddo"], thuncertainty["qcdup"])))
-        print ("added", "QCDscale_%s" % proc, (thuncertainty["qcddo"], thuncertainty["qcdup"]))
+        cb.cp().process(procdecays).AddSyst(cb, "pdf_qq", "lnN", ch.SystMap()(thuncertainty["pdf"]))
+        print ("added", "pdf_qg" , thuncertainty["pdf"])
+        cb.cp().process(procdecays).AddSyst(cb, "QCDscale_qg", "lnN", ch.SystMap()((thuncertainty["qcddo"], thuncertainty["qcdup"])))
+        print ("added", "QCDscale_qg", (thuncertainty["qcddo"], thuncertainty["qcdup"]))
 
 ########################################
 if shape :
@@ -212,6 +220,7 @@ if shape :
     ########################################
     # MC estimated shape syst
     for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated + JES_shape_systs_Uncorrelated :
+        if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
         cb.cp().process(MC_proc).AddSyst(cb,  MC_shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
     ########################################
@@ -223,6 +232,7 @@ if shape :
         if channel not in specific_shape_systs[specific_syst]["channels"] :
             continue
         procs = list_proc(specific_shape_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
+        # that above take the overlap of the lists
         if len(procs) == 0 :
             continue
         cb.cp().process(procs).AddSyst(cb,  specific_syst, "shape", ch.SystMap()(1.0))
@@ -290,11 +300,15 @@ if shape :
     ########################################
     # MC estimated shape syst
     for MC_shape_syst in MC_shape_systs_uncorrelated :
-        MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
+        if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
+        if MC_shape_syst == "CMS_ttHl_trigger" :
+            MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")) + "_" + channel
+        else :
+            MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
         cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
         print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
     for MC_shape_syst in JES_shape_systs_Uncorrelated :
-        MC_shape_syst_era = MC_shape_syst.replace("_Era", str(era))
+        MC_shape_syst_era = MC_shape_syst.replace("Era", str(era))
         cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
         print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
 
@@ -304,9 +318,19 @@ if shape :
     cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_tauES", "CMS_scale_t")
     print ("renamed CMS_ttHl_tauES to CMS_scale_t to the MC processes ")
 
-    #for shape_syst in created_shape_to_shape_syst :
-    #    cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
-    #    print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
+    if channel in ["1l_2tau", "1l_1tau"] :
+        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger_leptau" % str(era).replace("20",""))
+        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger_leptau to the MC processes " % str(era).replace("20",""))
+    elif channel in ["0l_2tau"] :
+        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger_tau" % str(era).replace("20",""))
+        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger_tau to the MC processes " % str(era).replace("20",""))
+    else :
+        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger" % str(era).replace("20",""))
+        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger to the MC processes " % str(era).replace("20",""))
+
+    for shape_syst in specific_syst_list["created_shape_to_shape_syst"] :
+        cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
+        print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
     # Xanda: FIXME for isMCsplit
 
 
@@ -331,17 +355,19 @@ if options.output_file == "none" :
 else :
     output_file = options.output_file
 
-if not (coupling == "none") :
-    output_file += "_" + coupling
+#if not (coupling == "none") :
+#    output_file += "_" + coupling
 
 bins = cb.bin_set()
 for b in bins :
-    print ("\n Output file: " + output_file + ".txt")
+    print ("\n Output file: " + output_file + ".txt", b )
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
+    #cb.cp().bin([output_file]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
 
-rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data)
+rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
-    rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data)
+    rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
+    
 
 sys.stdout.flush()

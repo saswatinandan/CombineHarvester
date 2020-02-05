@@ -78,7 +78,9 @@ tHweights = [
 
 list_couplings = [
   {
-    "name" : get_tH_weight_str(entry["kt"], entry["kv"], entry["cosa"]), "ratio" : entry["kt"]/entry["kv"]
+    "name" : get_tH_weight_str(entry["kt"], entry["kv"], entry["cosa"]),
+    "ratio" : entry["kt"]/entry["kv"],
+    "name_out" : get_tH_weight_str_out(entry["kt"], entry["kv"], entry["cosa"])
   } for entry in tHweights
 ]
 
@@ -93,5 +95,5 @@ for ee, entry in enumerate(list_couplings) :
     cmd += " --era %s"          % options.era
     cmd += " --no_data"
     cmd += " --tH_kin"
-    cmd += " --output_file %s/ttH_%s_%s" % (options.cardFolder, channel_to_card, options.era)
+    cmd += " --output_file %s/ttH_%s_%s_%s" % (options.cardFolder, channel_to_card, options.era, entry["name_out"].replace("A", ""))
     runCombineCmd(cmd)

@@ -8,16 +8,16 @@ lumiSyst_corr = {2016: 1.014,          2017: 1.013,          2018: 1.021}
 theory_ln_Syst = {
     "pdf_Higgs_ttH"               : {"value": 1.036,              "proc" : ["ttH"]},
     "QCDscale_ttH"                : {"value": (0.907 , 1.058),    "proc" : ["ttH"]},
-    "pdf_tHq"                     : {"value": 1.027,              "proc" : ["tHq"]},
-    "QCDscale_tHq"                : {"value": (0.939 , 1.046),    "proc" : ["tHq"]},
-    "pdf_tHW"                     : {"value": 1.027,              "proc" : ["tHW"]},
-    "QCDscale_tHW"                : {"value": (0.939 , 1.046),    "proc" : ["tHW"]},
-    "pdf_TTW"                     : {"value": 1.04,               "proc" : ["TTW"]},
+    "pdf_qg"                      : {"value": 1.01,               "proc" : ["tHq"]},
+    "QCDscale_tHq"                : {"value": (0.933, 1.041),     "proc" : ["tHq"]},
+    "pdf_qg_2"                    : {"value": 1.027,              "proc" : ["tHW"]}, # this is going to be renamed to "pdf_qg" on the main code
+    "QCDscale_tHW"                : {"value": (0.939, 1.046),     "proc" : ["tHW"]},
+    "pdf_ttW"                     : {"value": 1.04,               "proc" : ["TTW"]},
     "QCDscale_ttW"                : {"value": (0.885 , 1.129),    "proc" : ["TTW"]},
-    "pdf_TTWW"                    : {"value": 1.03,               "proc" : ["TTWW"]},
+    "pdf_ttWW"                    : {"value": 1.03,               "proc" : ["TTWW"]},
     "QCDscale_ttWW"               : {"value": (0.891 , 1.081),    "proc" : ["TTWW"]},
-    "pdf_TTZ"                     : {"value": 0.966,              "proc" : ["TTZ"]},
-    "QCDscale_TTZ"                : {"value": (0.904 , 1.112),    "proc" : ["TTZ"]},
+    "pdf_ttZ"                     : {"value": 0.966,              "proc" : ["TTZ"]},
+    "QCDscale_ttZ"                : {"value": (0.904 , 1.112),    "proc" : ["TTZ"]},
     "CMS_ttHl_WZ_theo"            : {"value": 1.07,               "proc" : ["WZ"]},
     "pdf_ttjets"                  : {"value": 1.04,               "proc" : ["TT"]},
     "QCDscale_ttjets"             : {"value": (0.996 , 1.035),    "proc" : ["TT"]},
@@ -84,7 +84,8 @@ fake_shape_systs_uncorrelated = [
     "CMS_ttHl_Clos_t_norm",
 ]
 MC_shape_systs_uncorrelated = [
-
+    "CMS_ttHl_trigger",
+    "CMS_ttHl_l1PreFire", #-- should be 2016/2017 not 2018
 ]
 btag_type_systs_uncorrelated = [
     "HFStats1",
@@ -100,16 +101,15 @@ MC_shape_systs_correlated = [
     #"CMS_ttHl_JES",   # renamed to "CMS_scale_j"
     "CMS_ttHl_JER",
     "CMS_ttHl_UnclusteredEn",
-    ##"CMS_ttHl_l1PreFire", -- should be 2016/2017 not 2018
     "CMS_ttHl_pileup",
-    #### JEC_regrouped -- shoule be
+    #### JEC_regrouped
     "CMS_ttHl_JESAbsolute",
     "CMS_ttHl_JESBBEC1",
     "CMS_ttHl_JESEC2",
     "CMS_ttHl_JESFlavorQCD",
     "CMS_ttHl_JESHF",
     "CMS_ttHl_JESRelativeBal",
-
+    ### doing uncorrelated on the Writedatacards explicitelly, as other naming convention should be changed before it is easier to add it here
 ]
 btag_type_systs_correlated = [
     "HF",
@@ -131,19 +131,25 @@ JES_shape_systs_Uncorrelated = [
 # syst specific to processes
 
 def specific_syst(analysis, list_channel_opt) :
+    # channel specific shape syst
+    HH_proc = ["HH_tttt",  "HH_zzzz",  "HH_wwww",  "HH_ttzz",  "HH_ttww",  "HH_zzww", "HH_bbtt", "HH_bbww", "HH_bbzz" , "HH"]
+    ttH_proc = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hzg", "ttH_hzz"]
+    tHq_proc = ["tHq_htt", "tHq_hww", "tHq_hzz"]
+    tHW_proc = ["tHW_htt", "tHW_hww", "tHW_hzz"]
     if analysis == "ttH" :
         # the "correlated" on the dictionary means correlated between years
         # "MCproc" means that will take all the MC processes that appear for the channel that the datacard is being made for
         specific_ln_systs = {
+            #"pdf_qg"                    : {"value" : 1.3,  "correlated"   : True,  "proc" : ["fakes_data"],          "channels" : [k for k,v in list_channel_opt.items() if "fakes_data"  in v["bkg_proc_from_data"]]},
             "CMS_ttHl_fakes"            : {"value" : 1.3,  "correlated"   : True,  "proc" : ["fakes_data"],          "channels" : [k for k,v in list_channel_opt.items() if "fakes_data"  in v["bkg_proc_from_data"]]},  # for channels with "fakes_data"
             "CMS_ttHl_QF"               : {"value" : 1.3,  "correlated"   : True,  "proc" : ["flips_data"],          "channels" : [k for k,v in list_channel_opt.items() if "flips_data"  in v["bkg_proc_from_data"]]},  # for channels with "flips_data"
             "CMS_ttHl_Convs"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["conversions"],         "channels" : [k for k,v in list_channel_opt.items() if "conversions" in v["bkg_procs_from_MC"]]},   # for channels with "conversions"
-            "CMS_ttHl_EWK"              : {"value" : 1.5,  "correlated"   : True,  "proc" : ["EWK"],                 "channels" : [k for k,v in list_channel_opt.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with "EWK"
+            #"CMS_ttHl_EWK"              : {"value" : 1.5,  "correlated"   : True,  "proc" : ["EWK"],                 "channels" : [k for k,v in list_channel_opt.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with "EWK"
             "CMS_ttHl_WZ_lnU"           : {"value" : 1.3,  "correlated"   : True,  "proc" : ["WZ"],                  "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"]]},            # for channels with WZ
             "CMS_ttHl_ZZ_lnU"           : {"value" : 3.0,  "correlated"   : True,  "proc" : ["ZZ"],                  "channels" : [k for k,v in list_channel_opt.items() if "ZZ" in v["bkg_procs_from_MC"]]},            # for channels with WZ
             "CMS_ttHl_Rares"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["Rares"],               "channels" : [k for k,v in list_channel_opt.items() if "Rares" in v["bkg_procs_from_MC"]]},         # for channels with "Rares"
             "CMS_ttHl_trigger_uncorr"   : {"value" : 1.02, "correlated"   : False, "proc" : ["TTW", "TTZ", "Rares"], "channels" : ["2l_2tau", "2los_1tau", "2lss_1tau"]},                                                # for 2l_2tau / 2los_1tau / 2lss_1tau  --- check!
-            "CMS_ttHl_trigger"          : {"value" : 1.05, "correlated"   : False, "proc" : "MCproc",                "channels" : ["3l_1tau"]},                                                                          # for 3l_1tau
+            #"CMS_ttHl_trigger"          : {"value" : 1.05, "correlated"   : False, "proc" : "MCproc",                "channels" : ["3l_1tau"]},                                                                          # for 3l_1tau
             "CMS_ttHl_EWK_4j"           : {"value" : 1.3,  "correlated"   : False, "proc" : ["EWK"],                 "channels" : [k for k,v in list_channel_opt.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with EWK
             "CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n ]},
             "CMS_eff_t"                 : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ]},
@@ -152,15 +158,7 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_lepEff_mtight"    : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : list(set(list(list_channel_opt.keys())) - set(["2los_1tau", "0l_2tau", "1l_1tau"]))},  # not for "2los_1tau", "0l_2tau", "1l_1tau"
         }
 
-        # channel specific shape syst
-        HH_proc = ["HH_tttt",  "HH_zzzz",  "HH_wwww",  "HH_ttzz",  "HH_ttww",  "HH_zzww", "HH_bbtt", "HH_bbww", "HH_bbzz" , "HH"]
-        ttH_proc = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hzg", "ttH_hzz"]
-        tHq_proc = ["tHq_htt", "tHq_hww", "tHq_hzz"]
-        tHW_proc = ["tHW_htt", "tHW_hww", "tHW_hzz"]
         specific_shape = {
-            "CMS_ttHl_trigger"              : {"correlated" : False, "proc" : "MCproc", "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau", "1l_2tau", "1l_1tau", "3l_1tau"]))},   # not for 1l_2tau / 2los_1tau / 3l_1tau
-            "CMS_ttHl_trigger"             : {"correlated" : False, "proc" : "MCproc", "channels" : ["1l_2tau", "1l_1tau"]},
-            "CMS_ttHl_trigger"              : {"correlated" : False, "proc" : "MCproc", "channels" : ["0l_2tau"]},
             "CMS_ttHl_tauIDSF"              : {"correlated" : False, "proc" : "MCproc", "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n or "1tau" in n ]},
             "CMS_ttHl_tauES"                : {"correlated" : False, "proc" : "MCproc", "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]}, # renamed to "CMS_scale_t"
             ########################### addSyst...
@@ -184,8 +182,8 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_thu_shape_tHq_y1"     : {"correlated" : False, "proc" : tHq_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHq_proc)]},
             "CMS_ttHl_thu_shape_tHW_x1"     : {"correlated" : False, "proc" : tHW_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHW_proc)]},
             "CMS_ttHl_thu_shape_tHW_y1"     : {"correlated" : False, "proc" : tHW_proc, "channels" : [k for k,v in list_channel_opt.items() if any(i in v["bkg_procs_from_MC"] for i in tHW_proc)]},
-            "CMS_ttHl_thu_shape_ttW_x1"     : {"correlated" : False, "proc" : ["TTW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
-            "CMS_ttHl_thu_shape_ttW_y1"     : {"correlated" : False, "proc" : ["TTW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_ttW_x1"     : {"correlated" : False, "proc" : ["TTW", "TTWW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
+            "CMS_ttHl_thu_shape_ttW_y1"     : {"correlated" : False, "proc" : ["TTW", "TTWW"], "channels" : [k for k,v in list_channel_opt.items() if "TTW" in v["bkg_procs_from_MC"]]},
             "CMS_ttHl_thu_shape_ttZ_x1"     : {"correlated" : False, "proc" : ["TTZ"], "channels" : [k for k,v in list_channel_opt.items() if "TTZ" in v["bkg_procs_from_MC"]]},
             "CMS_ttHl_thu_shape_ttZ_y1"     : {"correlated" : False, "proc" : ["TTZ"], "channels" : [k for k,v in list_channel_opt.items() if "TTZ" in v["bkg_procs_from_MC"]]},
             "CMS_ttHl_thu_shape_HH_x1"      : {"correlated" : False, "proc" : HH_proc, "channels" : [k for k,v in list_channel_opt.items()  if any(i in v["bkg_procs_from_MC"] for i in HH_proc)]},
@@ -206,10 +204,17 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_FRjt_norm"  : {"correlated" : True, "type" : "faketau"},  ## only for faketau
             "CMS_ttHl_FRjt_shape" : {"correlated" : True, "type" : "faketau"},  ## only for faketau
         }
+
+        created_shape_to_shape_syst = {
+        "CMS_constructed_ttHl_FRjt_norm",
+        "CMS_constructed_ttHl_FRjt_shape"
+        }
+
     else : sys.exit("analysis " + analysis + " not implemented")
     return {
         "specific_ln_systs"             : specific_ln_systs,
         "specific_shape"                : specific_shape,
         "specific_ln_to_shape_systs"    : specific_ln_shape_systs,
-        "specific_shape_to_shape_systs" : specific_shape_shape_systs
+        "specific_shape_to_shape_systs" : specific_shape_shape_systs,
+        "created_shape_to_shape_syst"   : created_shape_to_shape_syst
     }
