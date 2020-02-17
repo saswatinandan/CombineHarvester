@@ -9,7 +9,7 @@ def options_plot (analysis, channel, all_procs, Hdecays) :
         flips       = "flips_data"
         # if label == "none" it means that this process is to be merged with the anterior key
         if fakes in all_procs       : dprocs[fakes]       = {"color" :  12, "fillStype" : 3345, "label" : "Non-prompt"  , "make border" : True}
-        if flips in all_procs       : dprocs[flips]       = {"color" :   1, "fillStype" : 3006, "label" : "Charge mis-m", "make border" : True}
+        if flips in all_procs       : dprocs[flips]       = {"color" :   1, "fillStype" : 3006, "label" : "Flips", "make border" : True}
         if conversions in all_procs : dprocs[conversions] = {"color" :   5, "fillStype" : 1001, "label" : "Conv."       , "make border" :  True}
         if "Rares" in all_procs     : dprocs["Rares"]     = {"color" : 851, "fillStype" : 1001, "label" : "Rares"       , "make border" : True}
         if "EWK" in all_procs       : dprocs["EWK"]       = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
@@ -44,12 +44,12 @@ def options_plot (analysis, channel, all_procs, Hdecays) :
         if channel in ["2los_1tau", "1l_2tau", "2eos_1tau", "2muos_1tau", "1mu1eos_1tau", "1l_1tau", "2l_2tau"] :
             ## remove "fakes_data" from first entry and add as last
             del dprocs[fakes]
-            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
         if "0l" in channel :
             del dprocs["EWK"]
             dprocs["EWK"]                                 = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
             del dprocs[fakes]
-            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Mis."        , "make border" : True}
+            dprocs[fakes]                                 = {"color" :   1, "fillStype" : 3005, "label" : "Fakes"        , "make border" : True}
             dprocs["TT"]                                  = {"color" :   1, "fillStype" : 1001, "label" : "TT"          , "make border" : True}
     else : sys.exit("analysis " + analysis + " not implemented")
     return dprocs

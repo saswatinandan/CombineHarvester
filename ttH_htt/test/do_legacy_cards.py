@@ -12,12 +12,20 @@ exec(open(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_
 #output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_23Jan20_MVAs_3ldecDNN/"
 #output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_25Jan20_MVAs_legDNN/"
 #output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_23Jan20_SVAs/"
-output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_26Jan20_MVAs/"
+#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_26Jan20_MVAs/"
+output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_1l_2ta_sidebands_fullSyst_12Feb20/"
+
+
 
 
 eras_to_do = ["2018", "2016", "2017"] #
 make_cards = True
 
+cards_CR_fullSyst_feb13 = {
+    #"1l_2tau_SS"            : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_12Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mvaOutput_legacy_SS.root"},
+    #"1l_2tau_SS_mTTVis"     : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_12Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mTauTauVis_SS.root"}
+    "1l_2tau_SS_HTT"     : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_15Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_HTT_SS.root"} 
+}
 
 cards_fullsyst_jan26 = {
     ########################
@@ -173,7 +181,7 @@ cards_SVA = {
     #"4l_cr"                 : {"channel" : "4lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_4l_cR_16Jan20_2018/datacards/4lctrl/prepareDatacards/prepareDatacards_4lctrl_OS_control.root"},
 
 }
-cards_to_do = cards_fullsyst_jan26
+cards_to_do = cards_CR_fullSyst_feb13 
 
 for era in eras_to_do :
     if make_cards :
@@ -185,8 +193,8 @@ for era in eras_to_do :
             cmd += "--channel %s "     % (cards_to_do[key]["channel"].replace("2018", era))
             cmd += "--cardFolder %s "  % output_cards
             cmd += "--noX_prefix  "
-            if not "ctrl" in cards_to_do[key]["channel"]  :
-                cmd += "--no_data "
+            #if not "ctrl" in cards_to_do[key]["channel"]  :
+            #    cmd += "--no_data "
             cmd += "--era %s" % str(era)
             cmd += " --output_file %s/ttH_%s_%s" % (output_cards, key, era)
             cmd += " --shapeSyst "
