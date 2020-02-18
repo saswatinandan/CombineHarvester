@@ -105,15 +105,8 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_eff_t"                 : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ]},
         }
 
-        ## if it is uncorrelated and the name or renameTo contains "CMS_ttHl_" leave it, if not add an "Era" where the year should be
+        ## if it is uncorrelated and the name or renameTo contains "CMS_ttHl_" leave it (a 16/17/18 will be added just after ttHl), if not add an "Era" where the year should be (2016/2017/2018 will replace "Era")
         specific_shape = {
-            # CMS_ttHl_EWK_btag ?
-            # "CMS_ttHl_btag_HFStats1" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
-            # "CMS_ttHl_btag_HFStats2" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
-            # "CMS_ttHl_btag_LFStats1" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
-            # "CMS_ttHl_btag_LFStats2" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
-            # CMS_ttHl18_Clos_e_shape -- really only for 2018?
-            # "CMS_ttHl_Clos_m_shape" -- is it missing for you ?
             #"CMS_ttHl_EWK_jet"      : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"] or "ZZ" in v["bkg_procs_from_MC"]]},
             #####################################
             "CMS_ttHl_Clos_e_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : list(list_channel_opt.keys())}, # should be only 2018, that is done on the main code
