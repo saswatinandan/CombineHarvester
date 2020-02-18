@@ -278,31 +278,38 @@ def check_systematics (output_file, bins) :
                     nominal  = tfileout.Get( "%s/%s" % (obj0_name, name_nominal) )
                     histo_up = tfileout.Get( "%s/%s" % (obj0_name, name_up ))
                     histo_do = tfileout.Get( "%s/%s" % (obj0_name, obj_name) )
-                    did_something = 0
+                    did_something_do = 0
+                    did_something_up = 0
+                    did_something_nom = 0
                     for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
                         if histo_do.GetBinContent(binn) == 0 and histo_up.GetBinContent(binn) > 0 :
                             histo_do.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_up.GetBinContent(binn)  )
                             # down = nominal / (up/nominal)
-                            did_something = 1
+                            did_something_do = 1
                         if histo_up.GetBinContent(binn) == 0 and histo_do.GetBinContent(binn) > 0 :
                             histo_up.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_do.GetBinContent(binn)  )
                             # down = nominal / (up/nominal)
-                            did_something = 1
+                            did_something_up = 1
                             # up = nominal/(down/nominal)
-                        if nominal.GetBinContent(binn) == 0 :
-                            if histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0 :
+                        if nominal.GetBinContent(binn) <= 0 :
+                            if nominal.GetBinContent(binn) == 0 and histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0 :
                                 raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
                             histo_up.SetBinContent(binn, 0.00001 )
                             nominal.SetBinContent(binn, 0.00001 )
                             histo_do.SetBinContent(binn, 0.00001 )
-                            did_something = 1
+                            did_something_nom = 1
+                            did_something_do = 1
+                            did_something_up = 1
 
-                    if did_something == 1 :
-                        print ("modifyed ", obj.GetName().replace(name_nominal, ""), " in process: ", name_nominal)
+                    if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
+                        print ("modifyed ", obj.GetName().replace(name_nominal, "").replace("Down", ""), " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
                         tfileout.cd(obj0_name)
-                        histo_up.Write()
-                        nominal.Write()
-                        histo_do.Write()
+                        if did_something_up == 1 :
+                            histo_up.Write()
+                        if did_something_nom == 1 :
+                            nominal.Write()
+                        if did_something_do == 1 :
+                            histo_do.Write()
                         tfileout.cd()
     tfileout.Close()
 
