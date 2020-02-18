@@ -292,7 +292,7 @@ def check_systematics (output_file, bins) :
                             did_something_up = 1
                             # up = nominal/(down/nominal)
                         if nominal.GetBinContent(binn) <= 0 :
-                            if nominal.GetBinContent(binn) == 0 and histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0 :
+                            if nominal.GetBinContent(binn) == 0 and (histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0) :
                                 raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
                             histo_up.SetBinContent(binn, 0.00001 )
                             nominal.SetBinContent(binn, 0.00001 )
