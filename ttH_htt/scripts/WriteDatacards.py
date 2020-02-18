@@ -222,24 +222,24 @@ if tH_kin : # [k for k,v in list_channel_opt.items()
 ########################################
 if shape :
     ########################################
-    # fakes shape syst -- all uncorrelated
-    for fake_shape_syst in fake_shape_systs_uncorrelated :
-        cb.cp().process(["fakes_data"]).AddSyst(cb,  fake_shape_syst, "shape", ch.SystMap()(1.0))
-        print ("added " + fake_shape_syst + " as shape uncertainty to " + "fakes_data")
-    ########################################
     # MC estimated shape syst
-    for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated + JES_shape_systs_Uncorrelated :
-        if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
-        cb.cp().process(MC_proc).AddSyst(cb,  MC_shape_syst, "shape", ch.SystMap()(1.0))
-        print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
+    #for MC_shape_syst in MC_shape_systs_uncorrelated + MC_shape_systs_correlated + JES_shape_systs_Uncorrelated :
+    #    if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
+    #    cb.cp().process(MC_proc).AddSyst(cb,  MC_shape_syst, "shape", ch.SystMap()(1.0))
+    #    print ("added " + MC_shape_syst + " as shape uncertainty to the MC processes")
     ########################################
     # channel specific estimated shape syst
-    #print("specific_shape", specific_shape)
     specific_shape_systs = specific_syst_list["specific_shape"]
     print("specific_shape_systs", specific_syst_list['specific_shape_to_shape_systs'])
     for specific_syst in specific_shape_systs :
+        if era == 2018 and specific_syst == "CMS_ttHl_l1PreFire" :
+            continue
         if channel not in specific_shape_systs[specific_syst]["channels"] :
             continue
+        #if specific_shape_systs[specific_syst]["proc"] == "MCproc" :
+        #    applyTo = MC_proc
+        #else :
+        #    applyTo = specific_shape_systs[specific_syst]["proc"]
         procs = list_proc(specific_shape_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
         # that above take the overlap of the lists
         if len(procs) == 0 :
@@ -250,7 +250,6 @@ if shape :
 ########################################
 # Specific channels lnN syst
 specific_ln_systs  = specific_syst_list["specific_ln_systs"]
-
 for specific_syst in specific_ln_systs :
     if channel not in specific_ln_systs[specific_syst]["channels"] :
         continue
@@ -301,74 +300,44 @@ else :
 # rename some shape systematics according to era to keep them uncorrelated
 if shape :
     ########################################
-    # fakes shape syst
-    for fake_shape_syst in fake_shape_systs_uncorrelated :
-        fake_shape_syst_era = fake_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % (str(era-2000)))
-        cb.cp().process(["fakes_data"]).RenameSystematic(cb, fake_shape_syst, fake_shape_syst_era)
-        print ("renamed " + fake_shape_syst + " to " + "fakes_data" + " as: " + fake_shape_syst_era)
-    ########################################
-    # MC estimated shape syst
-    for MC_shape_syst in MC_shape_systs_uncorrelated :
-        if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
-        if MC_shape_syst == "CMS_ttHl_l1PreFire" :
-            cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_l1PreFire", "CMS_ttHl_L1PreFiring")
-            print ("renamed CMS_ttHl_l1PreFire as shape uncertainty to MC prcesses to CMS_ttHl17_L1PreFiring" )
-        if MC_shape_syst == "CMS_ttHl_trigger" :
-            MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")) + "_" + channel
-        else :
-            MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
-        cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
-        print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
-    for MC_shape_syst in JES_shape_systs_Uncorrelated :
-        MC_shape_syst_era = MC_shape_syst.replace("Era", str(era))
-        cb.cp().process(MC_proc).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era)
-        print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
-
-    cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_JES",   "CMS_scale_j")
-    print ("renamed CMS_ttHl_JES to CMS_scale_j to the MC processes ")
-
-    cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_tauES", "CMS_scale_t")
-    print ("renamed CMS_ttHl_tauES to CMS_scale_t to the MC processes ")
-
-    if channel in ["1l_2tau", "1l_1tau"] :
-        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger_leptau" % str(era).replace("20",""))
-        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger_leptau to the MC processes " % str(era).replace("20",""))
-    elif channel in ["0l_2tau"] :
-        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger_tau" % str(era).replace("20",""))
-        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger_tau to the MC processes " % str(era).replace("20",""))
-    else :
-        cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_trigger", "CMS_ttHl%s_trigger" % str(era).replace("20",""))
-        print ("renamed CMS_ttHl_trigger CMS_ttHl%s_trigger to the MC processes " % str(era).replace("20",""))
-
+    #for MC_shape_syst in MC_shape_systs_uncorrelated :
+    # for isMCsplit
     for shape_syst in specific_syst_list["created_shape_to_shape_syst"] :
         cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
         print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
-    # Xanda: FIXME for isMCsplit
-
+    ##################################
     for specific_syst in specific_shape_systs :
         if channel not in specific_shape_systs[specific_syst]["channels"] :
             continue
-        if specific_shape_systs[specific_syst]["correlated"] :
+        if era == 2018 and specific_syst == "CMS_ttHl_l1PreFire" :
             continue
-        MC_shape_syst_era = specific_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
-        cb.cp().process(MC_proc).RenameSystematic(cb, specific_syst, MC_shape_syst_era)
-        print ("renamed " + specific_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
-
-    to_change_corr = {
-        "CMS_ttHl_lepEff_elloose" : "CMS_eff_ttHl_eloose",
-        "CMS_ttHl_lepEff_eltight" : "CMS_eff_ttHl_etight",
-        "CMS_ttHl_lepEff_mutight" : "CMS_eff_ttHl_mtight",
-        "CMS_ttHl_lepEff_muloose" : "CMS_eff_ttHl_mloose"
-    }
-    for key in to_change_corr.keys() :
-        cb.cp().process(MC_proc).RenameSystematic(cb, key, to_change_corr[key])
-        print ("renamed " + key + " as shape uncertainty to MC prcesses to " + to_change_corr[key])
-
-    """
-    FIXME: Missing to rename:
-    CMS_scale_j_[additional year/source tag],
-    CMS_res_j
-    """
+        if specific_shape_systs[specific_syst]["correlated"] and specific_shape_systs[specific_syst]["renameTo"] == None :
+            continue
+        #################
+        procs = list_proc(specific_shape_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
+        # that above take the overlap of the lists
+        if len(procs) == 0 :
+            continue
+        #################
+        if not specific_shape_systs[specific_syst]["renameTo"] == None :
+            MC_shape_syst_era = specific_shape_systs[specific_syst]["renameTo"]
+            cb.cp().process(procs).RenameSystematic(cb, specific_syst, MC_shape_syst_era)
+            print ("renamed " + specific_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
+        else :
+            MC_shape_syst_era = specific_syst
+        if not specific_shape_systs[specific_syst]["correlated"] :
+            MC_shape_syst_era_2 = MC_shape_syst_era.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")).replace("Era", str(era))
+            cb.cp().process(procs).RenameSystematic(cb, MC_shape_syst_era, MC_shape_syst_era_2)
+            print ("renamed " + MC_shape_syst_era + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_2)
+        if specific_syst == "CMS_ttHl_trigger" :
+            if channel in ["1l_2tau", "1l_1tau"] :
+                MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_leptau"
+            elif channel in ["0l_2tau"] :
+                MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_tau"
+            else :
+                MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_" + channel
+            cb.cp().process(procs).RenameSystematic(cb, MC_shape_syst_era_2, MC_shape_syst_era_3)
+            print ("renamed " + MC_shape_syst_era_2 + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
 
 ########################################
 # output the card
@@ -378,13 +347,9 @@ else :
     output_file = options.output_file
 
 bins = cb.bin_set()
-#"""
 for b in bins :
     print ("\n Output file: " + output_file + ".txt", b )
-    #
-    #cb.cp().bin([b]).ForEachSyst(checkSyst)
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
-#"""
 print ("Do not allow Zero shape systematics variations")
 check_systematics(output_file, bins)
 

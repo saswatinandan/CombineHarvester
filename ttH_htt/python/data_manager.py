@@ -265,7 +265,6 @@ def check_systematics (output_file, bins) :
                 #tfileout.get()
                 obj =  key.ReadObj()
                 obj_name = key.GetName()
-                #print(obj_name)
                 if type(obj) is not ROOT.TH1F : continue
                 if "Down" in obj_name :
                     name_nominal = obj_name.split("_CMS")[0]
@@ -282,17 +281,17 @@ def check_systematics (output_file, bins) :
                     did_something_up = 0
                     did_something_nom = 0
                     for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
-                        if histo_do.GetBinContent(binn) == 0 and histo_up.GetBinContent(binn) > 0 :
+                        if histo_do.GetBinContent(binn) == 0 and abs(histo_up.GetBinContent(binn) > 0) :
                             histo_do.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_up.GetBinContent(binn)  )
                             # down = nominal / (up/nominal)
                             did_something_do = 1
-                        if histo_up.GetBinContent(binn) == 0 and histo_do.GetBinContent(binn) > 0 :
+                        if histo_up.GetBinContent(binn) == 0 and abs(histo_do.GetBinContent(binn)) > 0 :
                             histo_up.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_do.GetBinContent(binn)  )
                             # down = nominal / (up/nominal)
                             did_something_up = 1
                             # up = nominal/(down/nominal)
                         if nominal.GetBinContent(binn) <= 0 :
-                            if nominal.GetBinContent(binn) == 0 and (histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0) :
+                            if nominal.GetBinContent(binn) == 0 and (abs(histo_do.GetBinContent(binn)) > 0 or  abs(histo_up.GetBinContent(binn)) > 0) :
                                 raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
                             histo_up.SetBinContent(binn, 0.00001 )
                             nominal.SetBinContent(binn, 0.00001 )
