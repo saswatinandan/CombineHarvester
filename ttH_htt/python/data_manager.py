@@ -292,21 +292,17 @@ def check_systematics (output_file, bins) :
                         if nominal.GetBinContent(binn) == 0 :
                             if histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0 :
                                 raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
-                            histo_up.SetBinContent(binn, 0.0001 )
-                            nominal.SetBinContent(binn, 0.0001 )
-                            histo_do.SetBinContent(binn, 0.0001 )
+                            histo_up.SetBinContent(binn, 0.00001 )
+                            nominal.SetBinContent(binn, 0.00001 )
+                            histo_do.SetBinContent(binn, 0.00001 )
                             did_something = 1
 
                     if did_something == 1 :
                         print ("modifyed ", obj.GetName().replace(name_nominal, ""), " in process: ", name_nominal)
-                        #del nominal
                         tfileout.cd(obj0_name)
                         histo_up.Write()
                         nominal.Write()
                         histo_do.Write()
-                        #ROOT.gDirectory.Delete(name_nominal+";1")
-                        #ROOT.gDirectory.Delete(name_up+";1")
-                        #ROOT.gDirectory.Delete(name_do+";1")
                         tfileout.cd()
     tfileout.Close()
 
