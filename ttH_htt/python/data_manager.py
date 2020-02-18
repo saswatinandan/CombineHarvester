@@ -7,18 +7,22 @@ from subprocess import Popen, PIPE
 import glob
 
 def checkSyst(syst) :
+    print ("if do = up or do = nom:  do nom/up")
     if syst.type() != "shape" :
+        print ("lnN ", syst.name(), syst.value_u(), syst.value_d())
         return
+    print (syst.type())
     old_hd  = syst.shape_d()
     old_hu  = syst.shape_u()
     nominal = syst.shape()
     did_something = 0
     for bin in xrange(1, old_hu.GetNbinsX() + 1 ) :
-        if abs(old_hu.GetBinContent(bin) - old_hd.GetBinContent(bin)) < 0.01 :
+        if abs(old_hu.GetBinContent(bin) - old_hd.GetBinContent(bin)) < 0.01 or abs(nominal.GetBinContent(bin) - old_hd.GetBinContent(bin)) < 0.01 :
             old_hd.SetBinContent(bin, nominal.GetBinContent(bin))
             did_something = 1
-    if did_something == 1 :
+    if 0 < 1 or did_something == 1 :
         syst.set_shapes(old_hu, old_hd, nominal)
+        print ("modifyed ", syst.name(), nominal.GetName())
         return
     else :
         return
@@ -249,6 +253,66 @@ def rename_tH_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacar
     #m = m.replace(test_name_ttH.replace("p0", ""), "ttH")
     f2.write(m)
     f2.close()
+
+def check_systematics (output_file, bins) :
+    tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
+    tfileout.cd()
+    for bb in bins :
+        for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
+            obj0 =  keyO.ReadObj()
+            obj0_name  = keyO.GetName()
+            for nkey, key in enumerate(obj0.GetListOfKeys()) :
+                #tfileout.get()
+                obj =  key.ReadObj()
+                obj_name = key.GetName()
+                #print(obj_name)
+                if type(obj) is not ROOT.TH1F : continue
+                if "Down" in obj_name :
+                    name_nominal = obj_name.split("_CMS")[0]
+                    name_up = obj_name.replace("Down", "Up")
+                    name_do = obj_name
+                    #print( obj_name, name_nominal, name_up , obj0_name , bb)
+                    nominal  = ROOT.TH1F()
+                    histo_up = ROOT.TH1F()
+                    histo_do = ROOT.TH1F()
+                    nominal  = tfileout.Get( "%s/%s" % (obj0_name, name_nominal) )
+                    histo_up = tfileout.Get( "%s/%s" % (obj0_name, name_up ))
+                    histo_do = tfileout.Get( "%s/%s" % (obj0_name, obj_name) )
+                    did_something = 0
+                    for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
+                        if histo_do.GetBinContent(binn) == 0 and histo_up.GetBinContent(binn) > 0 :
+                            histo_do.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_up.GetBinContent(binn)  )
+                            # down = nominal / (up/nominal)
+                            did_something = 1
+                        if histo_up.GetBinContent(binn) == 0 and histo_do.GetBinContent(binn) > 0 :
+                            histo_up.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_do.GetBinContent(binn)  )
+                            # down = nominal / (up/nominal)
+                            did_something = 1
+                            # up = nominal/(down/nominal)
+                        if nominal.GetBinContent(binn) == 0 :
+                            if histo_do.GetBinContent(binn) > 0 or  histo_up.GetBinContent(binn) > 0 :
+                                raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
+                            histo_up.SetBinContent(binn, 0.0001 )
+                            nominal.SetBinContent(binn, 0.0001 )
+                            histo_do.SetBinContent(binn, 0.0001 )
+                            did_something = 1
+
+                    if did_something == 1 :
+                        print ("modifyed ", obj.GetName().replace(name_nominal, ""), " in process: ", name_nominal)
+                        #del nominal
+                        tfileout.cd(obj0_name)
+                        histo_up.Write()
+                        nominal.Write()
+                        histo_do.Write()
+                        #ROOT.gDirectory.Delete(name_nominal+";1")
+                        #ROOT.gDirectory.Delete(name_up+";1")
+                        #ROOT.gDirectory.Delete(name_do+";1")
+                        tfileout.cd()
+    tfileout.Close()
+
+
+
+
 
 
 def rename_tH(output_file, coupling, bins, no_data, all_procs, preparedatacard) :

@@ -4,7 +4,7 @@ import CombineHarvester.CombineTools.ch as ch
 import ROOT
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst
+from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -378,16 +378,20 @@ else :
     output_file = options.output_file
 
 bins = cb.bin_set()
+#"""
 for b in bins :
     print ("\n Output file: " + output_file + ".txt", b )
-    print ("Do not allow Zero shape systematics variations")
-    print ("if do = up do nom/up")
-    cb.cp().channel([b]).ForEachSyst(checkSyst)
+    #
+    #cb.cp().bin([b]).ForEachSyst(checkSyst)
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
+#"""
+print ("Do not allow Zero shape systematics variations")
+check_systematics(output_file, bins)
 
 if no_data :
     print("Making data_obs as the asimov in SM if asked to do so")
     rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
+
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
     rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
