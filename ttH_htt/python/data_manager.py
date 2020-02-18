@@ -6,6 +6,37 @@ import sys, os, re, shlex
 from subprocess import Popen, PIPE
 import glob
 
+def checkSyst(syst) :
+    if syst.type() != "shape" :
+        return
+    old_hd  = syst.shape_d()
+    old_hu  = syst.shape_u()
+    nominal = syst.shape()
+    did_something = 0
+    for bin in xrange(1, old_hu.GetNbinsX() + 1 ) :
+        if abs(old_hu.GetBinContent(bin) - old_hd.GetBinContent(bin)) < 0.01 :
+            old_hd.SetBinContent(bin, nominal.GetBinContent(bin))
+            did_something = 1
+    if did_something == 1 :
+        syst.set_shapes(old_hu, old_hd, nominal)
+        return
+    else :
+        return
+
+### reminiscent of doing cards with wrong XS normalization, leave it here in case we need again
+def scaleBy(proc):
+    # scale tHq by 3 and WZ by 2
+    if "tHq" in proc.process() :
+        proc.set_rate(proc.rate()*3)
+        print ("scale " +   str(proc.process()) +  " by " + str(3))
+    #if "WZ"  in proc.process() :
+    #     proc.set_rate(proc.rate()*2)
+    #     print ("scale " +   str(proc.process()) +  " by " + str(2))
+    #    p.set_signal(True)
+    ### use as:
+    #print ("placeholder for 2lss 1tau processes ")
+    #cb.ForEachProc(scaleBy)
+
 def extract_thu(proc, coupling) :
     import pandas
     tagf = coupling.replace('p', '.').replace('m','-').replace('kt_', "")

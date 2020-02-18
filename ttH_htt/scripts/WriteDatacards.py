@@ -4,7 +4,7 @@ import CombineHarvester.CombineTools.ch as ch
 import ROOT
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc, make_threshold
+from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -127,12 +127,15 @@ cb.AddProcesses(    ['*'], [''], ['13TeV'], [''], higgs_procs_plain, cats, True)
 #######################################
 print ("Adding lumi syt uncorrelated/year")
 # check if we keep the lumis/era correlated or not
-cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_%s" % str(era), "lnN", ch.SystMap()(lumiSyst[era]))
-cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_2016_2017_2018", "lnN", ch.SystMap()(lumi_2016_2017_2018[era]))
+cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_%s" % str(era), "lnN", ch.SystMap()(lumiSyst[era]))
+cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_XY", "lnN", ch.SystMap()(lumi_2016_2017_2018[era]))
 if era in [2017, 2018] :
-    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_2017_2018", "lnN", ch.SystMap()(lumi_2017_2018[era]))
+    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_LS",  "lnN", ch.SystMap()(lumi_2017_2018[era]))
+    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_BCC", "lnN", ch.SystMap()(lumi_13TeV_BCC[era]))
 if era in [2017, 2016] :
-    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_2016_2017", "lnN", ch.SystMap()(lumi_2016_2017[era]))
+    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_BBD", "lnN", ch.SystMap()(lumi_2016_2017[era]))
+    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_DB",  "lnN", ch.SystMap()(lumi_13TeV_DB[era]))
+    cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_GS",  "lnN", ch.SystMap()(lumi_13TeV_GS[era]))
 
 
 #######################################
@@ -307,6 +310,9 @@ if shape :
     # MC estimated shape syst
     for MC_shape_syst in MC_shape_systs_uncorrelated :
         if era == 2018 and MC_shape_syst == "CMS_ttHl_l1PreFire" : continue
+        if MC_shape_syst == "CMS_ttHl_l1PreFire" :
+            cb.cp().process(MC_proc).RenameSystematic(cb, "CMS_ttHl_l1PreFire", "CMS_ttHl_L1PreFiring")
+            print ("renamed CMS_ttHl_l1PreFire as shape uncertainty to MC prcesses to CMS_ttHl17_L1PreFiring" )
         if MC_shape_syst == "CMS_ttHl_trigger" :
             MC_shape_syst_era = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")) + "_" + channel
         else :
@@ -339,20 +345,30 @@ if shape :
         print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
     # Xanda: FIXME for isMCsplit
 
+    for specific_syst in specific_shape_systs :
+        if channel not in specific_shape_systs[specific_syst]["channels"] :
+            continue
+        if specific_shape_systs[specific_syst]["correlated"] :
+            continue
+        MC_shape_syst_era = specific_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20",""))
+        cb.cp().process(MC_proc).RenameSystematic(cb, specific_syst, MC_shape_syst_era)
+        print ("renamed " + specific_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era)
 
-### reminiscent of doing cards with wrong XS normalization, leave it here in case we need again
-def scaleBy(proc):
-    # scale tHq by 3 and WZ by 2
-    if "tHq" in proc.process() :
-        proc.set_rate(proc.rate()*3)
-        print ("scale " +   str(proc.process()) +  " by " + str(3))
-    #if "WZ"  in proc.process() :
-    #     proc.set_rate(proc.rate()*2)
-    #     print ("scale " +   str(proc.process()) +  " by " + str(2))
-    #    p.set_signal(True)
+    to_change_corr = {
+        "CMS_ttHl_lepEff_elloose" : "CMS_eff_ttHl_eloose",
+        "CMS_ttHl_lepEff_eltight" : "CMS_eff_ttHl_etight",
+        "CMS_ttHl_lepEff_mutight" : "CMS_eff_ttHl_mtight",
+        "CMS_ttHl_lepEff_muloose" : "CMS_eff_ttHl_mloose"
+    }
+    for key in to_change_corr.keys() :
+        cb.cp().process(MC_proc).RenameSystematic(cb, key, to_change_corr[key])
+        print ("renamed " + key + " as shape uncertainty to MC prcesses to " + to_change_corr[key])
 
-#print ("placeholder for 2lss 1tau processes ")
-#cb.ForEachProc(scaleBy)
+    """
+    FIXME: Missing to rename:
+    CMS_scale_j_[additional year/source tag],
+    CMS_res_j
+    """
 
 ########################################
 # output the card
@@ -361,19 +377,19 @@ if options.output_file == "none" :
 else :
     output_file = options.output_file
 
-#if not (coupling == "none") :
-#    output_file += "_" + coupling
-
 bins = cb.bin_set()
 for b in bins :
     print ("\n Output file: " + output_file + ".txt", b )
+    print ("Do not allow Zero shape systematics variations")
+    print ("if do = up do nom/up")
+    cb.cp().channel([b]).ForEachSyst(checkSyst)
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
-    #cb.cp().bin([output_file]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
 
-rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
+if no_data :
+    print("Making data_obs as the asimov in SM if asked to do so")
+    rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
     rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
-    
 
 sys.stdout.flush()
