@@ -2,9 +2,10 @@
 
 import CombineHarvester.CombineTools.ch as ch
 import ROOT
+import shutil
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
-from CombineHarvester.ttH_htt.data_manager import rename_tH, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics
+from CombineHarvester.ttH_htt.data_manager import manipulate_cards, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -28,7 +29,7 @@ parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      h
 
 (options, args) = parser.parse_args()
 
-inputShapes = options.inputShapes
+inputShapesRaw = options.inputShapes
 channel     = options.channel
 era         = options.era
 shape       = options.shapeSyst
@@ -93,6 +94,11 @@ elif only_BKG_sig :
     print ("signal        (new): ", ["TTW", "TTZ"])
     higgs_procs_plain = ["TTW", "TTZ"] #higgs_procs
 
+print ("Do not allow Zero shape systematics variations")
+inputShapes = inputShapesRaw.replace(".root", "_mod.root")
+shutil.copy2(inputShapesRaw, inputShapes)
+print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
+check_systematics(inputShapes, coupling)
 
 # check a threshold on processes
 print ("do not add a process to datacard if the yield is smaller than 0.01")
@@ -234,6 +240,8 @@ if shape :
     for specific_syst in specific_shape_systs :
         if era == 2018 and specific_syst == "CMS_ttHl_l1PreFire" :
             continue
+        if specific_syst == "CMS_ttHl_Clos_e_shape" and era != 2018:
+            continue
         if channel not in specific_shape_systs[specific_syst]["channels"] :
             continue
         #if specific_shape_systs[specific_syst]["proc"] == "MCproc" :
@@ -267,9 +275,9 @@ for specific_syst in specific_ln_systs :
     print ("added " + name_syst + " with value " + str(specific_ln_systs[specific_syst]["value"]) + " to processes: ",  specific_ln_systs[specific_syst]["proc"] )
 
 ########################################
-# Construct templates for fake/gentau syst if relevant
 finalFile = inputShapes
 if list_channel_opt[channel]["isSMCSplit"] :
+    print ("Construct templates for fake/gentau systematics:")
     specific_ln_shape_systs    = specific_syst_list["specific_ln_to_shape_systs"]
     specific_shape_shape_systs = specific_syst_list["specific_shape_to_shape_systs"]
     finalFile = construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_systs, inputShapes , MC_proc, shape, noX_prefix )
@@ -300,11 +308,10 @@ else :
 # rename some shape systematics according to era to keep them uncorrelated
 if shape :
     ########################################
-    #for MC_shape_syst in MC_shape_systs_uncorrelated :
-    # for isMCsplit
-    for shape_syst in specific_syst_list["created_shape_to_shape_syst"] :
-        cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
-        print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
+    if list_channel_opt[channel]["isSMCSplit"] :
+        for shape_syst in specific_syst_list["created_shape_to_shape_syst"] :
+            cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
+            print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
     ##################################
     for specific_syst in specific_shape_systs :
         if channel not in specific_shape_systs[specific_syst]["channels"] :
@@ -350,15 +357,13 @@ bins = cb.bin_set()
 for b in bins :
     print ("\n Output file: " + output_file + ".txt", b )
     cb.cp().bin([b]).mass(["*"]).WriteDatacard(output_file + ".txt" , output_file + ".root")
-print ("Do not allow Zero shape systematics variations")
-check_systematics(output_file, bins)
 
 if no_data :
     print("Making data_obs as the asimov in SM if asked to do so")
-    rename_tH(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
+    manipulate_cards(output_file, "none", bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
 
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     print("Renaming tH processes (remove the coupling mention to combime)")
-    rename_tH(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
+    manipulate_cards(output_file, coupling, bins, no_data, bkg_procs_from_MC+higgs_procs_plain+bkg_proc_from_data, inputShapes)
 
 sys.stdout.flush()

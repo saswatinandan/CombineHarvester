@@ -4,7 +4,7 @@ def list_channels(analysis, fake_mc) :
         decays = ["_hww", "_hzz", "_htt", "_hzg", "_hmm" ]
         decays_hh = ["_tttt", "_zzzz", "_wwww", "_ttzz", "_ttww", "_zzww"  ]
         higgs_procs = [ [y + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
-        #higgs_procs = higgs_procs + [["HH" + x  for x in decays_hh]]
+        higgs_procs = higgs_procs + [["HH" + x  for x in decays_hh]]
         conversions = "Convs"
         #print (higgs_procs)
         if fake_mc :
@@ -17,22 +17,22 @@ def list_channels(analysis, fake_mc) :
         info_channel = {
         "2lss_0tau" : {
             "bkg_proc_from_data" : [ fakes  , flips  ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT",  "HH",],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ"],
             "isSMCSplit" : False
         },
         "4lctrl" : {
             "bkg_proc_from_data" : [ fakes  , flips  ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT",  "HH",],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ"],
             "isSMCSplit" : False
         },
         "3lctrl" : {
             "bkg_proc_from_data" : [ fakes  , flips  ],
-            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ", "TT",  "HH",],
+            "bkg_procs_from_MC"  : ["TTW", "TTWW", "TTZ", "Rares", conversions, "WZ", "ZZ"],
             "isSMCSplit" : False
         },
         "2lss_1tau" : {
             "bkg_proc_from_data" : [ fakes , flips ], #
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT", "HH"],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions],
             "isSMCSplit" : True
             },
         "3l_0tau"   : {

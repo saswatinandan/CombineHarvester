@@ -207,7 +207,7 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
     return finalFile
 
-def rename_tH_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
+def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
     print "Post Manipulate cards (if needed)"
     print (output_file)
     test_name_tHq = "tHq_%s" % coupling
@@ -254,62 +254,69 @@ def rename_tH_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacar
     f2.write(m)
     f2.close()
 
-def check_systematics (output_file, bins) :
-    tfileout = ROOT.TFile(output_file + ".root", "UPDATE")
+def check_systematics (inputShapes, coupling) :
+    if coupling == "none" :
+        print ("Not doing cards with couplings, skping to modify all shapes with 'kt' mark on it from tHq/tHW/HH")
+    ## it assumes no subdirectories in the preparedatacards file,
+    tfileout = ROOT.TFile(inputShapes, "UPDATE")
     tfileout.cd()
-    for bb in bins :
-        for nkey, keyO in enumerate(tfileout.GetListOfKeys()) :
-            obj0 =  keyO.ReadObj()
-            obj0_name  = keyO.GetName()
-            for nkey, key in enumerate(obj0.GetListOfKeys()) :
-                #tfileout.get()
-                obj =  key.ReadObj()
-                obj_name = key.GetName()
-                if type(obj) is not ROOT.TH1F : continue
-                if "Down" in obj_name :
-                    name_nominal = obj_name.split("_CMS")[0]
-                    name_up = obj_name.replace("Down", "Up")
-                    name_do = obj_name
-                    #print( obj_name, name_nominal, name_up , obj0_name , bb)
-                    nominal  = ROOT.TH1F()
-                    histo_up = ROOT.TH1F()
-                    histo_do = ROOT.TH1F()
-                    nominal  = tfileout.Get( "%s/%s" % (obj0_name, name_nominal) )
-                    histo_up = tfileout.Get( "%s/%s" % (obj0_name, name_up ))
-                    histo_do = tfileout.Get( "%s/%s" % (obj0_name, obj_name) )
-                    did_something_do = 0
-                    did_something_up = 0
-                    did_something_nom = 0
-                    for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
-                        if histo_do.GetBinContent(binn) == 0 and abs(histo_up.GetBinContent(binn) > 0) :
-                            histo_do.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_up.GetBinContent(binn)  )
-                            # down = nominal / (up/nominal)
-                            did_something_do = 1
-                        if histo_up.GetBinContent(binn) == 0 and abs(histo_do.GetBinContent(binn)) > 0 :
-                            histo_up.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_do.GetBinContent(binn)  )
-                            # down = nominal / (up/nominal)
-                            did_something_up = 1
-                            # up = nominal/(down/nominal)
-                        if nominal.GetBinContent(binn) <= 0 :
-                            if nominal.GetBinContent(binn) == 0 and (abs(histo_do.GetBinContent(binn)) > 0 or  abs(histo_up.GetBinContent(binn)) > 0) :
-                                raise RuntimeException("help, nominal is zero while up/do not", histo_do.GetBinContent(binn) > 0 , histo_up.GetBinContent(binn))
-                            histo_up.SetBinContent(binn, 0.00001 )
-                            nominal.SetBinContent(binn, 0.00001 )
-                            histo_do.SetBinContent(binn, 0.00001 )
-                            did_something_nom = 1
-                            did_something_do = 1
-                            did_something_up = 1
+    for nkey, key in enumerate(tfileout.GetListOfKeys()) :
+        obj =  key.ReadObj()
+        obj_name = key.GetName()
+        if coupling == "none" and "_kt_" in obj_name :
+            continue
+        if type(obj) is not ROOT.TH1F :
+            continue
+        if "Down" in obj_name :
+            name_nominal = obj_name.split("_CMS")[0]
+            name_up = obj_name.replace("Down", "Up")
+            name_do = obj_name
+            nominal  = ROOT.TH1F()
+            histo_up = ROOT.TH1F()
+            histo_do = ROOT.TH1F()
+            nominal  = tfileout.Get( name_nominal )
+            histo_up = tfileout.Get( name_up )
+            histo_do = tfileout.Get( obj_name )
+            did_something_do = 0
+            did_something_up = 0
+            did_something_nom = 0
+            for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
+                if nominal.GetBinContent(binn) > 0 :
+                    ## if up or do is zero fixe it
+                    if histo_do.GetBinContent(binn) == 0 and abs(histo_up.GetBinContent(binn) > 0) :
+                        histo_do.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_up.GetBinContent(binn)  )
+                        # down = nominal / (up/nominal)
+                        did_something_do = 1
+                    if histo_up.GetBinContent(binn) == 0 and abs(histo_do.GetBinContent(binn)) > 0 :
+                        histo_up.SetBinContent(binn, nominal.GetBinContent(binn)*nominal.GetBinContent(binn)/histo_do.GetBinContent(binn)  )
+                        did_something_up = 1
+                        # up = nominal/(down/nominal)
+                    ##### then, deflate if too big
+                    # if up/nom > 10: up = 10*nom
+                    # if down/nom > 10: down = 10*nom
+                    if histo_do.GetBinContent(binn)/nominal.GetBinContent(binn) > 10  :
+                        histo_do.SetBinContent(binn, 10*nominal.GetBinContent(binn)  )
+                        did_something_do = 1
+                    if histo_up.GetBinContent(binn)/nominal.GetBinContent(binn) > 10 :
+                        histo_up.SetBinContent(binn, 10*nominal.GetBinContent(binn) )
+                        did_something_up = 1
+                else :
+                    if nominal.GetBinContent(binn) == 0 and (abs(histo_do.GetBinContent(binn)) > 0 or  abs(histo_up.GetBinContent(binn)) > 0) :
+                        print ("WARNING, nominal is zero while up/do not; up/do = %s/%s. Setting nom/up/do 0.00001 " % (str(histo_do.GetBinContent(binn))  , str(histo_up.GetBinContent(binn))))
+                    histo_up.SetBinContent(binn, 0.00001 )
+                    nominal.SetBinContent(binn, 0.00001 )
+                    histo_do.SetBinContent(binn, 0.00001 )
+                    did_something_nom = 1
+                    did_something_do = 1
+                    did_something_up = 1
 
-                    if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
-                        print ("modifyed ", obj.GetName().replace(name_nominal, "").replace("Down", ""), " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
-                        tfileout.cd(obj0_name)
-                        if did_something_up == 1 :
-                            histo_up.Write()
-                        if did_something_nom == 1 :
-                            nominal.Write()
-                        if did_something_do == 1 :
-                            histo_do.Write()
-                        tfileout.cd()
+            if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
+                print ("modified ", obj.GetName().replace(name_nominal, "").replace("Down", ""), " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
+                #tfileout.cd(obj0_name)
+                histo_up.Write()
+                nominal.Write()
+                histo_do.Write()
+
     tfileout.Close()
 
 
@@ -317,7 +324,7 @@ def check_systematics (output_file, bins) :
 
 
 
-def rename_tH(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
+def manipulate_cards(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
     print "Post Manipulate cards (if needed)"
     test_name_tHq = "tHq_%s" % coupling
     test_name_tHW = "tHW_%s" % coupling
