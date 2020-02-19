@@ -107,7 +107,7 @@ def specific_syst(analysis, list_channel_opt) :
 
         ## if it is uncorrelated and the name or renameTo contains "CMS_ttHl_" leave it (a 16/17/18 will be added just after ttHl), if not add an "Era" where the year should be (2016/2017/2018 will replace "Era")
         specific_shape = {
-            #"CMS_ttHl_EWK_jet"      : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"] or "ZZ" in v["bkg_procs_from_MC"]]},
+            #"CMS_ttHl_EWK_jet"      : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"] or "ZZ" in v["bkg_procs_from_MC"]]}, ## added only on SRs atm
             #####################################
             "CMS_ttHl_Clos_e_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]}, # should be only 2018, that is done on the main code
             #"CMS_ttHl_Clos_m_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : list(list_channel_opt.keys())}, # there is no shape tend in
@@ -128,7 +128,7 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_btag_cErr1"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_btag_cErr2"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #################################
-            "CMS_ttHl_JER"                  : {"correlated" : True, "renameTo" : "CMS_res_j"              ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JER"                  : {"correlated" : False, "renameTo" : "CMS_res_j"             ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_UnclusteredEn"        : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_pileup"               : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #### JEC_regrouped

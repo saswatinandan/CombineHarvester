@@ -271,6 +271,7 @@ def check_systematics (inputShapes, coupling) :
             name_nominal = obj_name.split("_CMS")[0]
             name_up = obj_name.replace("Down", "Up")
             name_do = obj_name
+            name_syst = obj.GetName().replace(name_nominal, "").replace("Down", "")
             nominal  = ROOT.TH1F()
             histo_up = ROOT.TH1F()
             histo_do = ROOT.TH1F()
@@ -294,11 +295,13 @@ def check_systematics (inputShapes, coupling) :
                     ##### then, deflate if too big
                     # if up/nom > 10: up = 10*nom
                     # if down/nom > 10: down = 10*nom
-                    if histo_do.GetBinContent(binn)/nominal.GetBinContent(binn) > 10  :
-                        histo_do.SetBinContent(binn, 10*nominal.GetBinContent(binn)  )
+                    if histo_do.GetBinContent(binn)/nominal.GetBinContent(binn) > 100  :
+                        print "WARNING: big shift in template for syst template %s down in process %s : variation = %g"%( name_syst, name_nominal, histo_do.GetBinContent(binn)/nominal.GetBinContent(binn))
+                        histo_do.SetBinContent(binn, 100*nominal.GetBinContent(binn)  )
                         did_something_do = 1
-                    if histo_up.GetBinContent(binn)/nominal.GetBinContent(binn) > 10 :
-                        histo_up.SetBinContent(binn, 10*nominal.GetBinContent(binn) )
+                    if histo_up.GetBinContent(binn)/nominal.GetBinContent(binn) > 100 :
+                        print "WARNING: big shift in template for syst template %s up in process %s : variation = %g"%( name_syst, name_nominal, histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
+                        histo_up.SetBinContent(binn, 100*nominal.GetBinContent(binn) )
                         did_something_up = 1
                 else :
                     if nominal.GetBinContent(binn) == 0 and (abs(histo_do.GetBinContent(binn)) > 0 or  abs(histo_up.GetBinContent(binn)) > 0) :
@@ -311,7 +314,7 @@ def check_systematics (inputShapes, coupling) :
                     did_something_up = 1
 
             if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
-                print ("modified ", obj.GetName().replace(name_nominal, "").replace("Down", ""), " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
+                print ("modified syst templates in ", name_syst, " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
                 #tfileout.cd(obj0_name)
                 histo_up.Write()
                 nominal.Write()
