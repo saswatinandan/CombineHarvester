@@ -37,49 +37,44 @@ def list_channels(analysis, fake_mc) :
             },
         "3l_0tau"   : {
             "bkg_proc_from_data" : [ fakes  ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", "EWK", conversions, "TT",  "HH",],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", "EWK", conversions],
             "isSMCSplit" : False
         },
         "1l_2tau"   : {
-            "bkg_proc_from_data" : [ "data_fakes"       ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "EWK", "Rares", "WZ", "ZZ", "TT",  "HH",],
+            "bkg_proc_from_data" : [ fakes       ],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ"],
             "isSMCSplit" : False
             },
         "2l_2tau"   : {
             "bkg_proc_from_data" : [ fakes       ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "EWK", "Rares", "WZ", "ZZ", "TT",  "HH",],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ"],
             "isSMCSplit" : False
             },
         "3l_1tau"   : {
             "bkg_proc_from_data" : [ fakes, flips   ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT", "HH",],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions],
             "isSMCSplit" : True
             },
         "2los_1tau" : {
             "bkg_proc_from_data" : [ fakes, flips   ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT"],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions],
             "isSMCSplit" : False
         },
         "0l_2tau"   : {
             "bkg_proc_from_data" : [ fakes      ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "EWK", "Rares", "WZ", "ZZ", "DY", "TT", "HH",],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", "DY", "TT"],
             "isSMCSplit" : False
             },
         "1l_1tau"   : {
             "bkg_proc_from_data" : [ fakes      ],
-            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "EWK", "Rares", "WZ", "ZZ", "DY", "TT", "HH",],
+            "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", "DY", "TT"],
             "isSMCSplit" : False
             },
         "4l_0tau"   : {
             "bkg_proc_from_data" : [ fakes, flips   ],
             "bkg_procs_from_MC"  : [ "TTW", "TTWW", "TTZ", "Rares", "WZ", "ZZ", conversions, "TT"],
             "isSMCSplit" : False
-        },
-        "ttWctrl"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
-        "ttZctrl"   : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"], "isSMCSplit" : False},
-        "WZctrl"    : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"],                "isSMCSplit" : False},
-        "ZZctrl"    : { "bkg_proc_from_data" : [             ], "bkg_procs_from_MC"  : ["TTWH", "TTZH", "HH"],                               "isSMCSplit" : False},
-        }
+        }        }
     else : sys.exit("analysis " + analysis + " not implemented")
     return {
         "higgs_procs"      : higgs_procs,
