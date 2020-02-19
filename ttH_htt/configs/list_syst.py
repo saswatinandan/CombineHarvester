@@ -128,7 +128,7 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_btag_cErr1"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_btag_cErr2"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #################################
-            "CMS_ttHl_JER"                  : {"correlated" : False, "renameTo" : "CMS_res_j"             ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JER"                  : {"correlated" : False, "renameTo" : "CMS_res_j_Era"             ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_UnclusteredEn"        : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_pileup"               : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #### JEC_regrouped
