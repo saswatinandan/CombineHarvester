@@ -149,8 +149,8 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
                 central_calc = 0
                 histCentral = ROOT.TH1F()
                 name_syst = shape_to_shape.replace("CMS_", "CMS_constructed_")
-                if not specific_shape_shape_systs[shape_to_shape]["correlated"] :
-                    name_syst = name_systreplace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
+                #if not specific_shape_shape_systs[shape_to_shape]["correlated"] :
+                #    name_syst = name_syst.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
                 for proc in MC_proc :
                     if "Convs" in proc :
                         histFindCentral = "%s" % (proc)
@@ -201,10 +201,17 @@ def construct_templates(cb, ch, specific_ln_shape_systs, specific_shape_shape_sy
     comboutput = p.communicate()[0]
     #if "conversions" in MC_proc : MC_proc.remove("conversions")
     ## fixme: old cards does not have uniform naming convention to tH/VH
+    #MC_proc_less = list(set(list(MC_proc)) - set(["Convs"]))
+    #for shape_syst in created_ln_to_shape_syst + created_shape_to_shape_syst :
+    #    cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
+    #    print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
     MC_proc_less = list(set(list(MC_proc)) - set(["Convs"]))
-    for shape_syst in created_ln_to_shape_syst + created_shape_to_shape_syst :
+    for shape_syst in created_ln_to_shape_syst :
         cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
         print ("added " + shape_syst + " as shape uncertainty to the MC processes, except conversions")
+    for shape_syst in created_shape_to_shape_syst :
+        cb.cp().process(MC_proc_less).AddSyst(cb,  shape_syst, "shape", ch.SystMap()(1.0))
+        print ("added " + shape_syst + " as shape uncertainty to data_fakes")
     return finalFile
 
 def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
@@ -263,7 +270,12 @@ def check_systematics (inputShapes, coupling) :
     for nkey, key in enumerate(tfileout.GetListOfKeys()) :
         obj =  key.ReadObj()
         obj_name = key.GetName()
-        if coupling == "none" and "_kt_" in obj_name :
+        if (coupling == "none" or coupling == "kt_1_kv_1") and "_kt_" in obj_name :
+            continue
+        if not (coupling == "none" or coupling == "kt_1_kv_1") and ("tHq" in obj_name or "tHW" in obj_name) and not coupling in obj_name :
+            continue
+        ### FIXME: not doing BSM HH
+        if "HH" in obj_name and "_kt_" in obj_name :
             continue
         if type(obj) is not ROOT.TH1F :
             continue
