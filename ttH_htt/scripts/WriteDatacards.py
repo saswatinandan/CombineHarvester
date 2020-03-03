@@ -94,6 +94,14 @@ elif only_BKG_sig :
     print ("signal        (new): ", ["TTW", "TTZ"])
     higgs_procs_plain = ["TTW", "TTZ"] #higgs_procs
 
+if tH_kin :
+    print ("HH should not be marked as process")
+    bkg_procs_from_MC += [ entry for entry in higgs_procs_plain if "HH" in  entry]
+    higgs_procs        = [ entries for entries in higgs_procs if not "HH" in entries[0] ]
+    print ("BKG from MC   (new): ", bkg_procs_from_MC)
+    print ("signal        (new): ", higgs_procs)
+    higgs_procs_plain = sum(higgs_procs,[])
+
 print ("Do not allow Zero shape systematics variations")
 inputShapes = inputShapesRaw.replace(".root", "_mod.root")
 shutil.copy2(inputShapesRaw, inputShapes)
@@ -115,6 +123,22 @@ print ("signal        (original): ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
 print("analysis type        :", analysis)
+
+removeProcs = True
+try :
+    print (list_channel_opt[channel]["proc_to_remove"][str(era)])
+except :
+    removeProcs = False
+
+if removeProcs :
+    removeProcslist = list_channel_opt[channel]["proc_to_remove"][str(era)]
+    if not (coupling == "none" or coupling == "kt_1_kv_1") :
+        removeProcslist = [nn.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for nn in list(removeProcslist) if "tHW" in nn or "tHq" in nn]
+    if len(removeProcslist) > 0 :
+        print("Removing processes where systematics blow up (found by hand a posteriory using the list hardcoded on configs/list_channels.py)")
+        higgs_procs_plain = list(set(list(higgs_procs_plain)) - set(list(removeProcslist)))
+        print ("New list of Higgs processes", higgs_procs_plain)
+        print ("Removed", list_channel_opt[channel]["proc_to_remove"][str(era)])
 
 ###########################################
 # start the list of common systematics for all channels
@@ -260,6 +284,7 @@ if shape :
 specific_ln_systs  = specific_syst_list["specific_ln_systs"]
 for specific_syst in specific_ln_systs :
     if channel not in specific_ln_systs[specific_syst]["channels"] :
+        print ("Skipped ", specific_syst , " in ", channel)
         continue
     procs = list_proc(specific_ln_systs[specific_syst], MC_proc, bkg_proc_from_data + bkg_procs_from_MC, specific_syst)
     if len(procs) == 0 :
@@ -309,9 +334,19 @@ else :
 if shape :
     ########################################
     if list_channel_opt[channel]["isSMCSplit"] :
+        MC_proc_less = list(set(list(MC_proc)) - set(["Convs"]))
         for shape_syst in specific_syst_list["created_shape_to_shape_syst"] :
-            cb.cp().process(MC_proc).RenameSystematic(cb, shape_syst, shape_syst.replace("CMS_constructed_", "CMS_"))
-            print ("renamed " + shape_syst + " to " +  shape_syst.replace("CMS_constructed_", "CMS_") + " to the MC processes ")
+            MC_shape_syst = shape_syst.replace("CMS_constructed_", "CMS_")
+            cb.cp().process(MC_proc_less).RenameSystematic(cb, shape_syst, MC_shape_syst)
+            print ("renamed " + shape_syst + " to " +  MC_shape_syst + " to the MC processes ")
+            if "tauES" in shape_syst :
+                MC_shape_syst_era_3 = "CMS_scale_t_Era".replace("Era", str(era))
+                cb.cp().process(MC_proc_less).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era_3)
+                print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
+            else :
+                MC_shape_syst_era_2 = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")).replace("Era", str(era))
+                cb.cp().process(MC_proc_less).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era_2)
+                print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_2)
     ##################################
     for specific_syst in specific_shape_systs :
         if channel not in specific_shape_systs[specific_syst]["channels"] :
