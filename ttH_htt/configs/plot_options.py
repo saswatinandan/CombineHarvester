@@ -17,9 +17,9 @@ def options_plot (analysis, channel, all_procs, Hdecays) :
         if "WZ" in all_procs        : dprocs["WZ"]        = {"color" : 610, "fillStype" : 1001, "label" : "EWK"         , "make border" : True}
         if "TTWW" in all_procs :
             dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "none"        , "make border" : False}
-            dprocs["TTWW"]                                = {"color" : 823, "fillStype" : 1001, "label" : "ttW + ttWW"  , "make border" : True}
+            dprocs["TTWW"]                                = {"color" : 823, "fillStype" : 1001, "label" : "ttW(W)"  , "make border" : True}
         elif "TTW" in all_procs :
-            dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "ttWW"        , "make border" : True}
+            dprocs["TTW"]                                 = {"color" : 823, "fillStype" : 1001, "label" : "ttW"        , "make border" : True}
         if "TTZ" in all_procs       : dprocs["TTZ"]       = {"color" : 822, "fillStype" : 1001, "label" : "ttZ"         , "make border" : True}
         ### signals
         for decay in list(set(list(Hdecays)) - set(["htt"])) :
@@ -63,7 +63,7 @@ def options_plot_ranges (analysis) :
             "3l_0tau"   : { "minY" : -6, "maxY" :  229., "minYerr": 0.501, "maxYerr" : 1.59, "useLogPlot" : False},
             "ttZctrl"   : { "minY" : -6, "maxY" :  229., "minYerr": -0.6, "maxYerr" : 2.85, "useLogPlot" : False},
             "2l_2tau"   : {
-                "minY" : 0.007, "maxY" :  50., 
+                "minY" : 0.007, "maxY" :  50.,
                 "minYerr":  0.0, "maxYerr" : 2.75,
                 "useLogPlot" : True
                 },

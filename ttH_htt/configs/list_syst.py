@@ -102,24 +102,47 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_Rares"            : {"value" : 1.5,  "correlated"   : True,  "proc" : ["Rares"],               "channels" : [k for k,v in list_channel_opt.items() if "Rares" in v["bkg_procs_from_MC"]]},         # for channels with "Rares"
             "CMS_ttHl_trigger_uncorr"   : {"value" : 1.02, "correlated"   : False, "proc" : ["TTW", "TTZ", "Rares"], "channels" : ["2l_2tau", "2los_1tau", "2lss_1tau"]},                                                # for 2l_2tau / 2los_1tau / 2lss_1tau  --- check!
             "CMS_ttHl_EWK_4j"           : {"value" : 1.3,  "correlated"   : False, "proc" : ["EWK"],                 "channels" : [k for k,v in list_channel_opt.items() if "EWK" in v["bkg_procs_from_MC"]]},           # for channels with EWK
-            "CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n ]},
-            "CMS_eff_t"                 : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ]},
+            #"CMS_eff_t"                 : {"value" : 1.1,  "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "2tau" in n ]},
+            #"CMS_eff_t"                 : {"value" : 1.05, "correlated"   : True,  "proc" : "MCproc",                "channels" : [n for n in list(list_channel_opt.keys()) if  "1tau" in n and n not in ["2lss_1tau", "3l_1tau"] ]},
         }
 
+        """
+        --> not added yet: need some working
+
+        - CMS_ttHl_trigger_2lssEE;
+        - CMS_ttHl_trigger_2lssEMu;
+        - CMS_ttHl_trigger_2lssMuMu.
+        """
         ## if it is uncorrelated and the name or renameTo contains "CMS_ttHl_" leave it (a 16/17/18 will be added just after ttHl), if not add an "Era" where the year should be (2016/2017/2018 will replace "Era")
         specific_shape = {
-            #"CMS_ttHl_EWK_btag"      : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"] or "ZZ" in v["bkg_procs_from_MC"]]}, ## added only on SRs atm
+            "CMS_ttHl_PS_TT_ISR"   : {"correlated" : True, "renameTo" : None   , "proc" : ["TT"], "channels" : ["0l_2tau", "1l_1tau"]},
+            "CMS_ttHl_PS_TT_FSR"   : {"correlated" : True, "renameTo" : None   , "proc" : ["TT"], "channels" : ["0l_2tau", "1l_1tau"]},
+            #####################################
+            "CMS_ttHl_JERBarrel"        : {"correlated" : False, "renameTo" : "CMS_res_j_barrel_Era"        ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JEREndcap1"       : {"correlated" : False, "renameTo" : "CMS_res_j_endcap1_Era"       ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JEREndcap2LowPt"  : {"correlated" : False, "renameTo" : "CMS_res_j_endcap2lowpt_Era"  ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JEREndcap2HighPt" : {"correlated" : False, "renameTo" : "CMS_res_j_endcap2highpt_Era" ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JERForwardLowPt"  : {"correlated" : False, "renameTo" : "CMS_res_j_forwardlowpt_Era"  ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            "CMS_ttHl_JERForwardHighPt" : {"correlated" : False, "renameTo" : "CMS_res_j_forwardhighpt_Era" ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            #####################################
+            "CMS_ttHl_EWK_btag"     : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : ["3l_0tau", "3lctrl", "3l_1tau", "2lss_1tau_tH", "2lss_1tau_ttH", "2lss_1tau_rest"]}, ## to be added only on 3l
             "CMS_ttHl_EWK_jet"      : {"correlated" : True, "renameTo" : None   , "proc" : ["WZ"], "channels" : [k for k,v in list_channel_opt.items() if "WZ" in v["bkg_procs_from_MC"] or "ZZ" in v["bkg_procs_from_MC"]]}, ## added only on SRs atm
             #####################################
-            "CMS_ttHl_Clos_e_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]}, # should be only 2018, that is done on the main code
+            "CMS_ttHl_Clos_e_shape" : {"correlated" : False, "renameTo" : None            , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]}, # should be only 2018, that is done on the main code
+            "CMS_ttHl_JESHEM"       : {"correlated" : True,  "renameTo" : "CMS_ttHl_HEM"  , "proc" : "MCproc"      , "channels" : list(list_channel_opt.keys())}, # only for 2018 -- that is set on the Writedatacards
+            ##
             #"CMS_ttHl_Clos_m_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : list(list_channel_opt.keys())}, # there is no shape tend in
             "CMS_ttHl_Clos_t_shape" : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if ("1tau" in n or "2tau" in n) and not ("2lss_1tau" in n or "3l_1tau" in n)]},
             "CMS_ttHl_Clos_e_norm"  : {"correlated" : True, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_Clos_m_norm"  : {"correlated" : True, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},
             "CMS_ttHl_Clos_t_norm"  : {"correlated" : False, "renameTo" : None  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if ("1tau" in n or "2tau" in n) and not ("2lss_1tau" in n or "3l_1tau" in n) ]},
             ###################################
-            "CMS_ttHl_trigger"       : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())}, # uncorrelate by channel as well, that renaming is done on the main code
-            "CMS_ttHl_l1PreFire"     : {"correlated" : False, "renameTo" : "CMS_ttHl_L1PreFiring"  ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())}, # should be 2016/2017 not 2018, that is done on the main code
+            "CMS_ttHl_trigger"          : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : [n for n in list(list_channel_opt.keys()) if not ("2lss" in n)]}, # uncorrelate by channel as well, that renaming is done on the main code
+            ## CMS_ttHl16_trigger_ee/em/mm
+            "CMS_ttHl_trigger_2lssEE"   : {"correlated" : False, "renameTo" : "CMS_ttHl_trigger_ee"   ,  "proc" : "MCproc"                 , "channels" : [n for n in list(list_channel_opt.keys()) if ("2lss" in n)]},
+            "CMS_ttHl_trigger_2lssEMu"  : {"correlated" : False, "renameTo" : "CMS_ttHl_trigger_em"   ,  "proc" : "MCproc"                 , "channels" : [n for n in list(list_channel_opt.keys()) if ("2lss" in n)]},
+            "CMS_ttHl_trigger_2lssMuMu" : {"correlated" : False, "renameTo" : "CMS_ttHl_trigger_mm"    ,  "proc" : "MCproc"                 , "channels" : [n for n in list(list_channel_opt.keys()) if ("2lss" in n)]},
+            "CMS_ttHl_l1PreFire"        : {"correlated" : False, "renameTo" : "CMS_ttHl_L1PreFiring"  ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())}, # should be 2016/2017 not 2018, that is done on the main code
             ###################################
             "CMS_ttHl_btag_HFStats1" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_btag_HFStats2" : {"correlated" : False, "renameTo" : None                    ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
@@ -130,7 +153,7 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_btag_cErr1"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_btag_cErr2"    : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #################################
-            "CMS_ttHl_JER"                  : {"correlated" : False, "renameTo" : "CMS_res_j_Era"             ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
+            #"CMS_ttHl_JER"                  : {"correlated" : False, "renameTo" : "CMS_res_j_Era"         ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_UnclusteredEn"        : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             "CMS_ttHl_pileup"               : {"correlated" : True, "renameTo" : None                     ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             #### JEC_regrouped
@@ -149,11 +172,11 @@ def specific_syst(analysis, list_channel_opt) :
             "CMS_ttHl_JESHF_Era"             : {"correlated" : False, "renameTo" : "CMS_scale_j_HF_Era"            ,  "proc" : "MCproc"                 , "channels" : list(list_channel_opt.keys())},
             ##############################
             "CMS_ttHl_lepEff_elloose"       : {"correlated" : True, "renameTo" : "CMS_eff_ttHl_eloose"    ,  "proc" : "MCproc"                 , "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau"]))},
-            "CMS_ttHl_lepEff_eltight"       : {"correlated" : True, "renameTo" : "CMS_eff_ttHl_etight"    ,  "proc" : "MCproc"                 , "channels" : list(set(list(list_channel_opt.keys())) - set([ "0l_2tau"]))},
+            "CMS_ttHl_lepEff_eltight"       : {"correlated" : True, "renameTo" : "CMS_eff_ttHl_etight"    ,  "proc" : "MCproc"                 , "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau"]))},
             "CMS_ttHl_lepEff_mutight"       : {"correlated" : True, "renameTo" : "CMS_eff_ttHl_mtight"    ,  "proc" : "MCproc"                 , "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau"]))},
             "CMS_ttHl_lepEff_muloose"       : {"correlated" : True, "renameTo" : "CMS_eff_ttHl_mloose"    ,  "proc" : "MCproc"                 , "channels" : list(set(list(list_channel_opt.keys())) - set(["0l_2tau"]))},
             ##############################
-            "CMS_ttHl_tauIDSF"              : {"correlated" : False, "renameTo" : None                  , "proc" : "MCproc"                 , "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},
+            "CMS_ttHl_tauIDSF"              : {"correlated" : False, "renameTo" : "CMS_eff_t_Era"      , "proc" : "MCproc"                 , "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},
             "CMS_ttHl_tauES"                : {"correlated" : False, "renameTo" : "CMS_scale_t_Era"     , "proc" : "MCproc"                 , "channels" : [k for k,v in list_channel_opt.items() if ("2tau" in k or "1tau" in k) and not v["isSMCSplit"] ]},
             ########################### addSyst...
             "CMS_ttHl_FRe_shape_pt"         : {"correlated" : True, "renameTo" : "CMS_ttHl_FRe_pt"  , "proc" : ["data_fakes"], "channels" : [n for n in list(list_channel_opt.keys()) if "4l" in n or "3l" in n or "2l" in n or "1l" in n ]},

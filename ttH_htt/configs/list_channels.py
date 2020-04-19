@@ -94,7 +94,7 @@ def list_channels(analysis, fake_mc) :
             "isSMCSplit" : False,
             "proc_to_remove" :
             {
-                "2018" : ["WH_htt"],
+                "2018" : [ "WH_htt", "ttH_hzz", "ttH_hww"], # 
                 "2017" : ["ggH_hzz", "ttH_hzz", "ttH_hzg"],
                 "2016" : ["WH_htt", "ZH_htt", "ZH_hww"]
             }

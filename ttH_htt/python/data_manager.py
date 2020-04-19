@@ -277,8 +277,12 @@ def check_systematics (inputShapes, coupling) :
         ### FIXME: not doing BSM HH
         if "HH" in obj_name and "_kt_" in obj_name :
             continue
+        #if  "data_fakes" in obj_name:
+        #    print ("===========> type of ", obj_name, type(obj))
         if type(obj) is not ROOT.TH1F :
             continue
+        #if "data_fakes" in obj_name: # FRjt_shape" in obj_name and
+        #    print ("===========> TH1F type of ", obj_name)
         if "Down" in obj_name :
             name_nominal = obj_name.split("_CMS")[0]
             name_up = obj_name.replace("Down", "Up")
@@ -293,7 +297,40 @@ def check_systematics (inputShapes, coupling) :
             did_something_do = 0
             did_something_up = 0
             did_something_nom = 0
+            #if "FRjt_shape" in name_up and "data_fakes" in name_up:
+            #    print ("===========> trying to find ", name_up)
+            #if "FRjt_shape" in name_up and "data_fakes" in name_up:
+            #    print ("===========> trying to find ", name_do)
+            try :
+                histo_do.Integral()
+            except :
+                print ("There was no Do histo in", obj.GetName(), name_do)
+                continue
+            #####
+            try :
+                histo_up.Integral()
+            except :
+                if "CMS_ttHl_JESHEM" in name_do :
+                    hadNom = True
+                    try :
+                        nominal.Integral()
+                    except :
+                        histo_up = histo_do
+                        histo_up.SetName(name_do.replace("Down", "Up"))
+                        hadNom = False
+                        print ("adding HEM up as Down in ", name_nominal, name_do.replace("Down", "Up"))
+                    if hadNom :
+                        histo_up = nominal
+                        histo_up.SetName(name_do.replace("Down", "Up"))
+                        print ("adding HEM up as nominal in ", name_nominal, name_do.replace("Down", "Up"))
+                else :
+                    print ("There was no Up histo in", obj.GetName())
+                    continue
+                #if "FRjt_shape" in name_up and "data_fakes" in name_up:
+                #    print ("===========> found ", name_up)
             for binn in xrange(1, histo_do.GetNbinsX() + 1 ) :
+                #if "FRjt_shape" in name_up and "data_fakes" in name_up:
+                #    print ("======> ", name_up, nominal.GetBinContent(binn), histo_do.GetBinContent(binn), histo_up.GetBinContent(binn), histo_do.GetBinError(binn), histo_up.GetBinError(binn), histo_do.GetBinContent(binn)/nominal.GetBinContent(binn), histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
                 if nominal.GetBinContent(binn) > 0 :
                     ## if up or do is zero fixe it
                     if histo_do.GetBinContent(binn) == 0 and abs(histo_up.GetBinContent(binn) > 0) :
@@ -315,6 +352,15 @@ def check_systematics (inputShapes, coupling) :
                         print "WARNING: big shift in template for syst template %s up in process %s : variation = %g"%( name_syst, name_nominal, histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
                         histo_up.SetBinContent(binn, 100*nominal.GetBinContent(binn) )
                         did_something_up = 1
+                    #####
+                    #if histo_do.GetBinError(binn)/nominal.GetBinContent(binn) > 100  :
+                    #    print "WARNING: big shift in template for syst template %s down in process %s : variation = %g"%( name_syst, name_nominal, histo_do.GetBinContent(binn)/nominal.GetBinContent(binn))
+                    #    histo_do.SetBinError(binn, 100*nominal.GetBinContent(binn)  )
+                    #    did_something_do = 1
+                    #if histo_up.GetBinError(binn)/nominal.GetBinContent(binn) > 100 :
+                    #    print "WARNING: big shift in template for syst template %s up in process %s : variation = %g"%( name_syst, name_nominal, histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
+                    #    histo_up.SetBinError(binn, 100*nominal.GetBinContent(binn) )
+                    #    did_something_up = 1
                 else :
                     if nominal.GetBinContent(binn) == 0 and (abs(histo_do.GetBinContent(binn)) > 0 or  abs(histo_up.GetBinContent(binn)) > 0) :
                         print ("WARNING, nominal is zero while up/do not; up/do = %s/%s. Setting nom/up/do 0.00001 " % (str(histo_do.GetBinContent(binn))  , str(histo_up.GetBinContent(binn))))
@@ -324,6 +370,9 @@ def check_systematics (inputShapes, coupling) :
                     did_something_nom = 1
                     did_something_do = 1
                     did_something_up = 1
+                if "FRjt_shape" in name_up and "data_fakes" in name_up:
+                    print ("=========> ", name_up, nominal.GetBinContent(binn), histo_do.GetBinContent(binn), histo_up.GetBinContent(binn), histo_do.GetBinError(binn), histo_up.GetBinError(binn), histo_do.GetBinContent(binn)/nominal.GetBinContent(binn), histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
+
 
             if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
                 print ("modified syst templates in ", name_syst, " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
@@ -331,6 +380,8 @@ def check_systematics (inputShapes, coupling) :
                 histo_up.Write()
                 nominal.Write()
                 histo_do.Write()
+            elif "HEM" in name_do:
+                histo_up.Write()
 
     tfileout.Close()
 

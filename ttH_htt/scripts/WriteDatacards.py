@@ -44,6 +44,13 @@ fake_mc      = options.fake_mc
 no_data      = options.no_data
 tH_kin       = options.tH_kin
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
+
+# output the card
+if options.output_file == "none" :
+    output_file = cardFolder + "/" + str(os.path.basename(inputShapes)).replace(".root","").replace("prepareDatacards", "datacard")
+else :
+    output_file = options.output_file
+
 if use_Exptl_HiggsBR_Uncs:
     print("Using Experimental Unc.s on Higgs BRs")
 else:
@@ -243,11 +250,14 @@ if tH_kin : # [k for k,v in list_channel_opt.items()
         # https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/tHQ_cross_sections.txt
         # https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/tHW_cross_sections.txt
         thuncertainty = extract_thu(proc, coupling)
-        procdecays = [proc + "_" + coupling + "_htt" , proc + "_" + coupling + "_hzz", proc + "_" + coupling + "_hww"]
-        cb.cp().process(procdecays).AddSyst(cb, "pdf_qq", "lnN", ch.SystMap()(thuncertainty["pdf"]))
-        print ("added", "pdf_qg" , thuncertainty["pdf"])
+        if coupling == "kt_1_kv_1" :
+            procdecays = [proc + "_htt" , proc + "_hzz", proc + "_hww"]
+        else :
+            procdecays = [proc + "_" + coupling + "_htt" , proc + "_" + coupling + "_hzz", proc + "_" + coupling + "_hww"]
+        cb.cp().process(procdecays).AddSyst(cb, "pdf_qg", "lnN", ch.SystMap()(thuncertainty["pdf"]))
+        print ("added", "pdf_qg" , thuncertainty["pdf"], procdecays)
         cb.cp().process(procdecays).AddSyst(cb, "QCDscale_qg", "lnN", ch.SystMap()((thuncertainty["qcddo"], thuncertainty["qcdup"])))
-        print ("added", "QCDscale_qg", (thuncertainty["qcddo"], thuncertainty["qcdup"]))
+        print ("added", "QCDscale_qg", (thuncertainty["qcddo"], thuncertainty["qcdup"]), procdecays)
 
 ########################################
 if shape :
@@ -264,9 +274,15 @@ if shape :
     for specific_syst in specific_shape_systs :
         if era == 2018 and specific_syst == "CMS_ttHl_l1PreFire" :
             continue
-        if specific_syst == "CMS_ttHl_Clos_e_shape" and era != 2018:
+        #if "SS" in output_file and ("JER" in specific_syst or "JES" in specific_syst ) and not ( "HEM" in specific_syst )  :
+        #    continue
+        if ( "HEM" in specific_syst ) and era != 2018:
+            print ("skkiping ", specific_syst, "as it is not era 2018")
+            continue
+        if (specific_syst == "CMS_ttHl_Clos_e_shape") and era != 2018:
             continue
         if channel not in specific_shape_systs[specific_syst]["channels"] :
+            if ( "HEM" in specific_syst ) : print ("WTF", specific_shape_systs[specific_syst]["channels"])
             continue
         #if specific_shape_systs[specific_syst]["proc"] == "MCproc" :
         #    applyTo = MC_proc
@@ -343,6 +359,10 @@ if shape :
                 MC_shape_syst_era_3 = "CMS_scale_t_Era".replace("Era", str(era))
                 cb.cp().process(MC_proc_less).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era_3)
                 print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
+            elif "tauID" in shape_syst :
+                MC_shape_syst_era_3 = "CMS_eff_t_Era".replace("Era", str(era))
+                cb.cp().process(MC_proc_less).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era_3)
+                print ("renamed " + MC_shape_syst + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
             else :
                 MC_shape_syst_era_2 = MC_shape_syst.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")).replace("Era", str(era))
                 cb.cp().process(MC_proc_less).RenameSystematic(cb, MC_shape_syst, MC_shape_syst_era_2)
@@ -353,6 +373,10 @@ if shape :
             continue
         if era == 2018 and specific_syst == "CMS_ttHl_l1PreFire" :
             continue
+        #if "SS" in output_file and ("JER" in specific_syst or "JES" in specific_syst ) :
+        #    continue
+        if ( "HEM" in specific_syst ) and era != 2018:
+            print ("skkiping ", specific_syst, "as it is not era 2018")
         if specific_shape_systs[specific_syst]["correlated"] and specific_shape_systs[specific_syst]["renameTo"] == None :
             continue
         #################
@@ -371,6 +395,9 @@ if shape :
             MC_shape_syst_era_2 = MC_shape_syst_era.replace("CMS_ttHl", "CMS_ttHl%s" % str(era).replace("20","")).replace("Era", str(era))
             cb.cp().process(procs).RenameSystematic(cb, MC_shape_syst_era, MC_shape_syst_era_2)
             print ("renamed " + MC_shape_syst_era + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_2)
+        else :
+            MC_shape_syst_era_2 = MC_shape_syst_era
+        ###################
         if specific_syst == "CMS_ttHl_trigger" :
             if channel in ["1l_2tau", "1l_1tau"] :
                 MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_leptau"
@@ -380,13 +407,12 @@ if shape :
                 MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_" + channel
             cb.cp().process(procs).RenameSystematic(cb, MC_shape_syst_era_2, MC_shape_syst_era_3)
             print ("renamed " + MC_shape_syst_era_2 + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
+        if  "Clos_t_norm" in specific_syst or  "Clos_t_shape" in specific_syst:
+            MC_shape_syst_era_3 = MC_shape_syst_era_2 + "_" + channel
+            cb.cp().process(procs).RenameSystematic(cb, MC_shape_syst_era_2, MC_shape_syst_era_3)
+            print ("renamed " + MC_shape_syst_era_2 + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
 
 ########################################
-# output the card
-if options.output_file == "none" :
-    output_file = cardFolder + "/" + str(os.path.basename(inputShapes)).replace(".root","").replace("prepareDatacards", "datacard")
-else :
-    output_file = options.output_file
 
 bins = cb.bin_set()
 for b in bins :
