@@ -26,10 +26,13 @@ parser.add_option("--no_data",        action="store_true", dest="no_data",     h
 parser.add_option("--fake_mc",        action="store_true", dest="fake_mc",     help="Use fakes and flips from MC", default=False)
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      help="Cards for studies with tH kinematics have specifics", default=False)
+parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      help="Cards for studies with HH kinematics have specifics", default=False)
+
 
 (options, args) = parser.parse_args()
 
 inputShapesRaw = options.inputShapes
+inputShapes = inputShapesRaw.replace(".root", "_mod.root")
 channel     = options.channel
 era         = options.era
 shape       = options.shapeSyst
@@ -43,6 +46,7 @@ only_BKG_sig = options.only_BKG_sig
 fake_mc      = options.fake_mc
 no_data      = options.no_data
 tH_kin       = options.tH_kin
+HH_kin       = options.HH_kin
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
 
 # output the card
@@ -76,6 +80,7 @@ bkg_procs_from_MC  = list_channel_opt[channel]["bkg_procs_from_MC"]
 if not (coupling == "none" or coupling == "kt_1_kv_1") :
     higgs_procs = [ [ entry.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for entry in entries ] for entries in higgs_procs ]
 
+print higgs_procs
 higgs_procs_plain = sum(higgs_procs,[])
 
 if only_ttH_sig :
@@ -110,16 +115,17 @@ if tH_kin :
     higgs_procs_plain = sum(higgs_procs,[])
 
 print ("Do not allow Zero shape systematics variations")
-inputShapes = inputShapesRaw.replace(".root", "_mod.root")
+
+print("inputShapes = ", inputShapes)
 shutil.copy2(inputShapesRaw, inputShapes)
 print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
 check_systematics(inputShapes, coupling)
 
 # check a threshold on processes
 print ("do not add a process to datacard if the yield is smaller than 0.01")
-bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes)
-bkg_procs_from_MC  = make_threshold(0.01, bkg_procs_from_MC, inputShapes)
-higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes)
+bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes, tH_kin)
+bkg_procs_from_MC  = make_threshold(0.01, bkg_procs_from_MC, inputShapes, tH_kin)
+higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes, tH_kin)
 
 print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
@@ -208,7 +214,7 @@ for specific_syst in theory_ln_Syst :
     if "HH" in procs[0] :
         for decay in list_channels(analysis, fake_mc)["decays_hh"] :
             procs = procs + [procs[0] + decay]
-    elif "H" in procs[0] :
+    elif "H" in procs[0] and analysis == "ttH":
         if tH_kin and ("tHq" in procs[0] or "tHW" in procs[0]) :
             continue
         for decay in list_channels(analysis, fake_mc)["decays"] :
@@ -222,6 +228,55 @@ for specific_syst in theory_ln_Syst :
         specific_syst_use = specific_syst
     cb.cp().process(procs).AddSyst(cb,  specific_syst_use, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
     print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", procs)
+
+if analysis == "HH" or 1 > 0 :
+    ### Uniformize those names at some point
+    #"pdf_HH"                      : {"value": 1.04,               "proc" : ["HH"]},
+    #"QCDscale_HH"                 : {"value": (0.95 , 1.022),     "proc" : ["HH"]},
+    #"TopmassUnc_HH"               : {"value": 1.026,              "proc" : ["HH"]},
+    #"pdf_Higgs_ttH"               : {"value": 1.036,              "proc" : ["ttH"]},
+    #"QCDscale_ttH"                : {"value": (0.907 , 1.058),    "proc" : ["ttH"]},
+    #"pdf_qg"                      : {"value": 1.01,               "proc" : ["tHq"]},
+    #"QCDscale_tHq"                : {"value": (0.933, 1.041),     "proc" : ["tHq"]},
+    #"QCDscale_WH"                 : {"value": (0.95 , 1.07),      "proc" : ["WH"]},
+    #"pdf_WH"                      : {"value": 1.019,              "proc" : ["WH"]},
+
+    specific_syst == "pdf_HH"
+    cb.cp().process(higgs_procs_plain).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", higgs_procs_plain)
+
+    specific_syst = "QCDscale_HH"
+    cb.cp().process(higgs_procs_plain).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", higgs_procs_plain)
+
+    specific_syst = "TopmassUnc_HH"
+    cb.cp().process(higgs_procs_plain).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", higgs_procs_plain)
+
+    specific_syst = "pdf_Higgs_ttH"
+    cb.cp().process(["TTH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["TTH"])
+
+    specific_syst = "QCDscale_ttH"
+    cb.cp().process(["TTH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["TTH"])
+
+    specific_syst = "pdf_qg"
+    cb.cp().process(["TH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["TH"])
+
+    specific_syst = "QCDscale_tHq"
+    cb.cp().process(["TH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["TH"])
+
+    specific_syst = "QCDscale_WH"
+    cb.cp().process(["VH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["VH"])
+
+    specific_syst = "pdf_WH"
+    cb.cp().process(["VH"]).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
+    print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", ["VH"])
+
 
 ########################################
 # BR syst
@@ -239,11 +294,11 @@ for proc in higgs_procs_plain :
 
 ########################################
 # specifics for cards with tH-kinematics
-if tH_kin : # [k for k,v in list_channel_opt.items()
+if tH_kin and analysis == "ttH": # [k for k,v in list_channel_opt.items()
     MC_proc = [ procc.replace(coupling+"_", "") for procc in MC_proc ]
     print (coupling+"_", "MC_proc", MC_proc)
     for proc in ["TTW", "TTZ"] :
-        cb.cp().process([proc]).AddSyst(cb, "CMS_ttHl_%s_lnU" % proc, "lnU", ch.SystMap()(2.0))
+        cb.cp().process([proc]).AddSyst(cb, "CMS_ttHl_%s_lnU" % proc, "lnU", ch.SystMap()(3.0))
         print ("added", "CMS_ttHl_%s_lnU" % proc)
     from CombineHarvester.ttH_htt.data_manager import extract_thu
     for proc in ["tHq", "tHW"] :
@@ -309,8 +364,11 @@ for specific_syst in specific_ln_systs :
     if not specific_ln_systs[specific_syst]["correlated"] :
         name_syst = specific_syst.replace("%sl" % analysis, "%sl%s" % (analysis, str(era - 2000)))
         # assuming that the syst for the HH analysis with have the label HHl
-    if "lnU" in name_syst :
-        cb.cp().process(procs).AddSyst(cb,  name_syst, "lnU", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
+    if not analysis == "HH" :
+        if "lnU" in name_syst :
+            cb.cp().process(procs).AddSyst(cb,  name_syst, "lnU", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
+        else :
+            cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
     else :
         cb.cp().process(procs).AddSyst(cb,  name_syst, "lnN", ch.SystMap()(specific_ln_systs[specific_syst]["value"]))
     print ("added " + name_syst + " with value " + str(specific_ln_systs[specific_syst]["value"]) + " to processes: ",  specific_ln_systs[specific_syst]["proc"] )
