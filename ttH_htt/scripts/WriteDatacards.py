@@ -5,6 +5,10 @@ import ROOT
 import shutil
 import sys, os, re, shlex
 from subprocess import Popen, PIPE
+
+import os.path
+from os import path
+
 from CombineHarvester.ttH_htt.data_manager import manipulate_cards, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics
 sys.stdout.flush()
 
@@ -115,11 +119,13 @@ if tH_kin :
     higgs_procs_plain = sum(higgs_procs,[])
 
 print ("Do not allow Zero shape systematics variations")
-
-print("inputShapes = ", inputShapes)
-shutil.copy2(inputShapesRaw, inputShapes)
-print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-check_systematics(inputShapes, coupling)
+if not path.exists(inputShapes) : # and (tH_kin or HH_kin)
+    print("inputShapes = ", inputShapes)
+    shutil.copy2(inputShapesRaw, inputShapes)
+    print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
+    check_systematics(inputShapes, coupling)
+else :
+    print ("file %s already modifyed" % inputShapes)
 
 # check a threshold on processes
 print ("do not add a process to datacard if the yield is smaller than 0.01")
