@@ -373,7 +373,6 @@ def check_systematics (inputShapes, coupling) :
                 if "FRjt_shape" in name_up and "data_fakes" in name_up:
                     print ("=========> ", name_up, nominal.GetBinContent(binn), histo_do.GetBinContent(binn), histo_up.GetBinContent(binn), histo_do.GetBinError(binn), histo_up.GetBinError(binn), histo_do.GetBinContent(binn)/nominal.GetBinContent(binn), histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
 
-
             if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
                 print ("modified syst templates in ", name_syst, " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
                 #tfileout.cd(obj0_name)
@@ -382,6 +381,12 @@ def check_systematics (inputShapes, coupling) :
                 histo_do.Write()
             elif "HEM" in name_do:
                 histo_up.Write()
+        #else :
+        #    print("rebining ", obj.GetName())
+        #    nominal  = tfileout.Get( obj.GetName() )
+        #    nominal.Rebin(10)
+        #    nominal.Write()
+
 
     tfileout.Close()
 
@@ -537,7 +542,7 @@ def get_tH_weight_str_out_clara(kt, kv, cosa = -10):
         return ("kt_%.3g_kv_%s_cosa_%s" % (kt, str(kv), str(cosa))).replace('.', 'p')
 
 
-def make_threshold(threshold, proc_list, file_input) :
+def make_threshold(threshold, proc_list, file_input, tH_kin) :
     tfileout = ROOT.TFile(file_input, "READ")
     for proc in proc_list :
         histo = tfileout.Get(proc)
@@ -546,7 +551,11 @@ def make_threshold(threshold, proc_list, file_input) :
             print ("there was no process %s in the prepareDatacard" % proc )
             proc_list = list(set(list(proc_list)) - set([proc]))
             continue
-        if integral < threshold :
+        if tH_kin and ( "tHq" in proc or "tHW" in proc ):
+            if integral < threshold/10. :
+                print ("there was no sufficient yield of process %s (integral = %s)" % (proc, str(integral)) )
+                proc_list = list(set(list(proc_list)) - set([proc]))
+        elif integral < threshold :
             print ("there was no sufficient yield of process %s (integral = %s)" % (proc, str(integral)) )
             proc_list = list(set(list(proc_list)) - set([proc]))
     return proc_list
@@ -1287,11 +1296,16 @@ def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget, sendToCondor)
             elif channel in [ "0l_2tau"]:
                 #print ("read", bdtType+'_'+str(nbins)+"bins_"+BINtype)
                 shapeVariable=bdtType+'_'+str(nbins)+"bins_"+BINtype
-            else : shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
+            elif channel in [ "2l_0tau", "1l_0tau"]:
+                #print ("read", bdtType+'_'+str(nbins)+"bins_"+BINtype)
+                shapeVariable=bdtType+'_'+str(nbins)+"bins_mod"
+            else :
+                shapeVariable=options.variables+'_'+bdtType+'_nbin_'+str(nbins)
         elif nstart==1 : shapeVariable=options.variables+'_'+str(nbins)+'bins'
         else : shapeVariable=options.variables+'_from'+str(nstart)+'_to_'+str(nbins)
         #if BINtype=="ranged" : shapeVariable=shapeVariable+"_ranged"
         #if BINtype=="quantiles" : shapeVariable=shapeVariable+"_quantiles"
+        #print ("shapeVariable = ", shapeVariable)
         if channel in [ "0l_2tau"] and sendToCondor :
             #mvaOutput_0l_2tau_deeptauVTight_9bins_regular.3502010.0.out
             datacardFile_output = glob.glob(os.path.join(local, "%s*.out" % (shapeVariable)))[0]
@@ -1312,6 +1326,7 @@ def ReadLimits(bdtType,nbin, BINtype,channel,local,nstart,ntarget, sendToCondor)
           if "Expected 50.0%:" in line : central=central+[float(tokens[4])]
           if "Expected 84.0%:" in line : up1=up1+[float(tokens[4])]
           if "Expected 97.5%:" in line : up2=up2+[float(tokens[4])]
+        #print (shapeVariable, nbins,central)
     #print (shapeVariable,nbin)
     #print (shapeVariable,central)
     #print do1
