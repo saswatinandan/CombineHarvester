@@ -44,6 +44,9 @@ if channel == "2lss_0tau" : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHar
 if channel == "4l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_4l_0tau_datacards.py")
 if channel == "3l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_3l_0tau_datacards.py")
 if channel == "2los_1tau" : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2los_1tau_datacards.py")
+if channel == "2l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2l_0tau_datacards.py")
+if channel == "1l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_1l_0tau_datacards.py")
+
 if channel == "hh_bb2l"   : sys.exit("Please make the corresponding input card")
 if channel == "hh_bb1l"   : sys.exit("Please make the corresponding input card")
 
@@ -67,7 +70,11 @@ proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"] + "/prepareDatacards_
 #proc=subprocess.Popen(["mkdir deeptauWPS/" + info["label"] + "/datacard_rebined"],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
 #local = workingDir + "/deeptauWPS/" + info["label"]
-local = workingDir + "/deeptauWPS/" + info["label"] + "/prepareDatacards_rebined"
+#local = workingDir + "/deeptauWPS/" + info["label"] + "/prepareDatacards_rebined"
+#local = "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_nonres_prepare_datacards_rebined/"
+#local = "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_nonres_prepare_datacards_rebined_SL_AK8/"
+#local = "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_nonres_prepare_datacards_rebined_SL_AK8_LS/"
+local = "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_hh_bb1l_24Jun_SM_default_AK8_LS_fluxogramLike/"
 
 print (info["bdtTypes"])
 
@@ -94,7 +101,7 @@ if BINtype == "quantiles" : binstoDo = info["nbinQuant"]
 if BINtype == "none" : binstoDo=np.arange(1, info["originalBinning"])
 print binstoDo
 
-colorsToDo=['r','g','b','m','y','c', 'fuchsia', "peachpuff",'k','orange'] #['r','g','b','m','y','c','k']
+colorsToDo=['r','g','b','m','y','c', 'fuchsia', "peachpuff",'k','orange','y','c'] #['r','g','b','m','y','c','k']
 if not doLimits and not drawLimits:
     #########################################
     ## make rebinned datacards
@@ -202,7 +209,7 @@ if doLimits :
         cmd += "--inputShapes %s.root " % (inputbin)
         cmd += "--channel %s " % channel
         cmd += "--cardFolder %s " % local
-        cmd += "--noX_prefix --era 2018 --no_data --only_ttH_sig " # --only_BKG_sig --only_tHq_sig --fake_mc 
+        cmd += "--noX_prefix --era 2017  --no_data --analysis HH " # --only_ttH_sig --only_BKG_sig --only_tHq_sig --fake_mc
         runCombineCmd(cmd)
         if 0 > 1 :
             ######################
@@ -225,12 +232,12 @@ if doLimits :
             #######################
             cmd = "combineTool.py  -M AsymptoticLimits  -t -1 "
             if BINtype == "regular" :
-                cmd += "%s_%s.txt " % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin) + "bins")
+                cmd += "%s_%s.txt " % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin) + "bins_mod")
             else :
                 cmd += "%s_%s.txt " % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin) + "bins_" + BINtype)
             #cmd += " --setParameters r_ttH=1 --redefineSignalPOI r_ttH "
             if BINtype == "regular" :
-                outfile = "%s_%s.log" % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin)+"bins")
+                outfile = "%s_%s.log" % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin)+"bins_mod")
             if BINtype == "quantiles" :
                 outfile = "%s_%s.log" % (source.replace("prepareDatacards_" + info["ch_nickname"], "datacard_" + info["ch_nickname"]), str(nbin)+"bins_"+BINtype )
             if BINtype == "ranged" :
@@ -252,7 +259,9 @@ if drawLimits :
     file = open(namefig+".csv","w")
     #maxlim =-99.
     for nn, source in enumerate(sources) :
+        print(bdtTypesToDoFile[nn])
         limits=ReadLimits(bdtTypesToDoFile[nn], binstoDo, BINtype, channel, local, 0, 0, sendToCondor)
+        #print (source, limits)
         print (len(binstoDo),len(limits[0]))
         print 'binstoDo= ', binstoDo
         print limits[0]
@@ -275,9 +284,9 @@ if drawLimits :
     ax.set_xlabel('nbins')
     ax.set_ylabel('limits')
     maxsum=0
-    if channel in ["0l_2tau", "4l_0tau", "2los_1tau", "hh_bb2l"] :
-        maxlim = 11.5
-        minlim = 1.4
+    if channel in ["0l_2tau", "1l_0tau", "4l_0tau", "2los_1tau", "hh_bb2l"] :
+        maxlim = 35.1
+        minlim = 2.0
     elif channel in ["hh_bb1l"] : maxlim = 200.
     elif channel in ["2l_2tau"] :
         maxlim = 5.9
@@ -289,7 +298,7 @@ if drawLimits :
         #minlim = 40.
         #maxlim = 1.6
         #minlim = 0.4
-        maxlim = 11.5
+        maxlim = 300.5
         minlim = 0.4
         #maxlim = 19.
         #minlim = 4.0
