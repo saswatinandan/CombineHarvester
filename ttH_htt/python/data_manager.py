@@ -261,7 +261,7 @@ def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, prepare
     f2.write(m)
     f2.close()
 
-def check_systematics (inputShapes, coupling) :
+def check_systematics (inputShapes, coupling, stxs_pT_bins) :
     if coupling == "none" :
         print ("Not doing cards with couplings, skping to modify all shapes with 'kt' mark on it from tHq/tHW/HH")
     ## it assumes no subdirectories in the preparedatacards file,
@@ -279,10 +279,36 @@ def check_systematics (inputShapes, coupling) :
             continue
         #if  "data_fakes" in obj_name:
         #    print ("===========> type of ", obj_name, type(obj))
-        if type(obj) is not ROOT.TH1F :
+        if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D :
             continue
         #if "data_fakes" in obj_name: # FRjt_shape" in obj_name and
         #    print ("===========> TH1F type of ", obj_name)
+
+        print ( obj_name,len(stxs_pT_bins.keys()) )
+        if len(stxs_pT_bins.keys()) > 0 and "ttH" in obj_name :
+            factor = 1.0
+            for key in stxs_pT_bins.keys() :
+                if key in obj_name :
+                    print (key, name_nominal)
+                    factor = stxs_pT_bins[key]
+                    print (obj_name, factor)
+            pT_bins            = {
+                # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
+                "hww" : 0.2137,
+                "hzz" : 0.02619,
+                "htt" : 0.06272,
+                "hzg" : 0.001533,
+                "hmm" : 0.00002176
+            }
+            if not factor == 1.0 :
+                for key in pT_bins.keys() :
+                    if key in name_nominal :
+                        factor = factor * pT_bins[key]
+                        print (obj_name, key, factor)
+            if not factor == 1.0 :
+                obj.Scale( factor )
+
+
         if "Down" in obj_name :
             name_nominal = obj_name.split("_CMS")[0]
             name_up = obj_name.replace("Down", "Up")

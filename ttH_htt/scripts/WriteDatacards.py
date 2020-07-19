@@ -31,7 +31,7 @@ parser.add_option("--fake_mc",        action="store_true", dest="fake_mc",     h
 parser.add_option("--era",            type="int",          dest="era",         help="Era to consider (important for list of systematics). Default: 2017",  default=2017)
 parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      help="Cards for studies with tH kinematics have specifics", default=False)
 parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      help="Cards for studies with HH kinematics have specifics", default=False)
-
+parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
 
 (options, args) = parser.parse_args()
 
@@ -49,6 +49,7 @@ only_tHq_sig = options.only_tHq_sig
 only_BKG_sig = options.only_BKG_sig
 fake_mc      = options.fake_mc
 no_data      = options.no_data
+stxs         = options.stxs
 tH_kin       = options.tH_kin
 HH_kin       = options.HH_kin
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
@@ -118,12 +119,30 @@ if tH_kin :
     print ("signal        (new): ", higgs_procs)
     higgs_procs_plain = sum(higgs_procs,[])
 
+pT_bins = {}
+if stxs :
+    # take ttH_ as the pT bins
+    pT_bins            = {
+        # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
+        "PTH_0_60"      : 0.049,
+        "PTH_60_120"    : 0.076,
+        "PTH_120_200"   : 0.054,
+        "PTH_200_300"   : 0.023,
+        "PTH_300_infty" : 0.010
+    }
+    all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_htt", "ttH_hmm", "ttH_hzg"]
+    higgs_procs_plain        = list(set(higgs_procs_plain) - set(all_ttH_proc))
+    for pTs in list(pT_bins.keys()) :
+      for ttH_proc in all_ttH_proc :
+        higgs_procs_plain   = higgs_procs_plain + [ ttH_proc.replace("ttH", "ttH_" + pTs) ]
+    print ("higgs_procs == ", higgs_procs_plain)
+
 print ("Do not allow Zero shape systematics variations")
 if not path.exists(inputShapes) : # and (tH_kin or HH_kin)
     print("inputShapes = ", inputShapes)
     shutil.copy2(inputShapesRaw, inputShapes)
     print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-    check_systematics(inputShapes, coupling)
+    check_systematics(inputShapes, coupling, pT_bins)
 else :
     print ("file %s already modifyed" % inputShapes)
 
@@ -340,6 +359,8 @@ if shape :
         if ( "HEM" in specific_syst ) and era != 2018:
             print ("skkiping ", specific_syst, "as it is not era 2018")
             continue
+        if "HEM" in specific_syst and stxs :
+            continue
         if (specific_syst == "CMS_ttHl_Clos_e_shape") and era != 2018:
             continue
         if channel not in specific_shape_systs[specific_syst]["channels"] :
@@ -439,8 +460,10 @@ if shape :
             continue
         #if "SS" in output_file and ("JER" in specific_syst or "JES" in specific_syst ) :
         #    continue
-        if ( "HEM" in specific_syst ) and era != 2018:
+        if ( "HEM" in specific_syst ) and era != 2018 :
             print ("skkiping ", specific_syst, "as it is not era 2018")
+        if "HEM" in specific_syst and stxs :
+            continue
         if specific_shape_systs[specific_syst]["correlated"] and specific_shape_systs[specific_syst]["renameTo"] == None :
             continue
         #################
