@@ -261,7 +261,43 @@ def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, prepare
     f2.write(m)
     f2.close()
 
-def check_systematics (inputShapes, coupling, stxs_pT_bins) :
+def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins) :
+    ## it assumes no subdirectories in the preparedatacards file,
+    tfileout = ROOT.TFile(inputShapes, "UPDATE")
+    tfileout.cd()
+    for nkey, key in enumerate(tfileout.GetListOfKeys()) :
+        obj =  key.ReadObj()
+        obj_name = key.GetName()
+        if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D and type(obj) is not ROOT.TH1 and type(obj) is not ROOT.TH1S and type(obj) is not ROOT.TH1C :
+            continue
+        factor = 1.0
+        if "PTH" in obj_name:
+            if "_fake" in obj_name:
+                continue
+            for key in stxs_pT_bins.keys() :
+                if key in obj_name :
+                    factor = stxs_pT_bins[key]
+                    print (key, obj_name, factor)
+            BRs = {
+                "hww" : 0.2137,
+                "hzz" : 0.02619,
+                "htt" : 0.06272,
+                "hzg" : 0.001533,
+                "hmm" : 0.00002176
+            }
+            if not factor == 1.0 :
+                for key in BRs.keys() :
+                    if key in obj_name :
+                        factor = factor * BRs[key]
+                        print (obj_name, key, factor)
+            else :
+                print ("Something wrong, it is not scaling ", obj_name)
+            obj.Scale( factor )
+            obj.Write()
+    tfileout.Close()
+
+
+def check_systematics (inputShapes, coupling) :
     if coupling == "none" :
         print ("Not doing cards with couplings, skping to modify all shapes with 'kt' mark on it from tHq/tHW/HH")
     ## it assumes no subdirectories in the preparedatacards file,
@@ -284,29 +320,6 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
         #if "data_fakes" in obj_name: # FRjt_shape" in obj_name and
         #    print ("===========> TH1F type of ", obj_name)
 
-        if "PTH" in obj_name:
-            factor = 1.0
-            for key in stxs_pT_bins.keys() :
-                if key in obj_name :
-                    factor = stxs_pT_bins[key]
-                    print (key, obj_name, factor)
-            pT_bins            = {
-                # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
-                "hww" : 0.2137,
-                "hzz" : 0.02619,
-                "htt" : 0.06272,
-                "hzg" : 0.001533,
-                "hmm" : 0.00002176
-            }
-            if not factor == 1.0 :
-                for key in pT_bins.keys() :
-                    if key in obj_name :
-                        factor = factor * pT_bins[key]
-                        print (obj_name, key, factor)
-            else :
-                print ("Something wrong, it is not scaling ", obj_name)
-            obj.Scale( factor )
-
         if "Down" in obj_name :
             name_nominal = obj_name.split("_CMS")[0]
             name_up = obj_name.replace("Down", "Up")
@@ -321,10 +334,6 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
             did_something_do = 0
             did_something_up = 0
             did_something_nom = 0
-            #if "FRjt_shape" in name_up and "data_fakes" in name_up:
-            #    print ("===========> trying to find ", name_up)
-            #if "FRjt_shape" in name_up and "data_fakes" in name_up:
-            #    print ("===========> trying to find ", name_do)
             try :
                 histo_do.Integral()
             except :
@@ -396,8 +405,7 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
                     did_something_up = 1
                 if "FRjt_shape" in name_up and "data_fakes" in name_up:
                     print ("=========> ", name_up, nominal.GetBinContent(binn), histo_do.GetBinContent(binn), histo_up.GetBinContent(binn), histo_do.GetBinError(binn), histo_up.GetBinError(binn), histo_do.GetBinContent(binn)/nominal.GetBinContent(binn), histo_up.GetBinContent(binn)/nominal.GetBinContent(binn))
-
-            if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1  :
+            if did_something_nom == 1 or did_something_up == 1 or did_something_do == 1 :
                 print ("modified syst templates in ", name_syst, " in process: ", name_nominal, " nom/up/do = ", did_something_nom,  did_something_up, did_something_do)
                 #tfileout.cd(obj0_name)
                 histo_up.Write()
@@ -413,11 +421,6 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
 
 
     tfileout.Close()
-
-
-
-
-
 
 def manipulate_cards(output_file, coupling, bins, no_data, all_procs, preparedatacard) :
     print "Post Manipulate cards (if needed)"

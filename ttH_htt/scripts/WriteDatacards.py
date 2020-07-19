@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 import os.path
 from os import path
 
-from CombineHarvester.ttH_htt.data_manager import manipulate_cards, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics
+from CombineHarvester.ttH_htt.data_manager import manipulate_cards, lists_overlap, construct_templates, list_proc, make_threshold, checkSyst, check_systematics, rescale_stxs_pT_bins
 sys.stdout.flush()
 
 from optparse import OptionParser
@@ -134,7 +134,7 @@ if stxs :
     ptGt300      -> 0.00981   0.00993   0.01020
     ptGt450      -> 0.00214   0.00214   0.00220
     """
-    pT_bins            = {
+    stxs_pT_bins            = {
         # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
         "PTH_fwd"       : (0.00252 + 0.00237 + 0.00260)/3.,
         "PTH_0_60"      : (0.04617 + 0.04556 + 0.04486)/3.,
@@ -145,17 +145,19 @@ if stxs :
     }
     all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hmm", "ttH_hzg"]
     higgs_procs_plain        = list(set(higgs_procs_plain) - set(all_ttH_proc))
-    for pTs in list(pT_bins.keys()) :
+    for pTs in list(stxs_pT_bins.keys()) :
       for ttH_proc in all_ttH_proc :
         higgs_procs_plain   = higgs_procs_plain + [ ttH_proc.replace("ttH", "ttH_" + pTs) ]
     print ("higgs_procs == ", higgs_procs_plain)
 
 print ("Do not allow Zero shape systematics variations")
-if not path.exists(inputShapes) : # and (tH_kin or HH_kin)
+if not path.exists(inputShapes) :
     print("inputShapes = ", inputShapes)
     shutil.copy2(inputShapesRaw, inputShapes)
     print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-    check_systematics(inputShapes, coupling, pT_bins)
+    if stxs :
+        rescale_stxs_pT_bins (inputShapes, stxs_pT_bins)
+    check_systematics(inputShapes, coupling)
     #sys.exit()
 else :
     print ("file %s already modified" % inputShapes)
