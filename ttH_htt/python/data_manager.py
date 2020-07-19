@@ -279,19 +279,17 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
             continue
         #if  "data_fakes" in obj_name:
         #    print ("===========> type of ", obj_name, type(obj))
-        if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D :
+        if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D and type(obj) is not ROOT.TH1 and type(obj) is not ROOT.TH1S and type(obj) is not ROOT.TH1C :
             continue
         #if "data_fakes" in obj_name: # FRjt_shape" in obj_name and
         #    print ("===========> TH1F type of ", obj_name)
 
-        print ( obj_name,len(stxs_pT_bins.keys()) )
-        if len(stxs_pT_bins.keys()) > 0 and "ttH" in obj_name :
+        if "PTH" in obj_name:
             factor = 1.0
             for key in stxs_pT_bins.keys() :
                 if key in obj_name :
-                    print (key, name_nominal)
                     factor = stxs_pT_bins[key]
-                    print (obj_name, factor)
+                    print (key, obj_name, factor)
             pT_bins            = {
                 # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
                 "hww" : 0.2137,
@@ -302,12 +300,12 @@ def check_systematics (inputShapes, coupling, stxs_pT_bins) :
             }
             if not factor == 1.0 :
                 for key in pT_bins.keys() :
-                    if key in name_nominal :
+                    if key in obj_name :
                         factor = factor * pT_bins[key]
                         print (obj_name, key, factor)
-            if not factor == 1.0 :
-                obj.Scale( factor )
-
+            else :
+                print ("Something wrong, it is not scaling ", obj_name)
+            obj.Scale( factor )
 
         if "Down" in obj_name :
             name_nominal = obj_name.split("_CMS")[0]

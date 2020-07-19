@@ -143,8 +143,9 @@ if not path.exists(inputShapes) : # and (tH_kin or HH_kin)
     shutil.copy2(inputShapesRaw, inputShapes)
     print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
     check_systematics(inputShapes, coupling, pT_bins)
+    #sys.exit()
 else :
-    print ("file %s already modifyed" % inputShapes)
+    print ("file %s already modified" % inputShapes)
 
 # check a threshold on processes
 print ("do not add a process to datacard if the yield is smaller than 0.01")
