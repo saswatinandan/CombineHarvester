@@ -272,29 +272,22 @@ def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins) :
             continue
         factor = 1.0
         if "PTH" in obj_name:
-            if "_fake" in obj_name:
+            if "_fake_" in obj_name or  "Convs" in obj_name :
                 continue
             for key in stxs_pT_bins.keys() :
                 if key in obj_name :
                     factor = stxs_pT_bins[key]
-                    print (key, obj_name, factor)
-            BRs = {
-                "hww" : 0.2137,
-                "hzz" : 0.02619,
-                "htt" : 0.06272,
-                "hzg" : 0.001533,
-                "hmm" : 0.00002176
-            }
-            if not factor == 1.0 :
-                for key in BRs.keys() :
-                    if key in obj_name :
-                        factor = factor * BRs[key]
-                        print (obj_name, key, factor)
-            else :
-                print ("Something wrong, it is not scaling ", obj_name)
-            obj.Scale( factor )
-            obj.Write()
+                else :
+                    print ("Something wrong, it is not scaling ", obj_name)
+
+            nominal  = ROOT.TH1F()
+            nominal  = obj.Clone()
+            nominal.Scale( factor )
+            nominal.Write()
+            print ("rescaled ", key, obj_name, factor, nominal.Integral(), obj.Integral())
+
     tfileout.Close()
+    #sys.exit()
 
 
 def check_systematics (inputShapes, coupling) :

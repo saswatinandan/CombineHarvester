@@ -157,7 +157,8 @@ if not path.exists(inputShapes) :
     print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
     if stxs :
         rescale_stxs_pT_bins (inputShapes, stxs_pT_bins)
-    check_systematics(inputShapes, coupling)
+    else :
+        check_systematics(inputShapes, coupling)
     #sys.exit()
 else :
     print ("file %s already modified" % inputShapes)
