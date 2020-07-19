@@ -122,15 +122,28 @@ if tH_kin :
 pT_bins = {}
 if stxs :
     # take ttH_ as the pT bins
+    """
+    BIN                2016      2017      2018
+    -------------------------------------------
+    fwd          -> 0.00252   0.00237   0.00260
+    pt0to60      -> 0.04617   0.04556   0.04486
+    pt120to200   -> 0.05107   0.05146   0.05166
+    pt200to300   -> 0.02127   0.02147   0.02189
+    pt300to450   -> 0.00767   0.00779   0.00799
+    pt60to120    -> 0.07115   0.07108   0.07039
+    ptGt300      -> 0.00981   0.00993   0.01020
+    ptGt450      -> 0.00214   0.00214   0.00220
+    """
     pT_bins            = {
         # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
-        "PTH_0_60"      : 0.049,
-        "PTH_60_120"    : 0.076,
-        "PTH_120_200"   : 0.054,
-        "PTH_200_300"   : 0.023,
-        "PTH_300_infty" : 0.010
+        "PTH_fwd"       : (0.00252 + 0.00237 + 0.00260)/3.,
+        "PTH_0_60"      : (0.04617 + 0.04556 + 0.04486)/3.,
+        "PTH_60_120"    : (0.07115 + 0.07108 + 0.07039)/3.,
+        "PTH_120_200"   : (0.05107 + 0.05146 + 0.05166)/3.,
+        "PTH_200_300"   : (0.02127 + 0.02147 + 0.02189)/3.,
+        "PTH_300_infty" : (0.00981 + 0.00993 + 0.01020)/3.
     }
-    all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_htt", "ttH_hmm", "ttH_hzg"]
+    all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hmm", "ttH_hzg"]
     higgs_procs_plain        = list(set(higgs_procs_plain) - set(all_ttH_proc))
     for pTs in list(pT_bins.keys()) :
       for ttH_proc in all_ttH_proc :
