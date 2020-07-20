@@ -261,7 +261,7 @@ def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, prepare
     f2.write(m)
     f2.close()
 
-def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins) :
+def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins, era) :
     ## it assumes no subdirectories in the preparedatacards file,
     tfileout = ROOT.TFile(inputShapes, "UPDATE")
     tfileout.cd()
@@ -272,13 +272,15 @@ def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins) :
             continue
         factor = 1.0
         if "PTH" in obj_name:
-            if "_fake_" in obj_name or  "Convs" in obj_name :
+            if "_fake_" in obj_name or "Convs" in obj_name or "flips" in obj_name :
                 continue
+            #if not "_htt" in obj_name or not "_hww" in obj_name or not "_hzz" in obj_name or not "_hzg" in obj_name or not "_hmm" in obj_name :
+            #    continue
             for key in stxs_pT_bins.keys() :
                 if key in obj_name :
-                    factor = stxs_pT_bins[key]
-                else :
-                    print ("Something wrong, it is not scaling ", obj_name)
+                    factor = stxs_pT_bins[key][era]
+            if factor == 1.0 :
+                print ("Something wrong, it is not scaling ", obj_name)
 
             nominal  = ROOT.TH1F()
             nominal  = obj.Clone()

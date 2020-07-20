@@ -136,12 +136,12 @@ if stxs :
     """
     stxs_pT_bins            = {
         # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
-        "PTH_fwd"       : (0.00252 + 0.00237 + 0.00260)/3.,
-        "PTH_0_60"      : (0.04617 + 0.04556 + 0.04486)/3.,
-        "PTH_60_120"    : (0.07115 + 0.07108 + 0.07039)/3.,
-        "PTH_120_200"   : (0.05107 + 0.05146 + 0.05166)/3.,
-        "PTH_200_300"   : (0.02127 + 0.02147 + 0.02189)/3.,
-        "PTH_300_infty" : (0.00981 + 0.00993 + 0.01020)/3.
+        "PTH_fwd"       : {2016 : 0.00252, 2017 : 0.00237, 2018 : 0.00260} ,
+        "PTH_0_60"      : {2016 : 0.04617, 2017 : 0.04556, 2018 : 0.04486},
+        "PTH_60_120"    : {2016 : 0.07115, 2017 : 0.07108, 2018 : 0.07039},
+        "PTH_120_200"   : {2016 : 0.05107, 2017 : 0.05146, 2018 : 0.05166},
+        "PTH_200_300"   : {2016 : 0.02127, 2017 : 0.02147, 2018 : 0.02189},
+        "PTH_300_infty" : {2016 : 0.00981, 2017 : 0.00993, 2018 : 0.01020}
     }
     all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hmm", "ttH_hzg"]
     higgs_procs_plain        = list(set(higgs_procs_plain) - set(all_ttH_proc))
@@ -156,7 +156,7 @@ if not path.exists(inputShapes) :
     shutil.copy2(inputShapesRaw, inputShapes)
     print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
     if stxs :
-        rescale_stxs_pT_bins (inputShapes, stxs_pT_bins)
+        rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
     else :
         check_systematics(inputShapes, coupling)
     #sys.exit()
