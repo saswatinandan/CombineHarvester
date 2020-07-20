@@ -119,35 +119,44 @@ if tH_kin :
     print ("signal        (new): ", higgs_procs)
     higgs_procs_plain = sum(higgs_procs,[])
 
+removeProcs = True
+try :
+    print ( "proc_to_remove: listed by hand in configs/list_channels.py" )
+    print (list_channel_opt[channel]["proc_to_remove"][str(era)])
+except :
+    removeProcs = False
+    print ( "do not remove any process listed by hand" )
+
+if removeProcs :
+    removeProcslist = list_channel_opt[channel]["proc_to_remove"][str(era)]
+    if not (coupling == "none" or coupling == "kt_1_kv_1") :
+        removeProcslist = [nn.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for nn in list(removeProcslist) if "tHW" in nn or "tHq" in nn]
+    if len(removeProcslist) > 0 :
+        print("Removing processes where systematics blow up (found by hand a posteriory using the list hardcoded on configs/list_channels.py)")
+        higgs_procs_plain = list(set(list(higgs_procs_plain)) - set(list(removeProcslist)))
+        print ("New list of Higgs processes", higgs_procs_plain)
+        print ("Removed", list_channel_opt[channel]["proc_to_remove"][str(era)])
+
 pT_bins = {}
 if stxs :
     # take ttH_ as the pT bins
-    """
-    BIN                2016      2017      2018
-    -------------------------------------------
-    fwd          -> 0.00252   0.00237   0.00260
-    pt0to60      -> 0.04617   0.04556   0.04486
-    pt120to200   -> 0.05107   0.05146   0.05166
-    pt200to300   -> 0.02127   0.02147   0.02189
-    pt300to450   -> 0.00767   0.00779   0.00799
-    pt60to120    -> 0.07115   0.07108   0.07039
-    ptGt300      -> 0.00981   0.00993   0.01020
-    ptGt450      -> 0.00214   0.00214   0.00220
-    """
     stxs_pT_bins            = {
         # pT bin           XS (now the cards are done normalizing ttH in each pT bin is normalized to 1pb)
-        "PTH_fwd"       : {2016 : 0.00252, 2017 : 0.00237, 2018 : 0.00260} ,
-        "PTH_0_60"      : {2016 : 0.04617, 2017 : 0.04556, 2018 : 0.04486},
-        "PTH_60_120"    : {2016 : 0.07115, 2017 : 0.07108, 2018 : 0.07039},
-        "PTH_120_200"   : {2016 : 0.05107, 2017 : 0.05146, 2018 : 0.05166},
-        "PTH_200_300"   : {2016 : 0.02127, 2017 : 0.02147, 2018 : 0.02189},
-        "PTH_300_infty" : {2016 : 0.00981, 2017 : 0.00993, 2018 : 0.01020}
+        "PTH_fwd"       : {2016 : 0.002646, 2017 : 0.002486, 2018 : 0.002732},
+        "PTH_0_60"      : {2016 : 0.048411, 2017 : 0.047804, 2018 : 0.047128},
+        "PTH_60_120"    : {2016 : 0.074606, 2017 : 0.074574, 2018 : 0.073956},
+        "PTH_120_200"   : {2016 : 0.053548, 2017 : 0.053988, 2018 : 0.054276},
+        "PTH_200_300"   : {2016 : 0.022305, 2017 : 0.022525, 2018 : 0.022999},
+        "PTH_300_infty" : {2016 : 0.010284, 2017 : 0.010420, 2018 : 0.010711},
+        #"PTH_300_450"   : {2016 : 0.008042, 2017 : 0.008178, 2018 : 0.008397},
+        #"PTH_300_infty" : {2016 : 0.002241, 2017 : 0.002242, 2018 : 0.002314},
     }
-    all_ttH_proc       = ["ttH_htt", "ttH_hww", "ttH_hzz", "ttH_hmm", "ttH_hzg"]
-    higgs_procs_plain        = list(set(higgs_procs_plain) - set(all_ttH_proc))
-    for pTs in list(stxs_pT_bins.keys()) :
-      for ttH_proc in all_ttH_proc :
-        higgs_procs_plain   = higgs_procs_plain + [ ttH_proc.replace("ttH", "ttH_" + pTs) ]
+    for xproc in higgs_procs_plain :
+      if "ttH_" in xproc :
+        # remove the ttH_br of the list and add the same in a list of pT bins
+        higgs_procs_plain        = list(set(higgs_procs_plain) - set([xproc]))
+        for pTs in list(stxs_pT_bins.keys()) :
+          higgs_procs_plain   = higgs_procs_plain + [ xproc.replace("ttH", "ttH_" + pTs) ]
     print ("higgs_procs == ", higgs_procs_plain)
 
 print ("Do not allow Zero shape systematics variations")
@@ -178,22 +187,6 @@ print ("signal        (original): ", higgs_procs_plain)
 
 specific_syst_list = specific_syst(analysis, list_channel_opt)
 print("analysis type        :", analysis)
-
-removeProcs = True
-try :
-    print (list_channel_opt[channel]["proc_to_remove"][str(era)])
-except :
-    removeProcs = False
-
-if removeProcs :
-    removeProcslist = list_channel_opt[channel]["proc_to_remove"][str(era)]
-    if not (coupling == "none" or coupling == "kt_1_kv_1") :
-        removeProcslist = [nn.replace("tHq_", "tHq_%s_" % coupling).replace("tHW_", "tHW_%s_" % coupling) for nn in list(removeProcslist) if "tHW" in nn or "tHq" in nn]
-    if len(removeProcslist) > 0 :
-        print("Removing processes where systematics blow up (found by hand a posteriory using the list hardcoded on configs/list_channels.py)")
-        higgs_procs_plain = list(set(list(higgs_procs_plain)) - set(list(removeProcslist)))
-        print ("New list of Higgs processes", higgs_procs_plain)
-        print ("Removed", list_channel_opt[channel]["proc_to_remove"][str(era)])
 
 ###########################################
 # start the list of common systematics for all channels
