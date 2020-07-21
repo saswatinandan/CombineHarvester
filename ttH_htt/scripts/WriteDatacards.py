@@ -32,6 +32,7 @@ parser.add_option("--era",            type="int",          dest="era",         h
 parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      help="Cards for studies with tH kinematics have specifics", default=False)
 parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      help="Cards for studies with HH kinematics have specifics", default=False)
 parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
+parser.add_option("--forceModifyShapes",           action="store_true", dest="forceModifyShapes",        help="if file with modified shapes exist, delete it.", default=False)
 
 (options, args) = parser.parse_args()
 
@@ -53,6 +54,7 @@ stxs         = options.stxs
 tH_kin       = options.tH_kin
 HH_kin       = options.HH_kin
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
+forceModifyShapes      = options.forceModifyShapes
 
 # output the card
 if options.output_file == "none" :
@@ -160,13 +162,23 @@ if stxs :
     print ("higgs_procs == ", higgs_procs_plain)
 
 print ("Do not allow Zero shape systematics variations")
+
+if forceModifyShapes :
+    if path.exists(inputShapes) :
+        print("Deleting: ", inputShapes)
+        os.remove(inputShapes)
+
 if not path.exists(inputShapes) :
     print("inputShapes = ", inputShapes)
     shutil.copy2(inputShapesRaw, inputShapes)
-    print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
     if stxs :
+        print ("\n copied \n %s to \n %s \nto rescale the pT bins with the cross sections by pT bins (see this git issue https://github.com/HEP-KBFI/tth-htt/issues/142)" % (inputShapesRaw, inputShapes))
         rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
     else :
+        print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
+        # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes
+        # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
+        # with bins with large uncertainties, it does not matter for numeric results.
         check_systematics(inputShapes, coupling)
     #sys.exit()
 else :

@@ -263,34 +263,36 @@ def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, prepare
 
 def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins, era) :
     ## it assumes no subdirectories in the preparedatacards file,
-    tfileout = ROOT.TFile(inputShapes, "UPDATE")
-    tfileout.cd()
-    for nkey, key in enumerate(tfileout.GetListOfKeys()) :
+    tfileout1 = ROOT.TFile(inputShapes, "UPDATE")
+    tfileout1.cd()
+    for nkey, key in enumerate(tfileout1.GetListOfKeys()) :
         obj =  key.ReadObj()
         obj_name = key.GetName()
-        if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D and type(obj) is not ROOT.TH1 and type(obj) is not ROOT.TH1S and type(obj) is not ROOT.TH1C :
-            continue
-        factor = 1.0
-        if "PTH" in obj_name:
-            if "_fake_" in obj_name or "Convs" in obj_name or "flips" in obj_name :
+        #if type(obj) is not ROOT.TH1F and type(obj) is not ROOT.TH1D and type(obj) is not ROOT.TH1 and type(obj) is not ROOT.TH1S and type(obj) is not ROOT.TH1C and type(obj) is not ROOT.TH1 :
+        if type(obj) is not ROOT.TH1F :
+            if type(obj) is ROOT.TH1 :
+                print ("data_obs can be be TH1")
                 continue
-            #if not "_htt" in obj_name or not "_hww" in obj_name or not "_hzz" in obj_name or not "_hzg" in obj_name or not "_hmm" in obj_name :
-            #    continue
+            else :
+                print ("WARNING: All the histograms that are not data_obs should be TH1F - otherwhise combine will crash!!!")
+                sys.exit()
+        factor = 1.0
+        nominal  = ROOT.TH1F()
+        if "PTH" in obj_name:
+            if "_fake_" in obj_name or "Convs" in obj_name or "flip" in obj_name :
+                continue
+            if not "_htt" in obj_name and not "_hww" in obj_name and not "_hzz" in obj_name and not "_hzg" in obj_name and not "_hmm" in obj_name :
+                continue
             for key in stxs_pT_bins.keys() :
                 if key in obj_name :
                     factor = stxs_pT_bins[key][era]
             if factor == 1.0 :
                 print ("Something wrong, it is not scaling ", obj_name)
-
-            nominal  = ROOT.TH1F()
-            nominal  = obj.Clone()
+            nominal = obj.Clone()
             nominal.Scale( factor )
             nominal.Write()
             print ("rescaled ", key, obj_name, factor, nominal.Integral(), obj.Integral())
-
-    tfileout.Close()
-    #sys.exit()
-
+    tfileout1.Close()
 
 def check_systematics (inputShapes, coupling) :
     if coupling == "none" :
