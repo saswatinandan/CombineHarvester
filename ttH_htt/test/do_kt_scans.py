@@ -23,6 +23,7 @@ else :
 func_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py"
 execfile(func_file)
 
+
 tHweights = [
   {"kt" : -1.0, "kv" : 1.0, "cosa" : -10}, # the default (i.e. no weight)
   {"kt" : -3.0, "kv" : 1.0, "cosa" : -10},

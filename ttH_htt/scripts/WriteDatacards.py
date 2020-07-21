@@ -176,7 +176,7 @@ if not path.exists(inputShapes) :
         rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
     else :
         print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-        # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes
+        # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes the result without correct rescaling.
         # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
         # with bins with large uncertainties, it does not matter for numeric results.
         check_systematics(inputShapes, coupling)

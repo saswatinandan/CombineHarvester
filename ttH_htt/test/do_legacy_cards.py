@@ -8,20 +8,53 @@ from subprocess import Popen, PIPE
 from io import open
 exec(open(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py").read())
 
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_23Jan20_MVAs/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_23Jan20_MVAs_3ldecDNN/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_25Jan20_MVAs_legDNN/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_23Jan20_SVAs/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_26Jan20_MVAs/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_1l_2ta_sidebands_fullSyst_12Feb20/"
-#output_cards = "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/TLL_legacy_03March20_MVAs_data/"
-#output_cards = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_CR/"
+#output_cards = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_unblinded/"
+output_cards = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_unblinded_stxs/"
 
-#output_cards = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_23March20/"
-output_cards = "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_unblinded/"
-
-eras_to_do = [ "2018", "2016", "2017"] #
+eras_to_do = [ "2018", "2016", "2017" ]
 make_cards = True
+from optparse import OptionParser
+parser = OptionParser()
+parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
+parser.add_option("--blinded",        action="store_true", dest="blinded",     help="Cards for stxs", default=False)
+(options, args) = parser.parse_args()
+
+make_stxs     = options.stxs
+blinded       = options.blinded
+
+# the paths aree given as 2018, it is assumed that to get the other eras just changing 2018 to eg 2017
+cards_fullSyst_june22 = {
+    ## /home/karl/ttHAnalysis/2018/2020Jun18/datacards -- 7 tau channels;
+    ## updating ttW to NLO
+    ############################
+    "2lss_1tau_rest"         : {"channel" : "2lss_1tau_rest", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_rest.root"},
+    "2lss_1tau_tH"           : {"channel" : "2lss_1tau_tH",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_tH.root"},
+    "2lss_1tau_ttH"          : {"channel" : "2lss_1tau_ttH",  "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_ttH.root"},
+    #############################
+    "0l_2tau"                : {"channel" : "0l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/0l_2tau/addSystFakeRates/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
+    "1l_2tau"                : {"channel" : "1l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mvaOutput_legacy_OS.root"},
+    "1l_1tau"                : {"channel" : "1l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/1l_1tau/addSystFakeRates/addSystFakeRates_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"},
+    "2los_1tau"              : {"channel" : "2los_1tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/2los_1tau/addSystFakeRates/addSystFakeRates_2los_1tau_mvaOutput_legacy.root"},
+    ##############################
+    "2l_2tau"                : {"channel" : "2l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/2l_2tau/addSystFakeRates/addSystFakeRates_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"},
+    "3l_1tau"                : {"channel" : "3l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards/2018/datacards/3l_1tau/addSystFakeRates/addSystFakeRates_3l_1tau_OS_mvaOutput_legacy.root"}, #
+    }
+
+cards_fullSyst_june22_stxs = {
+    ## /home/karl/archive/201*/2020Jun18/datacards/
+    ############################
+    "2lss_1tau_rest"         : {"channel" : "2lss_1tau_rest", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/2lss_1tau/stxs/stxs_2lss_1tau_sumOS_output_NN_rest.root"},
+    "2lss_1tau_tH"           : {"channel" : "2lss_1tau_tH",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/2lss_1tau/stxs/stxs_2lss_1tau_sumOS_output_NN_tH.root"},
+    "2lss_1tau_ttH"          : {"channel" : "2lss_1tau_ttH",  "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/2lss_1tau/stxs/stxs_2lss_1tau_sumOS_output_NN_ttH.root"},
+    #############################
+    "0l_2tau"                : {"channel" : "0l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/0l_2tau/stxs/stxs_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
+    "1l_2tau"                : {"channel" : "1l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/1l_2tau/stxs/stxs_1l_2tau_mvaOutput_legacy_OS.root"},
+    "1l_1tau"                : {"channel" : "1l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/1l_1tau/stxs/stxs_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"},
+    "2los_1tau"              : {"channel" : "2los_1tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/2los_1tau/stxs/stxs_2los_1tau_mvaOutput_legacy.root"},
+    ##############################
+    "2l_2tau"                : {"channel" : "2l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/2l_2tau/stxs/stxs_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"},
+    "3l_1tau"                : {"channel" : "3l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_22June20_prepareDatacards_stxs/2018/datacards/3l_1tau/stxs/stxs_3l_1tau_OS_mvaOutput_legacy.root"}, #
+    }
 
 cards_CR_fullSyst_march21 = {
     ## - /home/karl/ttHAnalysis/$ERA/2020Mar18SB -- 1l+2tauSS SB (no regrouped JES or split JER, though);
@@ -29,170 +62,6 @@ cards_CR_fullSyst_march21 = {
     "1l_2tau_SS_mTTVis"     : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/1l_2tau_SS/addSystFakeRates/addSystFakeRates_1l_2tau_mTauTauVis_SS.root"},
     "1l_2tau_SS_numJets"    : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/1l_2tau_SS/addSystFakeRates/addSystFakeRates_1l_2tau_numJets_SS.root"},
     "1l_2tau_SS_HTT"        : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/1l_2tau_SS/addSystFakeRates/addSystFakeRates_1l_2tau_HTT_SS.root"}
-}
-
-cards_fullSyst_april11 = {
-    ## - /home/karl/ttHAnalysis/$ERA/2020Mar18 -- 7 tau channels;
-    ## - /home/karl/ttHAnalysis/$ERA/2020Mar19 -- 3 multilepton channels + 2 CR.
-    ## - /home/karl/archive/2016/2020Apr07/datacards/ for 0l_2tau  1l_1tau  1l_2tau  2lss_1tau
-    ############################
-    "2lss_1tau_rest"         : {"channel" : "2lss_1tau_rest", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_rest.root"},
-    "2lss_1tau_tH"           : {"channel" : "2lss_1tau_tH",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_tH.root"},
-    "2lss_1tau_ttH"          : {"channel" : "2lss_1tau_ttH",  "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/2lss_1tau/addSystFakeRates/addSystFakeRates_2lss_1tau_sumOS_output_NN_ttH.root"},
-    #############################
-    "0l_2tau"                : {"channel" : "0l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/0l_2tau/addSystFakeRates/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
-    "1l_2tau"                : {"channel" : "1l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mvaOutput_legacy_OS.root"},
-    "1l_1tau"                : {"channel" : "1l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_11April20_prepareDatacards/2018/datacards/1l_1tau/addSystFakeRates/addSystFakeRates_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"},
-    "2los_1tau"              : {"channel" : "2los_1tau", "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/2los_1tau/addSystFakeRates/addSystFakeRates_2los_1tau_mvaOutput_legacy.root"},
-    ##############################
-    "2l_2tau"                : {"channel" : "2l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/2l_2tau/addSystFakeRates/addSystFakeRates_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"},
-    "3l_1tau"                : {"channel" : "3l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/3l_1tau/addSystFakeRates/addSystFakeRates_3l_1tau_OS_mvaOutput_legacy.root"}, #
-    }
-
-cards_fullSyst_march23 = {
-    ## - /home/karl/ttHAnalysis/$ERA/2020Mar18 -- 7 tau channels;
-    ## - /home/karl/ttHAnalysis/$ERA/2020Mar19 -- 3 multilepton channels + 2 CR.
-    ############################
-    "1l_2tau"                : {"channel" : "1l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mvaOutput_legacy_OS.root"},
-    #"0l_2tau"                : {"channel" : "0l_2tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/0l_2tau/addSystFakeRates/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
-    #"1l_1tau"                : {"channel" : "1l_1tau",   "shapes"   : "/home/acaan/CMSSW_10_2_13/src/cards_set/legacy_TLL_21March20_prepareDatacards/2018/1l_1tau/addSystFakeRates/addSystFakeRates_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"},
-    }
-
-
-cards_fullsyst_feb20 = {
-    ## All taken from: /home/karl/ttHAnalysis/201*/2020Feb17/datacards/*/addSystFakeRates/
-    ############################
-    #"2lss_1tau_rest"         : {"channel" : "2lss_1tau_rest", "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/2lss_1tau/addSystFakeRates_2lss_1tau_sumOS_output_NN_rest.root"}, #  -- if isMCsplit needs to write on the repo
-    #"2lss_1tau_tH"           : {"channel" : "2lss_1tau_tH",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/2lss_1tau/addSystFakeRates_2lss_1tau_sumOS_output_NN_tH.root"},
-    #"2lss_1tau_ttH"          : {"channel" : "2lss_1tau_ttH",  "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/2lss_1tau/addSystFakeRates_2lss_1tau_sumOS_output_NN_ttH.root"},
-    #############################
-    #"0l_2tau"                : {"channel" : "0l_2tau",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/0l_2tau/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
-    "1l_2tau"                : {"channel" : "1l_2tau",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/1l_2tau/addSystFakeRates_1l_2tau_mvaOutput_legacy_OS.root"},
-    #"1l_1tau"                : {"channel" : "1l_1tau",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/1l_1tau/addSystFakeRates_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"},
-    #"2los_1tau"              : {"channel" : "2los_1tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/2los_1tau/addSystFakeRates_2los_1tau_mvaOutput_legacy.root"},
-    ##############################
-    #"2l_2tau"                : {"channel" : "2l_2tau",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2l_2tau_20Feb20/datacards/2l_2tau/addSystFakeRates/addSystFakeRates_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"},
-    #"3l_1tau"                : {"channel" : "3l_1tau",   "shapes"   : "/home/acaan/ttHAnalysis/2018/2020Feb17/addSystFakeRates/3l_1tau/addSystFakeRates_3l_1tau_OS_mvaOutput_legacy.root"}, #
-}
-
-
-cards_CR_fullSyst_feb13 = {
-    "1l_2tau_SS"            : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_12Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mvaOutput_legacy_SS.root"},
-    "1l_2tau_SS_mTTVis"     : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_12Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_mTauTauVis_SS.root"},
-    "1l_2tau_SS_HTT"        : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/ttHAnalysis/2018/legacy_1l_2ta_sidebands_fullSyst_15Feb20/datacards/1l_2tau/addSystFakeRates/addSystFakeRates_1l_2tau_HTT_SS.root"}
-}
-
-cards_fullsyst_jan26 = {
-    ########################
-    #"3l_0tau_rest_eee"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_eee.root"},
-    #"3l_0tau_rest_eem_bl"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_eem_bl.root"},
-    #"3l_0tau_rest_emm_bl"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_emm_bl.root"},
-    #"3l_0tau_rest_mmm_bl"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_mmm_bl.root"},
-    #"3l_0tau_rest_eem_bt"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_eem_bt.root"},
-    #"3l_0tau_rest_emm_bt"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_emm_bt.root"},
-    #"3l_0tau_rest_mmm_bt"   : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_rest_mmm_bt.root"},
-    #"3l_0tau_tH_bl"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_tH_bl.root"},
-    #"3l_0tau_tH_bt"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_tH_bt.root"},
-    #"3l_0tau_ttH_bl"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_ttH_bl.root"},
-    #"3l_0tau_ttH_bt"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_3l_0tau_2018/datacards/3l/addSystFakeRates/addSystFakeRates_3l_OS_output_NN_ttH_bt.root"},
-    ###########################
-    "2lss_1tau_rest"        : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2lss_1tau_addSystFakeRates/2018/addSystFakeRates_2lss_1tau_sumOS_output_NN_rest.root"}, # /home/karl/ttHAnalysis/2018/2020Jan22/datacards/2lss_1tau/ -- if isMCsplit needs to write on the repo
-    "2lss_1tau_tH"          : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2lss_1tau_addSystFakeRates/2018/addSystFakeRates_2lss_1tau_sumOS_output_NN_tH.root"},
-    "2lss_1tau_ttH"         : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2lss_1tau_addSystFakeRates/2018/addSystFakeRates_2lss_1tau_sumOS_output_NN_ttH.root"},
-    #############################
-    "0l_2tau"                : {"channel" : "0l_2tau", "shapes"   : "/home/arun/ttHAnalysis/2018/2020Jan23/datacards/0l_2tau/addSystFakeRates/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root"},
-    "1l_2tau"                : {"channel" : "1l_2tau", "shapes"   : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/1l_2tau_addSystFakeRates/2018/addSystFakeRates_1l_2tau_mvaOutput_legacy_OS.root"}, # 2017/2016 /home/karl/ttHAnalysis/2016/2020Jan22/datacards/1l_2tau/ | 2018 /home/acaan/ttHAnalysis/2018/legacy_22Jan20_fullSyst_1l_2tau_2018/
-    "1l_1tau"                : {"channel" : "1l_1tau", "shapes"   : "/home/arun/ttHAnalysis/2018/2020Jan23/datacards/1l_1tau/addSystFakeRates/addSystFakeRates_1l_1tau_1l_1tau_OS_mvaOutput_Legacy_6_disabled.root"},
-    "2los_1tau"              : {"channel" : "2los_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_22Jan20_fullSyst_2los_1tau_2018/datacards/2los_1tau/addSystFakeRates/addSystFakeRates_2los_1tau_mvaOutput_legacy.root"},
-    ##############################
-    "2l_2tau"                : {"channel" : "2l_2tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_25Jan20_fullSyst_2l_2tau_2018/datacards/2l_2tau/addSystFakeRates/addSystFakeRates_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"}, #"/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2l_2tau_addSystFakeRates/2018/addSystFakeRates_2l_2tau_lepdisabled_taudisabled_sumOS_mvaOutput_final.root"}, # /home/veelken/ttHAnalysis/201*/2020Jan22*/datacards/2l_2tau/addSystFakeRates/
-    "3l_1tau"                : {"channel" : "3l_1tau", "shapes" : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/3l_1tau_addSystFakeRates/2018/addSystFakeRates_3l_1tau_OS_mvaOutput_legacy.root"}, # /home/karl/ttHAnalysis/2018/2020Jan22/datacards/3l_1tau/addSystFakeRates-- if isMCsplit needs to write on the repo
-}
-
-
-cards_fullsyst_dec19 = {
-    # we do not have fullsyst for 2lss
-    "2lss_0tau_ee_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_ee.root"},
-    "2lss_0tau_em_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_em.root"},
-    "2lss_0tau_mm_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_mm.root"} ,
-    "2lss_0tau_ee_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_ee.root"},
-    "2lss_0tau_em_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_em.root"},
-    "2lss_0tau_mm_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_mm.root"},
-    "2lss_0tau_ee_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_ee.root"},
-    "2lss_0tau_em_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_em.root"},
-    "2lss_0tau_mm_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_mm.root"},
-    "2lss_0tau_ee_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_ee.root"},
-    "2lss_0tau_em_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_em.root"},
-    "2lss_0tau_mm_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_mm.root"},
-    #"2lss_0tau_inclusive"   : {"channel" : "2lss_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/2lss_0tau_central_DNN_legacy_IHEP_DNN_2018_20Dec2019/datacards/2lss/prepareDatacards/prepareDatacards_2lss_EventCounter.root"},
-    ########################
-    "3l_0tau_rest_eee"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_eee.root"},
-    "3l_0tau_rest_eem"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_eem.root"},
-    "3l_0tau_rest_emm"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_emm.root"},
-    "3l_0tau_rest_mmm"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_mmm.root"},
-    "3l_0tau_tH_bl"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_tH_bl.root"},
-    "3l_0tau_tH_bt"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_tH_bt.root"},
-    "3l_0tau_ttH_bl"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_ttH_bl.root"},
-    "3l_0tau_ttH_bt"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_3l_0tau_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_ttH_bt.root"},
-    ###########################
-    "2lss_1tau_rest"        : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_2lss_1tau_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_rest.root"}, # mT_lep is from lep_pt
-    "2lss_1tau_tH"          : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_2lss_1tau_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_tH.root"},   # mT_lep is from lep_pt
-    "2lss_1tau_ttH"         : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_fullSyst_2lss_1tau_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_ttH.root"},  # mT_lep is from lep_pt
-    #############################
-    "0l_2tau"                : {"channel" : "0l_2tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/0l_2tau/prepareDatacards/prepareDatacards_0l_2tau_0l_2tau_mvaOutput_Legacy.root"},            # mT_lep is from lep_pt
-    "1l_2tau"                : {"channel" : "1l_2tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/1l_2tau/prepareDatacards/prepareDatacards_1l_2tau_mvaOutput_legacy.root"},                    # mT_lep is from lep_pt ## needs to have less bins
-    "1l_1tau"                : {"channel" : "1l_1tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/1l_1tau/prepareDatacards/prepareDatacards_1l_1tau_1l_1tau_mvaOutput_Legacy_6_disabled.root"}, # mT_lep is from lep_pt
-    "2los_1tau"              : {"channel" : "2los_1tau", "shapes" : "/home/karl/ttHAnalysis/2018/2019Dec24/datacards/2los_1tau/prepareDatacards/prepareDatacards_2los_1tau_mvaOutput_legacy.root"},                # mT_lep is from lep_pt
-    ##############################
-    "2l_2tau"                : {"channel" : "2l_2tau", "shapes" : "/home/veelken/public/tthAnalysis/datacards/prepareDatacards_2l_2tau_mvaOutput_final_2018.root"},
-    "4l_0tau"                : {"channel" : "4l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_4l_0tau_2018/datacards/4l/prepareDatacards/prepareDatacards_4l_OS_mva_4l.root"},                                     # 25Dec has CR to plot
-    "3l_1tau"                : {"channel" : "3l_1tau", "shapes" : "/home/karl/ttHAnalysis/2018/2019Dec24/datacards/3l_1tau/prepareDatacards/prepareDatacards_3l_1tau_OS_mvaOutput_legacy.root"},                 # 25Dec has CR to plot
-    ###########################
-    ### there is only 2018 while we cannot check with Oviedo
-    "3l_cr_eee"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_3l_0tau_CR_2018/datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eee.root"},
-    "3l_cr_eem"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_3l_0tau_CR_2018/datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eem.root"},
-    "3l_cr_emm"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_3l_0tau_CR_2018/datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_emm.root"},
-    "3l_cr_mmm"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_3l_0tau_CR_2018/datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_mmm.root"},
-    ###########################
-    "4l_cr"                 : {"channel" : "4lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_07Dec20_4l_0tau_CR_2018/datacards/4lctrl/prepareDatacards/prepareDatacards_4lctrl_OS_control.root"},
-}
-
-cards_MVA = {
-    ## the multilep ones used for sync -- there are only 2018
-    ########################
-    "2lss_0tau_ee_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_ee.root"},
-    "2lss_0tau_em_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_em.root"},
-    "2lss_0tau_mm_Restnode" : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_rest_mm.root"} ,
-    "2lss_0tau_ee_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_ee.root"},
-    "2lss_0tau_em_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_em.root"},
-    "2lss_0tau_mm_tHQnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_tH_mm.root"},
-    "2lss_0tau_ee_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_ee.root"},
-    "2lss_0tau_em_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_em.root"},
-    "2lss_0tau_mm_ttHnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttH_mm.root"},
-    "2lss_0tau_ee_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_ee.root"},
-    "2lss_0tau_em_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_em.root"},
-    "2lss_0tau_mm_ttWnode"  : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_output_NN_ttW_mm.root"},
-    "2lss_0tau_inclusive"   : {"channel" : "2lss_0tau", "shapes" : "/home/karl/ttHAnalysis/2018/2020Jan21/datacards/2lss/prepareDatacards/prepareDatacards_2lss_EventCounter.root"},
-    ########################
-    "3l_0tau_rest_eee"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_eee.root"},
-    "3l_0tau_rest_eem"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_eem.root"},
-    "3l_0tau_rest_emm"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_emm.root"},
-    "3l_0tau_rest_mmm"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_rest_mmm.root"},
-    "3l_0tau_tH_bl"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_tH_bl.root"},
-    "3l_0tau_tH_bt"         : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_tH_bt.root"},
-    "3l_0tau_ttH_bl"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_ttH_bl.root"},
-    "3l_0tau_ttH_bt"        : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_output_NN_ttH_bt.root"},
-    ###########################
-    "2lss_1tau_rest"        : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_2lss_1tau_16Jan20_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_rest.root"}, # mT_lep is from lep_pt
-    "2lss_1tau_tH"          : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_2lss_1tau_16Jan20_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_tH.root"},   # mT_lep is from lep_pt
-    "2lss_1tau_ttH"         : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_2lss_1tau_16Jan20_2018/datacards/2lss_1tau/prepareDatacards/prepareDatacards_2lss_1tau_sumOS_output_NN_ttH.root"},  # mT_lep is from lep_pt
-    #############################
-    "3l_cr_eee"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eee.root"},
-    "3l_cr_eem"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eem.root"},
-    "3l_cr_emm"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_emm.root"},
-    "3l_cr_mmm"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_mmm.root"},
-    ###########################
-    "4l_cr"                 : {"channel" : "4lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_4l_cR_16Jan20_2018/datacards/4lctrl/prepareDatacards/prepareDatacards_4lctrl_OS_control.root"},
 }
 
 cards_SVA = {
@@ -217,17 +86,7 @@ cards_SVA = {
     #"3l_0tau_lj_pos"      : {"channel" : "3l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_0tau_16Jan20_2018/datacards/3l/prepareDatacards/prepareDatacards_3l_OS_mass_3L_lj_pos.root"},
     ###########################
     "2lss_1tau"              : {"channel" : "2lss_1tau", "shapes" : "/home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2lss_1tau_addSystFakeRates_SVA/2018/addSystFakeRates_2lss_1tau_sumOS_mTauTauVis1.root"},
-    ######################
-    #"0l_2tau"                : {"channel" : "0l_2tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/0l_2tau/prepareDatacards/prepareDatacards_0l_2tau_0l_2tau_mTauTau.root"},
-    #"1l_2tau"                : {"channel" : "1l_2tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/1l_2tau/prepareDatacards/prepareDatacards_1l_2tau_mTauTauVis.root"},
-    #"1l_1tau"                : {"channel" : "1l_1tau", "shapes" : "/home/arun/ttHAnalysis/2018/2019Dec23/datacards/1l_1tau/prepareDatacards/prepareDatacards_1l_1tau_1l_1tau_mTauTau_disabled.root"},
-    #"2los_1tau"              : {"channel" : "2los_1tau", "shapes" : "/home/karl/ttHAnalysis/2018/2019Dec24/datacards/2los_1tau/prepareDatacards/prepareDatacards_2los_1tau_mTauTauVis.root"},
-    ##############################
-    #"2l_2tau"                : {"channel" : "2l_2tau", "shapes" : "/home/veelken/ttHAnalysis/2018/2019Dec23/datacards/2l_2tau/prepareDatacards/prepareDatacards_2l_2tau_lepdisabled_taudisabled_sumOS_mTauTauVis.root"},
-    #"4l_0tau"                : {"channel" : "4l_0tau", "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_4l_0tau_16Jan20_2018/datacards/4l/prepareDatacards/prepareDatacards_4l_OS_mass_4L.root"},                  # 25Dec has CR to plot
-    #"3l_1tau"                : {"channel" : "3l_1tau", "shapes" : "/home/karl/ttHAnalysis/2018/2019Dec24/datacards/3l_1tau/prepareDatacards/prepareDatacards_3l_1tau_OS_EventCounter.root"},   # 25Dec has CR to plot
     ###########################
-    ### there is only 2018 while we cannot check with Oviedo
     #"3l_cr_eee"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eee.root"},
     #"3l_cr_eem"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_eem.root"},
     #"3l_cr_emm"             : {"channel" : "3lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_3l_cR_16Jan20_2018//datacards/3lctrl/prepareDatacards/prepareDatacards_3lctrl_OS_control_emm.root"},
@@ -236,7 +95,9 @@ cards_SVA = {
     #"4l_cr"                 : {"channel" : "4lctrl",  "shapes" : "/home/acaan/ttHAnalysis/2018/legacy_4l_cR_16Jan20_2018/datacards/4lctrl/prepareDatacards/prepareDatacards_4lctrl_OS_control.root"},
 
 }
-cards_to_do = cards_fullSyst_april11
+cards_to_do = cards_fullSyst_june22
+if make_stxs :
+    cards_to_do = cards_fullSyst_june22_stxs
 
 for era in eras_to_do :
     if make_cards :
@@ -248,6 +109,8 @@ for era in eras_to_do :
             cmd += "--channel %s "     % (cards_to_do[key]["channel"].replace("2018", era))
             cmd += "--cardFolder %s "  % output_cards
             cmd += "--noX_prefix  "
+            if make_stxs :
+                cmd += " --stxs --forceModifyShapes "
             #if not "ctrl" in cards_to_do[key]["channel"]  :
             #    cmd += "--no_data "
             cmd += "--era %s" % str(era)
@@ -256,12 +119,12 @@ for era in eras_to_do :
             runCombineCmd(cmd, '.', "%s/ttH_%s_%s.log" % (output_cards, key, era))
             print ("output card/log saved on: %s/ttH_%s_%s.txt/root/log" % (output_cards, key, era))
     #######################
-    # combine cards to make plots -- the order of lists of flavours is important
+    print ( "combine cards to make plots -- the order of lists of flavours is important" )
     if "3l_cr_eee" in list(cards_to_do.keys()) :
         cmd = "combineCards.py "
         for flavor in ["eee", "eem", "emm", "mmm"] :
             cmd += " ttH_3lctr_%s=ttH_3l_cr_%s_%s.txt" % (flavor, flavor, era)
-        cmd += " > ttH_3l_cr_%s.txt" % era
+        cmd += " > combo_ttH_3l_cr_%s.txt" % era
         runCombineCmd(cmd, output_cards)
     #
     if "2lss_0tau_ee_Restnode" in list(cards_to_do.keys()) :
@@ -269,7 +132,7 @@ for era in eras_to_do :
           cmd = "combineCards.py "
           for flavor in ["ee", "em", "mm"] :
             cmd += " ttH_2lss_0tau_%s_%snode=ttH_2lss_0tau_%s_%snode_%s.txt" % (flavor, node, flavor, node, era)
-          cmd += " > ttH_2lss_0tau_%snode_%s.txt" % (node, era)
+          cmd += " > combo_ttH_2lss_0tau_%snode_%s.txt" % (node, era)
           runCombineCmd(cmd, output_cards)
     #
     if "2lss_0tau_ee_hj_neg" in list(cards_to_do.keys()) :
@@ -278,7 +141,7 @@ for era in eras_to_do :
           cmd = "combineCards.py "
           for flavor in ["ee", "em", "mm"] :
             cmd += " ttH_2lss_0tau_%s_%s_%s=ttH_2lss_0tau_%s_%s_%s_%s.txt" % (flavor, node, type, flavor, node, type, era)
-          cmd += " > ttH_2lss_0tau_%s_%s_%s.txt" % (node, type, era)
+          cmd += " > combo_ttH_2lss_0tau_%s_%s_%s.txt" % (node, type, era)
           runCombineCmd(cmd, output_cards)
     #
     if "3l_0tau_rest_eee" in list(cards_to_do.keys()) :
@@ -286,33 +149,17 @@ for era in eras_to_do :
           cmd = "combineCards.py "
           for flavor in ["bt", "bl"] :
             cmd += " ttH_3l_0tau_%s_%s=ttH_3l_0tau_%s_%s_%s.txt" % (node, flavor, node, flavor, era)
-          cmd += " > ttH_3l_0tau_%s_%s.txt" % (node, era)
+          cmd += " > combo_ttH_3l_0tau_%s_%s.txt" % (node, era)
           runCombineCmd(cmd, output_cards)
         cmd = "combineCards.py "
         for flavor in ["eee", "eem", "emm", "mmm"] :
             cmd += " ttH_3l_0tau_rest_%s=ttH_3l_0tau_rest_%s_%s.txt" % (flavor, flavor, era)
-        cmd += " > ttH_3l_0tau_rest_%s.txt" % (era)
+        cmd += " > combo_ttH_3l_0tau_rest_%s.txt" % (era)
         runCombineCmd(cmd, output_cards)
     #
     if "2lss_1tau_rest" in list(cards_to_do.keys()) :
         cmd = "combineCards.py "
         for node in ["ttH", "tH", "rest"] :
             cmd += "ttH_2lss_1tau_%s=ttH_2lss_0tau_%s_%s.txt" % (node, node, era)
-        cmd += " > ttH_2lss_1tau_%s.txt" % (era)
+        cmd += " > combo_ttH_2lss_1tau_%s.txt" % (era)
         runCombineCmd(cmd, output_cards)
-    ##################################
-    # combine all cards to make fits / era
-    cmd = "combineCards.py "
-    for key in list(cards_to_do.keys()) :
-        cmd += " ttH_%s=ttH_%s_%s.txt" % (key, key, era)
-    cmd += " > ttH_multilep_%s.txt" % (era)
-    runCombineCmd(cmd, output_cards)
-############################################
-# combine all cards to make fits -- need to be by
-cmd = "combineCards.py "
-for era in eras_to_do :
-    cmd += " ttH_%s= ttH_multilep_%s.txt" % (era, era)
-cmd += " > ttH_multilep.txt"
-
-# for kt scans: python test/do_kt_scans.py --inputShapes /home/arun/ttHAnalysis/2017/2020Jan23/datacards/0l_2tau/addSystFakeRates/addSystFakeRates_0l_2tau_0l_2tau_mvaOutput_Legacy_OS.root --channel 0l_2tau --cardFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/ --era 2017 --shapeSyst
-# python test/do_kt_scans.py --inputShapes /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/2lss_1tau_addSystFakeRates/2017/addSystFakeRates_2lss_1tau_sumOS_output_NN_rest.root --channel 2lss_1tau --cardFolder /home/acaan/VHbbNtuples_8_0_x/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/deeptauWPS/legacy_27Jan_lepOv_tauTLL_tH/ --era 2017 --shapeSyst --channel_to_card 2lss_1tau_rest
