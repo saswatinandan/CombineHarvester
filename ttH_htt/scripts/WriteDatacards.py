@@ -33,7 +33,6 @@ parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      h
 parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      help="Cards for studies with HH kinematics have specifics", default=False)
 parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
 parser.add_option("--forceModifyShapes",           action="store_true", dest="forceModifyShapes",        help="if file with modified shapes exist, delete it.", default=False)
-
 (options, args) = parser.parse_args()
 
 inputShapesRaw = options.inputShapes
@@ -162,7 +161,6 @@ if stxs :
     print ("higgs_procs == ", higgs_procs_plain)
 
 print ("Do not allow Zero shape systematics variations")
-
 if forceModifyShapes :
     if path.exists(inputShapes) :
         print("Deleting: ", inputShapes)
@@ -171,16 +169,16 @@ if forceModifyShapes :
 if not path.exists(inputShapes) :
     print("inputShapes = ", inputShapes)
     shutil.copy2(inputShapesRaw, inputShapes)
-    if stxs :
-        print ("\n copied \n %s to \n %s \nto rescale the pT bins with the cross sections by pT bins (see this git issue https://github.com/HEP-KBFI/tth-htt/issues/142)" % (inputShapesRaw, inputShapes))
-        rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
-    else :
-        print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-        # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes the result without correct rescaling.
-        # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
-        # with bins with large uncertainties, it does not matter for numeric results.
-        check_systematics(inputShapes, coupling)
-    #sys.exit()
+    #if stxs :
+    #    print ("\n copied \n %s to \n %s \nto rescale the pT bins with the cross sections by pT bins (see this git issue https://github.com/HEP-KBFI/tth-htt/issues/142)" % (inputShapesRaw, inputShapes))
+    #    rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
+    #else :
+    #    print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
+    #    # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes the result without correct rescaling.
+    #    # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
+    #    # with bins with large uncertainties, it does not matter for numeric results.
+    #    check_systematics(inputShapes, coupling)
+    check_systematics(inputShapes, coupling)
 else :
     print ("file %s already modified" % inputShapes)
 
@@ -277,16 +275,6 @@ for specific_syst in theory_ln_Syst :
     print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", procs)
 
 if analysis == "HH" or 1 > 0 :
-    ### Uniformize those names at some point
-    #"pdf_HH"                      : {"value": 1.04,               "proc" : ["HH"]},
-    #"QCDscale_HH"                 : {"value": (0.95 , 1.022),     "proc" : ["HH"]},
-    #"TopmassUnc_HH"               : {"value": 1.026,              "proc" : ["HH"]},
-    #"pdf_Higgs_ttH"               : {"value": 1.036,              "proc" : ["ttH"]},
-    #"QCDscale_ttH"                : {"value": (0.907 , 1.058),    "proc" : ["ttH"]},
-    #"pdf_qg"                      : {"value": 1.01,               "proc" : ["tHq"]},
-    #"QCDscale_tHq"                : {"value": (0.933, 1.041),     "proc" : ["tHq"]},
-    #"QCDscale_WH"                 : {"value": (0.95 , 1.07),      "proc" : ["WH"]},
-    #"pdf_WH"                      : {"value": 1.019,              "proc" : ["WH"]},
 
     specific_syst == "pdf_HH"
     cb.cp().process(higgs_procs_plain).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))

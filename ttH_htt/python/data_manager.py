@@ -261,9 +261,9 @@ def manipulate_cards_Ov(output_file, coupling, bins, no_data, all_procs, prepare
     f2.write(m)
     f2.close()
 
-def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins, era) :
+def rescale_stxs_pT_bins (inputShapesI, stxs_pT_bins, era) :
     ## it assumes no subdirectories in the preparedatacards file,
-    tfileout1 = ROOT.TFile(inputShapes, "UPDATE")
+    tfileout1 = ROOT.TFile(inputShapesI, "UPDATE")
     tfileout1.cd()
     for nkey, key in enumerate(tfileout1.GetListOfKeys()) :
         obj =  key.ReadObj()
@@ -294,12 +294,13 @@ def rescale_stxs_pT_bins (inputShapes, stxs_pT_bins, era) :
             print ("rescaled ", key, obj_name, factor, nominal.Integral(), obj.Integral())
     tfileout1.Close()
 
-def check_systematics (inputShapes, coupling) :
+def check_systematics (inputShapesL, coupling) :
     if coupling == "none" :
         print ("Not doing cards with couplings, skping to modify all shapes with 'kt' mark on it from tHq/tHW/HH")
     ## it assumes no subdirectories in the preparedatacards file,
-    tfileout = ROOT.TFile(inputShapes, "UPDATE")
+    tfileout = ROOT.TFile(inputShapesL, "UPDATE")
     tfileout.cd()
+    ###########################
     for nkey, key in enumerate(tfileout.GetListOfKeys()) :
         obj =  key.ReadObj()
         obj_name = key.GetName()
