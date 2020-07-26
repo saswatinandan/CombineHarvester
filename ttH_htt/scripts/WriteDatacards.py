@@ -33,6 +33,12 @@ parser.add_option("--tH_kin",         action="store_true", dest="tH_kin",      h
 parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      help="Cards for studies with HH kinematics have specifics", default=False)
 parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
 parser.add_option("--forceModifyShapes",           action="store_true", dest="forceModifyShapes",        help="if file with modified shapes exist, delete it.", default=False)
+
+parser.add_option("--signal_type",    type="string",       dest="signal_type", help="Options: \"noresLO\" | \"nonresNLO\" | \"res\" ", default="none")
+parser.add_option("--mass",           type="string",       dest="mass",        help="Options: \n nonresNLO = it will be ignored \n noresLO = \"SM\", \"BM12\", \"kl_1p00\"... \n \"spin0_900\", ...", default="none")
+parser.add_option("--HHtype",         type="string",       dest="HHtype",      help="Options: \"bbWW\" | \"multilep\" ", default="none")
+parser.add_option("--renamedHHInput", action="store_true", dest="renamedHHInput",   help="If used input already renamed.", default=False)
+
 (options, args) = parser.parse_args()
 
 inputShapesRaw = options.inputShapes
@@ -52,8 +58,12 @@ no_data      = options.no_data
 stxs         = options.stxs
 tH_kin       = options.tH_kin
 HH_kin       = options.HH_kin
+signal_type  = options.signal_type
+mass         = options.mass
+HHtype       = options.HHtype
 use_Exptl_HiggsBR_Uncs = options.use_Exptl_HiggsBR_Uncs
 forceModifyShapes      = options.forceModifyShapes
+renamedHHInput         = options.renamedHHInput
 
 # output the card
 if options.output_file == "none" :
@@ -71,14 +81,22 @@ if not os.path.exists(cardFolder):
 
 syst_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_syst.py"
 execfile(syst_file)
-print ("syst values and channels options taken from: " +  syst_file)
+print ("syst values and channels options taken from: %s " % syst_file)
 
-info_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_channels.py"
-execfile(info_file)
-print ("list of signals/bkgs by channel taken from: " +  info_file)
+if analysis == "ttH" :
+    info_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_channels.py"
+    execfile(info_file)
+    print ("list of signals/bkgs by channel taken from: %s" % info_file)
+elif analysis == "HH" :
+    info_file = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/configs/list_channels_HH.py"
+    execfile(info_file)
+    print ("list of signals/bkgs by channel taken from: %s" % info_file)
+else :
+    print ("Analysis %s not implemented, should be \"ttH\" or \"HH\"")
+    sys.exit()
 
-higgs_procs = list_channels(analysis, fake_mc)["higgs_procs"]
-list_channel_opt   = list_channels(analysis, fake_mc)["info_bkg_channel"]
+higgs_procs = list_channels( fake_mc, signal_type, mass, HHtype, renamedHHInput )["higgs_procs"]
+list_channel_opt   = list_channels( fake_mc, signal_type, mass, HHtype, renamedHHInput )["info_bkg_channel"]
 bkg_proc_from_data = list_channel_opt[channel]["bkg_proc_from_data"]
 bkg_procs_from_MC  = list_channel_opt[channel]["bkg_procs_from_MC"]
 
@@ -107,7 +125,6 @@ elif only_BKG_sig :
     print ("MC processes -- after chosing to mark as signal only ttH:")
     bkg_procs_from_MC = [ entry for entry in bkg_procs_from_MC if not "TTW" in entry and not "TTZ" in entry ]
     bkg_procs_from_MC += sum(higgs_procs,[])
-    #higgs_procs        = [ entries for entries in bkg_procs_from_MC if "TTW" in entry or "TTZ" in entry ]
     print ("BKG from MC   (new): ", bkg_procs_from_MC)
     print ("signal        (new): ", ["TTW", "TTZ"])
     higgs_procs_plain = ["TTW", "TTZ"] #higgs_procs
@@ -160,30 +177,34 @@ if stxs :
           higgs_procs_plain   = higgs_procs_plain + [ xproc.replace("ttH", "ttH_" + pTs) ]
     print ("higgs_procs == ", higgs_procs_plain)
 
-print ("Do not allow Zero shape systematics variations")
-if forceModifyShapes :
-    if path.exists(inputShapes) :
-        print("Deleting: ", inputShapes)
-        os.remove(inputShapes)
+if shape :
+    print ("Do not allow Zero shape systematics variations")
+    inputShapes = inputShapesRaw.replace(".root", "_mod.root")
+    if forceModifyShapes :
+        if path.exists(inputShapes) :
+            print("Deleting: ", inputShapes)
+            os.remove(inputShapes)
 
-if not path.exists(inputShapes) :
-    print("inputShapes = ", inputShapes)
-    shutil.copy2(inputShapesRaw, inputShapes)
-    #if stxs :
-    #    print ("\n copied \n %s to \n %s \nto rescale the pT bins with the cross sections by pT bins (see this git issue https://github.com/HEP-KBFI/tth-htt/issues/142)" % (inputShapesRaw, inputShapes))
-    #    rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
-    #else :
-    #    print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
-    #    # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes the result without correct rescaling.
-    #    # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
-    #    # with bins with large uncertainties, it does not matter for numeric results.
-    #    check_systematics(inputShapes, coupling)
-    check_systematics(inputShapes, coupling)
+    if not path.exists(inputShapes) :
+        print("inputShapes = ", inputShapes)
+        shutil.copy2(inputShapesRaw, inputShapes)
+        #if stxs :
+        #    print ("\n copied \n %s to \n %s \nto rescale the pT bins with the cross sections by pT bins (see this git issue https://github.com/HEP-KBFI/tth-htt/issues/142)" % (inputShapesRaw, inputShapes))
+        #    rescale_stxs_pT_bins(inputShapes, stxs_pT_bins, era)
+        #else :
+        #    print ("\n copied \n %s to \n %s \nto make modifications in problematic bins." % (inputShapesRaw, inputShapes))
+        #    # FIXME: now if we do rescale_stxs_pT_bins somehow doing check_systematics makes the result without correct rescaling.
+        #    # I will not debug that now, the check_systematics is mostly to not deliver weird postfit shapes
+        #    # with bins with large uncertainties, it does not matter for numeric results.
+        #    check_systematics(inputShapes, coupling)
+        check_systematics(inputShapes, coupling)
+    else :
+        print ("file %s already modified" % inputShapes)
 else :
-    print ("file %s already modified" % inputShapes)
+    inputShapes = inputShapesRaw
 
 # check a threshold on processes
-print ("do not add a process to datacard if the yield is smaller than 0.01")
+print ("do not add a process to datacard if the yield is smaller than 0.01 -- if so, do not add it")
 bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes, tH_kin)
 bkg_procs_from_MC  = make_threshold(0.01, bkg_procs_from_MC, inputShapes, tH_kin)
 higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes, tH_kin)
@@ -225,10 +246,10 @@ if era in [2017, 2016] :
     cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_DB",  "lnN", ch.SystMap()(lumi_13TeV_DB[era]))
     cb.cp().process(bkg_procs_from_MC + higgs_procs_plain).AddSyst(cb, "lumi_13TeV_GS",  "lnN", ch.SystMap()(lumi_13TeV_GS[era]))
 
-
 #######################################
 # FIXME: one of the syst is logUniform -- fix
 if 0 > 1 : # FIXME: remind why we added that at some point
+    # it can be done as text modification afterwards
     print ("Adding rateParam")
     # normalizations floating individually (ttWW correlated with ttW and among signal types)
     # not relevant if you do the fit expliciting things on the text2ws maker -- but it does not hurt
@@ -257,12 +278,12 @@ for specific_syst in theory_ln_Syst :
     if len(procs) == 0 :
         continue
     if "HH" in procs[0] :
-        for decay in list_channels(analysis, fake_mc)["decays_hh"] :
+        for decay in list_channels( fake_mc, signal_type, mass, HHtype, renamedHHInput )["decays_hh"] :
             procs = procs + [procs[0] + decay]
     elif "H" in procs[0] and analysis == "ttH":
         if tH_kin and ("tHq" in procs[0] or "tHW" in procs[0]) :
             continue
-        for decay in list_channels(analysis, fake_mc)["decays"] :
+        for decay in list_channels( fake_mc, signal_type, mass, HHtype, renamedHHInput )["decays"] :
             procs = procs + [procs[0] + decay]
     else :
         if procs[0] not in bkg_procs_from_MC :
@@ -274,7 +295,7 @@ for specific_syst in theory_ln_Syst :
     cb.cp().process(procs).AddSyst(cb,  specific_syst_use, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
     print ("added " + specific_syst + " with value " + str(theory_ln_Syst[specific_syst]["value"]) + " to processes: ", procs)
 
-if analysis == "HH" or 1 > 0 :
+if analysis == "HH" :
 
     specific_syst == "pdf_HH"
     cb.cp().process(higgs_procs_plain).AddSyst(cb,  specific_syst, "lnN", ch.SystMap()(theory_ln_Syst[specific_syst]["value"]))
@@ -510,6 +531,9 @@ if shape :
             print ("renamed " + MC_shape_syst_era_2 + " as shape uncertainty to MC prcesses to " + MC_shape_syst_era_3)
 
 ########################################
+
+if not ( signal_type == "none" and mass == "none" and HHtype == "none" ) :
+    output_file =  "%s_%s_%s_%s" % (output_file, HHtype, signal_type, mass )
 
 bins = cb.bin_set()
 for b in bins :
