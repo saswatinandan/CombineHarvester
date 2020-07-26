@@ -11,20 +11,6 @@ import glob
 exec(open(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager.py").read())
 # for the runCombineCmd
 
-"""
-python test/do_bbWW_DL_dataMC.py \
- --inputPath "/home/acaan/hhAnalysis/2016/hh_bb1l_23Jul_baseline_TTSL/datacards/hh_bb1l/prepareDatacards/newProcName/" \
- --outputpath "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_SL_baseline_25Jul20/dataMC" \
- --channel "1l_0tau" \
- --era 2016
-
-python test/do_bbWW_DL_dataMC.py \
- --inputPath "/home/acaan/hhAnalysis/2017/hh_bb2l_21July_SM_default_dataMC/datacards/hh_bb2l/prepareDatacards/newProcName/" \
- --outputpath "/home/acaan/CMSSW_10_2_13/src/cards_set/hh_bbww_DL_baseline_25Jul20/dataMC" \
- --channel "2l_0tau" \
- --era 2017
-"""
-
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--inputPath",  type="string", dest="inputPath",  help="Full path of where prepareDatacards.root are ")
@@ -219,11 +205,6 @@ for era in eras_to_do :
             plotlog = "%s/%s_plot.log" % (savePlotsOn, combine_output_cards_final_only)
             runCombineCmd(cmd, '.', plotlog)
 
-            #output = run_cmd(cmd)
-            #fileInfo = "%s/%s.log" % (savePlotsOn, combine_output_cards_final)
-            #ff = open(fileInfo ,"w+")
-            #ff.write(output)
-            #ff.close()
             didPlot = False
             for line in open(plotlog):
                 if '.pdf' in line and "saved" in line :
@@ -234,22 +215,3 @@ for era in eras_to_do :
                 print ("!!!!!!!!!!!!!!!!!!!!!!!! The makePlots did not worked, to debug please check %s to see up to when the script worked AND run again for chasing the error:" % fileInfo)
                 print(cmd)
                 sys.exit()
-
-
-
-
-        # HH_jet1_pt_HbbFat_WjjFat_HP_e_bbWW_res_spin0_400.root
-        # HH_jet1_pt_HbbFat_WjjFat_HP_e.log
-    #else :
-    ## make the fitDiagnosis and the MakePlots
-    #    for key in types_plot :
-    #        print (key)
-    #        cmd = "python test/run_limits_floating_components.py "
-    #        cmd += "--channel %s "     % ("2l_0tau")
-    #        cmd += "--cardFolder %s "  % output_cards
-    #        cmd += "--combine_output_cards_final HH_%s_%s "  % (key, era)
-    #        cmd += "--namePlot HH_%s_%s "  % (key, era)
-    #        cmd += "--HH  "
-    #        cmd += "--era %s" % str(era)
-    #        runCombineCmd(cmd, '/home/acaan/CMSSW_10_2_13/src/signal_extraction_tH_ttH/', "%s/HH_%s_%s_run.log" % (output_cards, key, era))
-    #        print ("output card/log saved on: %s/HH_%s_%s.txt/root/log" % (output_cards, key, era))
