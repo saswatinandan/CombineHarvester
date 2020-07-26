@@ -103,8 +103,8 @@ def options_plot_ranges (analysis) :
         ### it will have the subcategories for the DNNs
         info_channel = {
             "2l_0tau" : {
-                "minY" : 0.01,    "maxY" :  22000.,
-                "minYerr": -0.32, "maxYerr" : 0.32,
+                "minY" : 0.1,    "maxY" :  220000.,
+                "minYerr": -1.02, "maxYerr" : 1.02,
                 "useLogPlot" : True,
                 "label" : 'HH bbWW 2l ', # (HH SM normalized to 1pb)
                 "labelX" : "BDT bin#",
@@ -116,7 +116,7 @@ def options_plot_ranges (analysis) :
                 },
             "1l_0tau" : {
                 "minY" : 0.01,    "maxY" :  1000000000.,
-                "minYerr": -1.02, "maxYerr" : 1.32,
+                "minYerr": -1.52, "maxYerr" : 1.52,
                 "useLogPlot" : True,
                 "label" : 'HH bbWW 1l (HH SM normalized to 1pb)',
                 "labelX" : "BDT bin#",
