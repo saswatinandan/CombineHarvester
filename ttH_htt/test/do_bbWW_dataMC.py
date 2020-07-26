@@ -31,6 +31,7 @@ mergeSL   = False
 makeCards = True
 makePlots = True
 makeHadd  = False
+makePlotsOnly = False
 
 if era == 0 :
     eras_to_do = [ "2016" , "2017", "2018" ]
@@ -133,7 +134,7 @@ for era in eras_to_do :
         combine_output_cards = "%s/%s" % (output_cards, toRead.replace(filebegin, "HH_"))
         combine_output_cards_final = "%s/%s_%s_%s_%s" % (output_cards, toRead.replace(filebegin, "HH_"), HHtype, signal_type, mass)
 
-        if makeCards :
+        if makeCards and not makePlotsOnly :
             cmd = "WriteDatacards.py "
             cmd += "--inputShapes %s/%s.root " % (input_files, toRead.replace("2018", era))
             cmd += "--channel %s "     % channel
@@ -149,33 +150,34 @@ for era in eras_to_do :
             runCombineCmd(cmd, '.', "%s.log" % combine_output_cards_final)
             print ("output card/log saved on: %s.txt/root/log" % combine_output_cards_final )
 
-        if makePlots :
+        if makePlots or makePlotsOnly:
 
             FolderOut = "%s/results/" % (output_cards)
-            cmd = "mkdir %s" % FolderOut
-            runCombineCmd(cmd)
             combine_output_cards_final_only = combine_output_cards_final.split("/")[len(combine_output_cards_final.split("/")) - 1]
+            if not makePlotsOnly :
+                cmd = "mkdir %s" % FolderOut
+                runCombineCmd(cmd)
 
-            # make only HH be considered signal (independent of the card marking)
-            float_sig_rates = " --PO 'map=.*/.*hh.*:r_HH[1,-20,100]' "
+                # make only HH be considered signal (independent of the card marking)
+                float_sig_rates = " --PO 'map=.*/.*hh.*:r_HH[1,-20,100]' "
 
-            cmd = "text2workspace.py"
-            cmd += " %s.txt  " % combine_output_cards_final_only
-            cmd += " -o %s/%s_WS.root" % (FolderOut, combine_output_cards_final_only)
-            cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
-            cmd += " %s" % float_sig_rates
-            runCombineCmd(cmd, output_cards)
-            print ("done %s/%s_WS.root" % (FolderOut, combine_output_cards_final_only))
+                cmd = "text2workspace.py"
+                cmd += " %s.txt  " % combine_output_cards_final_only
+                cmd += " -o %s/%s_WS.root" % (FolderOut, combine_output_cards_final_only)
+                cmd += " -P HiggsAnalysis.CombinedLimit.PhysicsModel:multiSignalModel --PO verbose"
+                cmd += " %s" % float_sig_rates
+                runCombineCmd(cmd, output_cards)
+                print ("done %s/%s_WS.root" % (FolderOut, combine_output_cards_final_only))
 
-            cmd = "combineTool.py -M FitDiagnostics "
-            cmd += " %s_WS.root" % combine_output_cards_final_only
-            #if blinded :
-            #    cmd += " -t -1 "
-            cmd += " --saveShapes --saveWithUncertainties "
-            cmd += " --saveNormalization "
-            cmd += " --skipBOnlyFit "
-            cmd += " -n _shapes_combine_%s" % combine_output_cards_final_only
-            runCombineCmd(cmd, FolderOut)
+                cmd = "combineTool.py -M FitDiagnostics "
+                cmd += " %s_WS.root" % combine_output_cards_final_only
+                #if blinded :
+                #    cmd += " -t -1 "
+                cmd += " --saveShapes --saveWithUncertainties "
+                cmd += " --saveNormalization "
+                cmd += " --skipBOnlyFit "
+                cmd += " -n _shapes_combine_%s" % combine_output_cards_final_only
+                runCombineCmd(cmd, FolderOut)
             fileShapes = glob.glob("%s/fitDiagnostics_shapes_combine_%s*root" % (FolderOut, combine_output_cards_final_only))[0]
             print ( "done %s" % fileShapes )
 
