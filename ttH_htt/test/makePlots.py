@@ -564,76 +564,6 @@ if HH :
         legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", ""), "f")
         print(Hproc.replace("signal", "").replace("_", ""), histHH.Integral())
 
-    ###
-    """
-    #histHH2 = fin[0].Get("shapes_prefit/HH_2l_0tau/signal_ggf_nonresonant_hh_bbttSM")
-    histHH2 = template.Clone()
-    lastbin = 0
-    for cc, catcat in enumerate(catcats) :
-        if not options.fromHavester :
-            readFrom = folder + "/" + catcat
-        else :
-            readFrom = catcat
-            readFrom += "_prefit"
-        print ("read the hist with total uncertainties", readFrom, catcat)
-        lastbin += rebin_total(
-            histHH2,
-            readFrom,
-            fin,
-            divideByBinWidth,
-            #"signal_ggf_nonresonant_hh_bbttSM",
-            #"signal_ggf_nonresonant_hh_bbttkl_1p00",
-            #"signal_ggf_spin0_900_hh_bbtt",
-            "signal_ggf_spin0_400_hh_bbtt",
-            lastbin,
-            do_bottom,
-            labelX,
-            nbinscatlist[cc]
-            )
-    # "color" : 8, "fillStype" : 3315,
-    histHH2.SetMarkerSize(0)
-    histHH2.SetLineWidth(3)
-    histHH2.SetFillColor(4)
-    histHH2.SetLineColor(4)
-    histHH2.SetFillStyle(3351)
-    #histHH2.Scale(1.18)
-    legend1.AddEntry(histHH2, "HH SM bbtt", "f")
-    print("HH SM bbtt", histHH2.Integral())
-    ##
-    histHH3 = template.Clone()
-    lastbin = 0
-    for cc, catcat in enumerate(catcats) :
-        if not options.fromHavester :
-            readFrom = folder + "/" + catcat
-        else :
-            readFrom = catcat
-            readFrom += "_prefit"
-        print ("read the hist with total uncertainties", readFrom, catcat)
-        lastbin += rebin_total(
-            histHH3,
-            readFrom,
-            fin,
-            divideByBinWidth,
-            #"signal_ggf_nonresonant_hh_bbttSM",
-            #"signal_ggf_nonresonant_hh_bbvvkl_1p00",
-            #"signal_ggf_spin0_900_hh_bbvv",
-            "signal_ggf_spin0_400_hh_bbvv",
-            lastbin,
-            do_bottom,
-            labelX,
-            nbinscatlist[cc]
-            )
-    # "color" : 8, "fillStype" : 3315,
-    histHH3.SetMarkerSize(0)
-    histHH3.SetLineWidth(3)
-    histHH3.SetFillColor(8)
-    histHH3.SetLineColor(8)
-    histHH3.SetFillStyle(3351)
-    #histHH3.Scale(1.18)
-    legend1.AddEntry(histHH3, "HH SM bbvv dl", "f")
-    print("HH SM bbvv dl", histHH3.Integral())
-    #"""
-
 for line1 in linebin :
     line1.SetLineColor(1)
     line1.SetLineStyle(3)
@@ -753,10 +683,10 @@ print ("saving...", savepdf )
 dumb = canvas.SaveAs(savepdf + ".pdf")
 print ("saved", savepdf + ".pdf")
 del dumb
-if not HH :
-    dumb = canvas.Print(savepdf + ".root")
-    print ("saved", savepdf + ".root")
-    del dumb
+
+dumb = canvas.Print(savepdf + ".root")
+print ("saved", savepdf + ".root")
+del dumb
 canvas.IsA().Destructor(canvas)
 #dumb = canvas.SaveAs(savepdf + ".png")
 #print ("saved", savepdf + ".png")
