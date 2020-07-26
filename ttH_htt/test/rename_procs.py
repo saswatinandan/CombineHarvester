@@ -57,7 +57,7 @@ def rename_procs (inputShapesL, info_channelL) :
                 print ( "replaced %s by %s" % (obj_name, obj_name.replace(proc, info_channelL[proc]) ) )
     tfileout1.Close()
 
-inputPathNew = inputPath +  "_newProcName"
+inputPathNew = "%s/newProcName/" % inputPath
 try :
     os.mkdir( inputPathNew )
 except :
