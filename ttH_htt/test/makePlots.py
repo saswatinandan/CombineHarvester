@@ -191,7 +191,11 @@ else :
         typeFit = "prefit"
 print ("folder", folder)
 
-if not options.fromHavester : name_total = "total"
+if not options.fromHavester :
+    if not HH :
+        name_total = "total"
+    else :
+        name_total = "total_background"
 else : name_total = "TotalProcs"
 
 execfile("python/data_manager_makePostFitPlots.py")
@@ -525,8 +529,8 @@ for kk, key in  enumerate(dprocs.keys()) :
     del dumb
 
 if HH :
-    colorsH = [1, 4, 8]
-    histogramsHH = [ROOT.TH1F(), ROOT.TH1F(), ROOT.TH1F()]
+    colorsH = [1, 4, 8, 5, 6]
+    histogramsHH = [ROOT.TH1F(), ROOT.TH1F(), ROOT.TH1F(), ROOT.TH1F(), ROOT.TH1F()]
     for hh, Hproc in enumerate(higgs_procs_to_draw) :
         histHH = template.Clone()
         lastbin = 0
@@ -561,7 +565,7 @@ if HH :
         histHH.SetFillStyle(3315)
         #histHH.Scale(1.18)
         histogramsHH[hh] = histHH.Clone()
-        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", ""), "f")
+        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", ""), "f").replace("nonresonant", "")
         print(Hproc.replace("signal", "").replace("_", ""), histHH.Integral())
 
 for line1 in linebin :
@@ -576,8 +580,9 @@ dumb = hist_total.Draw("e2,same")
 del dumb
 if HH :
     for histoHHdraw in histogramsHH :
-        dumb = histoHHdraw.Draw("hist,same")
-        del dumb
+        if histoHHdraw.Integral() > 0 :
+            dumb = histoHHdraw.Draw("hist,same")
+            del dumb
 if options.unblind :
     dumb = dataTGraph1.Draw("e1P,same")
     del dumb

@@ -118,7 +118,7 @@ def options_plot_ranges (analysis) :
                 "minY" : 0.01,    "maxY" :  1000000000.,
                 "minYerr": -1.52, "maxYerr" : 1.52,
                 "useLogPlot" : True,
-                "label" : 'HH bbWW 1l (HH SM normalized to 1pb)',
+                "label" : 'HH bbWW 1l ',
                 "labelX" : "BDT bin#",
                 "position_cats": 300. ,
                 "list_cats" : [],
