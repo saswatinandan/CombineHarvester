@@ -1,74 +1,45 @@
 def read_from():
-    # /home/acaan/hhAnalysis/2016/hh_bb1l_7Jun_SM_default_boostedCat_central/datacards/hh_bb1l/prepareDatacards/
-    withFolder = False
-    label = "hh_bb1l_24Jun_SM_default_AK8_LS_fluxogramLike"
-    #label = "hh_bb1l_12Jun_SM_default_AK8_LS"
-    #label = "hh_bb1l_12Jun_SM_default_AK8"
-    mom="/home/acaan/hhAnalysis/2016/"+label+"/datacards/hh_bb1l/prepareDatacards/"
-    bdtTypes = [
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_one_jet_to_Wjj_Hbb_boosted", # _X900GeV
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_one_jet_to_Wjj_resolved", # _X900GeV
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Wjj_Hbb_reco_boosted",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Wjj_Hbb_reco_Hbb_boosted",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Wjj_Hbb_reco_resolved",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Wjj_Hbb_reco_Wjj_boosted",
-        ######
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_one_jet_to_Wjj_Hbb_boosted",
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_one_jet_to_Wjj_resolved",
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_Wjj_Hbb_reco_boosted",
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_Wjj_Hbb_reco_Hbb_boosted",
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_Wjj_Hbb_reco_resolved",
-        #"cat_jet_2BDT_Wjj_simple_X900GeV_Wjj_Hbb_reco_Wjj_boosted",
+    withFolderL = True
+    #localL = "/afs/cern.ch/work/a/acarvalh/cards_set/hh_bb1l_26Jul_baseline_TTSL_noWjj_dataMC/"
+    localL = "/afs/cern.ch/work/a/acarvalh/cards_set/hh_bb1l_26Jul_baseline_noWjj_dataMC/"
+    mom    = "/afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/SL/hh_bb1l_26Jul_baseline_TTSL_noWjj_dataMC/prepareDatacards/"
+    label  = "hh_bb1l_26Jul_baseline_TTSL_noWjj_dataMC"
+    BDTfor = "X900GeV"
+    BDTfor = "SM"
+    recoWjj = "Wjj_simple"
+    #recoWjj = "Wjj_BDT"
+    in_more_subcats = False
+    if not in_more_subcats : # did the hadd by hand
+        bdtTypes =  [
+        #"cat_jet_2BDT_%s_%s_HbbFat_WjjRes_MissJet" % (recoWjj, BDTfor),
+        #"cat_jet_2BDT_%s_%s_HbbFat_WjjRes_allReco" % (recoWjj, BDTfor),
+        #"cat_jet_2BDT_%s_%s_Res_MissWJet" % (recoWjj, BDTfor),
+        #"cat_jet_2BDT_%s_%s_Res_allReco" % (recoWjj, BDTfor)
         ###
-        #"cat_jet_2BDT_Wjj_BDT_Wjj_Hbb_reco_Hbb_boosted",
-        #"cat_jet_2BDT_Wjj_simple_Wjj_Hbb_reco_Hbb_boosted",
+        #"cat_jet_2BDT_Wjj_BDT_%s_HbbFat_WjjRes_allReco" % (BDTfor),
+        #"cat_jet_2BDT_Wjj_simple_%s_HbbFat_WjjRes_allReco" % (BDTfor),
+        ##
+        "cat_jet_2BDT_Wjj_BDT_%s_Res_allReco" % (BDTfor),
+        "cat_jet_2BDT_Wjj_simple_%s_Res_allReco" % (BDTfor),
         ###
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_HP_e",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_LP_e",
-        #"cat_jet_2BDT_Wjj_BDT_WjjFat_HP_e",
-        #"cat_jet_2BDT_Wjj_BDT_WjjFat_LP_e",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_allReco_e",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_MissJet_e",
-        #"cat_jet_2BDT_Wjj_BDT_Res_allReco_e",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissWJet_e",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissBJet_e",
-        ####
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_HP_m",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_LP_m",
-        #"cat_jet_2BDT_Wjj_BDT_WjjFat_HP_m",
-        ##"cat_jet_2BDT_Wjj_BDT_WjjFat_LP_m",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_allReco_m",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_MissJet_m",
-        #"cat_jet_2BDT_Wjj_BDT_Res_allReco_m",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissWJet_m",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissBJet_m",
-        ##
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_HP",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjFat_LP",
-        #"cat_jet_2BDT_Wjj_BDT_WjjFat_HP",
-        #"cat_jet_2BDT_Wjj_BDT_WjjFat_LP",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_allReco",
-        #"cat_jet_2BDT_Wjj_BDT_HbbFat_WjjRes_MissJet",
-        #"cat_jet_2BDT_Wjj_BDT_Res_allReco",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissWJet",
-        #"cat_jet_2BDT_Wjj_BDT_Res_MissBJet",
-        ##
-        #"cat_jet_2BDT_Wjj_simple_Res_allReco",
-        #"cat_jet_2BDT_Wjj_simple_HbbFat_WjjRes_allReco",
-        ##
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_HbbFat_WjjFat_HP",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_HbbFat_WjjFat_LP",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_WjjFat_HP",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_WjjFat_LP",
-        "cat_jet_2BDT_Wjj_BDT_X900GeV_HbbFat_WjjRes_allReco",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_HbbFat_WjjRes_MissJet",
-        "cat_jet_2BDT_Wjj_BDT_X900GeV_Res_allReco",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Res_MissWJet",
-        #"cat_jet_2BDT_Wjj_BDT_X900GeV_Res_MissBJet",
-        ##
-        "cat_jet_2BDT_Wjj_simple_X900GeV_Res_allReco",
-        "cat_jet_2BDT_Wjj_simple_X900GeV_HbbFat_WjjRes_allReco",
-    ]
+        #"cat_jet_2BDT_%s_%s_HbbFat_WjjRes_MissJet" % (recoWjj, BDTfor),
+        #"cat_jet_2BDT_%s_%s_Res_MissWJet" % (recoWjj, BDTfor),
+        ]
+    else :
+        bdtTypes = [
+        "cat_jet_2BDT_%s_%s_HbbFat_WjjRes_MissJet_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_HbbFat_WjjRes_MissJet_m" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_HbbFat_WjjRes_allReco_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_HbbFat_WjjRes_allReco_m" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_MissWJet_1b_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_MissWJet_1b_m" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_MissWJet_2b_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_MissWJet_2b_m" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_allReco_1b_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_allReco_1b_m" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_allReco_2b_e" % (recoWjj, BDTfor),
+        "cat_jet_2BDT_%s_%s_Res_allReco_2b_m" % (recoWjj, BDTfor),
+        ]
     # If there are subcategories construct the list of files to read based on their naming convention
 
     channelsTypes = [ "1l_0tau" ]
@@ -77,13 +48,14 @@ def read_from():
     originalBinning=100
     #nbinRegular = np.arange(4, 31)
     #nbinRegular = np.arange(31, 41)
-    nbinRegular = np.arange(30, 31)
-    nbinQuant = np.arange(1, 20)
+    nbinRegular = np.arange(20, 15)
+    nbinQuant = np.arange(20, 21)
 
     maxlim = 2.0
+    minlim = 0.0
 
     output = {
-    "withFolder"      : withFolder,
+    "withFolder"      : withFolderL,
     "label"           : label,
     "mom"             : mom,
     "bdtTypes"        : bdtTypes,
@@ -92,7 +64,10 @@ def read_from():
     "nbinRegular"     : nbinRegular,
     "nbinQuant"       : nbinQuant,
     "maxlim"          : maxlim,
+    "minlim"          : minlim,
     "ch_nickname"     : ch_nickname,
+    "local"           : localL,
+    "makePlotsBin"    : [40]
     }
 
     return output
