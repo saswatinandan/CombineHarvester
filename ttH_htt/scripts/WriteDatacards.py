@@ -34,7 +34,7 @@ parser.add_option("--HH_kin",         action="store_true", dest="HH_kin",      h
 parser.add_option("--stxs",           action="store_true", dest="stxs",        help="Cards for stxs", default=False)
 parser.add_option("--forceModifyShapes",           action="store_true", dest="forceModifyShapes",        help="if file with modified shapes exist, delete it.", default=False)
 
-parser.add_option("--signal_type",    type="string",       dest="signal_type", help="Options: \"noresLO\" | \"nonresNLO\" | \"res\" ", default="none")
+parser.add_option("--signal_type",    type="string",       dest="signal_type", help="Options: \"nonresLO\" | \"nonresNLO\" | \"res\" ", default="none")
 parser.add_option("--mass",           type="string",       dest="mass",        help="Options: \n nonresNLO = it will be ignored \n noresLO = \"SM\", \"BM12\", \"kl_1p00\"... \n \"spin0_900\", ...", default="none")
 parser.add_option("--HHtype",         type="string",       dest="HHtype",      help="Options: \"bbWW\" | \"multilep\" ", default="none")
 parser.add_option("--renamedHHInput", action="store_true", dest="renamedHHInput",   help="If used input already renamed.", default=False)
@@ -207,7 +207,10 @@ else :
 print ("do not add a process to datacard if the yield is smaller than 0.01 -- if so, do not add it")
 bkg_proc_from_data = make_threshold(0.01, bkg_proc_from_data,  inputShapes, tH_kin)
 bkg_procs_from_MC  = make_threshold(0.01, bkg_procs_from_MC, inputShapes, tH_kin)
-higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes, tH_kin)
+if analysis == "HH" and signal_type == "nonresLO":
+    ## FIXME: to the ggHH and qqHH processes in NLO cards do not discard any component by threshold
+    # by now it is not discarting any H process, narrow that down to ggHH and qqHH processes
+    higgs_procs_plain  = make_threshold(0.01, higgs_procs_plain, inputShapes, tH_kin)
 
 print ("final list of signal/bkg to add to datacards")
 MC_proc = higgs_procs_plain + bkg_procs_from_MC
