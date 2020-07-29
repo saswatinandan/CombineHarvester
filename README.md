@@ -5,6 +5,8 @@ cd CMSSW_8_1_0/src/
 
 cmsenv
 
+git init
+
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 
 git remote add origin https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git
