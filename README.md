@@ -7,16 +7,14 @@ cmsenv
 
 git clone https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git HiggsAnalysis/CombinedLimit
 
+git remote add origin https://github.com/cms-analysis/HiggsAnalysis-CombinedLimit.git
+
 git fetch origin
 
 git checkout v7.0.12
 
-scramv1 b clean; scramv1 b
-
-cd $CMSSW_BASE/src
-
 git clone https://github.com/HEP-KBFI/CombineHarvester CombineHarvester
 
-scram b
+scram b -j 8
 ## -------------------------------------------------------------------- ##
 
