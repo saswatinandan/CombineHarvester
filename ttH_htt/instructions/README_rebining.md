@@ -17,11 +17,11 @@ The bellow command will:
  --mass spin0_900  \
  --HHtype bbWW \
  --prepareDatacards_path /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/ \
- --output_path /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/results/ 
+ --output_path /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/results/
 ```
 
 The `--channel` [defines the input cards](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/test/rebin_datacards_HH.py#L72-L73) that have the information of what you want to rebin and how.
-(eg for 1l_0tau [this is the card](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py)). 
+(eg for 1l_0tau [this is the card](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py)).
 This card contains choices of:
 
 - which BDT type (by the name convention of the prepareDatacards)
@@ -29,16 +29,16 @@ This card contains choices of:
 - which subcategory to consider == you may like to comment in/out parts to have then done in different bin ranges/overlay same bin range
 - a range of bins to scan, [here](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L37-L38)
 - a list of bins to make a prefit plot from the a rebined datacard.txt/root, [here](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L54)
-- the ranges of the plot limits X nbins, [here](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L40-L41) 
+- the ranges of the plot limits X nbins, [here](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L40-L41)
 
 As you saw above, you can  chose the signal assumption in the command line `--signal_type res  --mass  --HHtype`
-By default the signal assumed is SM LO. 
-IMPORTANT: if you are optimizing for a BDT trained for signal, you must chose that signal too be considered on the binning optimization to the results make sense!!! 
+By default the signal assumed is SM LO.
+IMPORTANT: if you are optimizing for a BDT trained for signal, you must chose that signal too be considered on the binning optimization to the results make sense!!!
 
 
 - The manipulation of the card with rebining information is manual and it is suposed to be manual -- that is a binning optimization, mostly visual.
 
-You can skip some of the steps done by the script 
+You can skip some of the steps done by the script
 
 - If you already have the rebined datacards and only want to make a prefit oplot for a differente choice of bins use `--doLimitsOnly`
 - If you just want to  `--drawLimitsOnly` you just collect the limits in a plot of limits X nbins, in case you need to adapt the plot ranges
@@ -75,11 +75,17 @@ By now there are two (done in [this function](https://github.com/HEP-KBFI/Combin
 
 1 - regular binning, by default
 2 - quantiles binning adding the option
- - now set ine the sum of BKGs, defined as any process that does not have a H, hh, signal or data_obs in the name, see [here](https://github.com/HEP-KBFI/CombineHarvester/blob/db024d3d09e680165b45a4520bdbabcc18275d46/ttH_htt/python/data_manager.py#L1134-L1139) 
- 
+ - now set ine the sum of BKGs, defined as any process that does not have a H, hh, signal or data_obs in the name, see [here](https://github.com/HEP-KBFI/CombineHarvester/blob/db024d3d09e680165b45a4520bdbabcc18275d46/ttH_htt/python/data_manager.py#L1134-L1139)
+
 Those pointers should help you in case you want to implement annother binning type.
 
 # TODO
 
 Make the input card for 2l_0tau (bbWW DL) be compatible with the rebin_datacards_HH.py as the one for 1l_0tau (bbWW SL) is.
 
+# Some concrete output examples
+
+- (manivald) prepareDatacards_path = output_path = /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/
+- (lxplus)   prepareDatacards_path = output_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/SL/rebining_output_example.tar.gz
+
+They do not need to be the same, just for the sake of this example they are.
