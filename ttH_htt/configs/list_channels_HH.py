@@ -12,6 +12,10 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     decays_hh = []
     if HHtype == "bbWW" :
         decays_hh = ["bbvv_sl", "bbtt", "bbvv"]
+    else :
+        print("HHtype (%s) not implemented" % ( HHtype))
+        sys.exit()
+
     #---> by now not used, we may use to implement systematics/BR -- see how decays_hh is used in WriteDatacards
     higgs_procs = [ [y + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
 
@@ -29,7 +33,7 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
         # --> using "cHHH2p45" as control -- check closure to see if this is the best case
         couplings_VBF    = [ "CV_1_C2V_1_kl_1", "CV_1_C2V_1_kl_2", "CV_1_C2V_2_kl_1",  "CV_1_C2V_1_kl_0", "CV_1p5_C2V_1_kl_1", "CV_0p5_C2V_1_kl_1" ]
 
-    if signal_type == "noresLO" :
+    if signal_type == "nonresLO" :
         listSig = []
         for decay_hh in decays_hh :
             listSig = listSig + [
@@ -37,13 +41,13 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
             "%s_%s_hh_%s" % (prefix_VBF, SM_VBF, decay_hh)
             ]
         sigs = [ listSig ]
-    elif signal_type == "noresNLO" :
+    elif signal_type == "nonresNLO" :
         listSig = []
         for decay_hh in decays_hh :
             for massType in couplings_GF_NLO :
-                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_GF, mass, decay_hh) ]
-            for massType in couplings_VBF :
-                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]
+                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_GF, massType , decay_hh) ]
+            #for massType in couplings_VBF :
+            #    listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]
         sigs = [ listSig ]
     elif signal_type == "res" :
         listSig = []
@@ -51,7 +55,7 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
             listSig = listSig + [ "signal_ggf_%s_hh_%s" % (mass, decay_hh) ]
         sigs = [ listSig ]
     else :
-        print("signal_type (%s) and HHtype (%s) not implemented" % (signal_type, HHtype))
+        print("signal_type %s not implemented" % (signal_type))
         sys.exit()
     # FIXME ---> add VBF to nonres case (SM by default)
     # FIXME ---> add multilep options
