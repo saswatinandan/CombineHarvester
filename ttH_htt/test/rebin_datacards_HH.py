@@ -28,17 +28,19 @@ parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="2lss_1tau")
 parser.add_option("--variables", type="string", dest="variables", help="Add convention to file name", default="teste")
 parser.add_option("--BINtype", type="string", dest="BINtype", help="regular / ranged / quantiles", default="regular")
+parser.add_option("--output_path", type="string", dest="output_path", help="Where to copy prepareDatacards and make subdiretories with results")
+parser.add_option("--prepareDatacards_path", type="string", dest="prepareDatacard_path", help="Where to copy prepareDatacards and make subdiretories with results")
 parser.add_option("--doPlots", action="store_true", dest="doPlots", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--drawLimitsOnly", action="store_true", dest="drawLimitsOnly", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--doLimitsOnly", action="store_true", dest="doLimitsOnly", help="If you call this will not do plots with repport", default=False)
 parser.add_option(
     "--signal_type",    type="string",       dest="signal_type",
-    help="Options: \"noresLO\" | \"nonresNLO\" | \"res\" ",
-    default="noresLO"
+    help="Options: \"nonresLO\" | \"nonresNLO\" | \"res\" ",
+    default="nonresLO"
     )
 parser.add_option(
     "--mass",           type="string",       dest="mass",
-    help="Options: \n nonresNLO = it will be ignored \n noresLO = \"SM\", \"BM12\", \"kl_1p00\"... \n \"spin0_900\", ...",
+    help="Options: \n nonresNLO = it will be ignored \n nonresLO = \"SM\", \"BM12\", \"kl_1p00\"... \n \"spin0_900\", ...",
     default="kl_1p00"
     )
 parser.add_option(
@@ -63,6 +65,8 @@ signal_type  = options.signal_type
 mass         = options.mass
 HHtype       = options.HHtype
 era          = options.era
+local        = options.output_path
+mom          = options.prepareDatacard_path
 
 ## HH
 if channel == "2l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2l_0tau_datacards.py")
@@ -82,10 +86,11 @@ bdtTypesToDoLabel = []
 bdtTypesToDoFile  = []
 sourcesCards      = []
 
-local = info["local"]
+#local = info["local"]
 import shutil,subprocess
 proc=subprocess.Popen(["mkdir %s" % local],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
+
 mom_datacards = "%s/datacards_rebined/" % local
 proc=subprocess.Popen(["mkdir %s" % mom_datacards],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
@@ -94,8 +99,8 @@ print (info["bdtTypes"])
 
 counter=0
 for ii, bdtType in enumerate(info["bdtTypes"]) :
-    fileName = info["mom"] + "/prepareDatacards_" + info["ch_nickname"] + "_" + bdtType + ".root"
-    source=local+"/prepareDatacards_" + info["ch_nickname"] + "_" + bdtType
+    fileName = mom   + "/prepareDatacards_" + info["ch_nickname"] + "_" + bdtType + ".root"
+    source   = local + "/prepareDatacards_" + info["ch_nickname"] + "_" + bdtType
     print (fileName)
     if os.path.isfile(fileName) :
         proc              = subprocess.Popen(['cp ' + fileName + " " + local],shell=True,stdout=subprocess.PIPE)
