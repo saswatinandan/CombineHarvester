@@ -37,7 +37,16 @@ If already ran that once  you then put `makePlotsOnly = True` in "do_bbWW_dataMC
 
 For tunning those plot options, I suggest doing it in one plot first, instead of run the full to see the result later (or, in ran it once, you will have the plotting command printed in the screen, just use it standalone)
 
-
 # For doing post-fit plots
 
 Just add ` --doPostFit` on this command and run just the plots again with `makePlotsOnly = True` , the combine fitDiagnosis is already done in a first run.
+
+# Some concrete output examples
+
+manivald
+- DL:  /home/acaan/bbww_Jul2020_baseline_dataMC/DL/dataMC/
+- SL: /home/acaan/bbww_Jul2020_baseline_dataMC/SL/dataMC/
+
+lxplus
+- SL: /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/SL/hh_bb1l_26Jul_baseline_TTSL_noWjj_dataMC
+- DL: /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/hh_bb2l_21July_SM_default_dataMC
