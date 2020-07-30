@@ -7,7 +7,7 @@
 - The choice of the HH signal to draw makes effect [here](https://github.com/HEP-KBFI/CombineHarvester/blob/ee10ff510cc31486704a4bf3b7ea1dd5821c15eb/ttH_htt/configs/list_channels_HH.py#L80-L92).
  - Note that it supports having make a renaming, see the making of the cards for GF nonresonant NLO [here]() to understand why that.
 
-Note: If you add processes to the datacards that are not in this list (eg ggH and qqH) you need to explicitly add there,
+Note: If you add processes to the datacards that are not in this list (eg ggH and qqH) you need to explicitly add on the above-mentioned places.
 
 IMPORTANT: you need to ssh with "ssh -XY" to that working, and let the canvases pop-up. With "ssh -XYC" the plotter maybe run faster.
 That is why we cannot now make that faster / as jobs / in screen right now.
