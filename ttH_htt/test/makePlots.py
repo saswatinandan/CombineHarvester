@@ -565,7 +565,7 @@ if HH :
         histHH.SetFillStyle(3315)
         #histHH.Scale(1.18)
         histogramsHH[hh] = histHH.Clone()
-        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", "").replace("nonresonant", ""), "f")
+        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", "").replace("nonresonant", "").replace("kl", "").replace("1p00", "SM"), "f")
         print(Hproc.replace("signal", "").replace("_", ""), histHH.Integral())
 
 for line1 in linebin :
