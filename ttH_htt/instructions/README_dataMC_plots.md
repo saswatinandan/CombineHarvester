@@ -41,7 +41,7 @@ For tunning those plot options, I suggest doing it in one plot first, instead of
 
 Just add ` --doPostFit` on this command and run just the plots again with `makePlotsOnly = True` , the combine fitDiagnosis is already done in a first run.
 
-# Some concrete output examples
+# Some concrete input examples
 
 manivald
 - DL:  /home/acaan/bbww_Jul2020_baseline_dataMC/DL/dataMC/
