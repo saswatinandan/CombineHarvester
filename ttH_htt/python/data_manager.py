@@ -1131,8 +1131,7 @@ def rebinRegular(
                print ("h2.Integral:", h2.Integral())
                if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
                if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
-               if h2.GetName().find("H") ==-1 and h2.GetName().find("data_obs") ==-1  : # and "DY" in h2.GetName()
-                   #hSumDumb2 = obj # h2_rebin #
+               if h2.GetName().find("H") ==-1 and h2.GetName().find("hh") ==-1 and h2.GetName().find("signal") ==-1 and h2.GetName().find("data_obs") ==-1 :
                    print ("quantiles in ", h2.GetName())
                    if not hSumAll.Integral()>0 :
                        hSumAll=h2.Clone()
