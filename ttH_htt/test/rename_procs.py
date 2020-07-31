@@ -6,7 +6,10 @@ import shutil
 import ROOT
 
 # python test/rename_procs.py --inputPath /home/acaan/hhAnalysis/2016/hh_bb1l_23Jul_baseline_TTSL/datacards/hh_bb1l/prepareDatacards/ --card prepareDatacards_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_HbbFat_WjjFat_HP_e.root
-
+"""
+<ggHHsamplename>_<whatever>_Hbb_HZZ
+<ggHHsamplename>_<whatever>_Hbb_Htt
+"""
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--inputPath", type="string", dest="inputPath", help="Full path of where prepareDatacards.root are ")
@@ -30,10 +33,16 @@ info_channel = {
     "1_2_1"                   : "CV_1_C2V_2_kl_1",
     "1_1_0"                   : "CV_1_C2V_1_kl_0",
     "1p5_1_1"                 : "CV_1p5_C2V_1_kl_1",
-    "0p5_1_1"                 : "CV_0p5_C2V_1_kl_1"
+    "0p5_1_1"                 : "CV_0p5_C2V_1_kl_1",
 }
 
-def rename_procs (inputShapesL, info_channelL) :
+info_brs = {
+    "bbvv_sl"                 : "SL_hbb_hww",
+    "bbvv"                    : "DL_hbb_hww",
+    "bbtt"                    : "hbb_htt",
+}
+
+def rename_procs (inputShapesL, info_channelL, info_brsL) :
     ## it assumes no subdirectories in the preparedatacards file,
     tfileout1 = ROOT.TFile(inputShapesL, "UPDATE")
     tfileout1.cd()
@@ -54,7 +63,13 @@ def rename_procs (inputShapesL, info_channelL) :
                 nominal = obj.Clone()
                 nominal.SetName( obj_name.replace(proc, info_channelL[proc]) )
                 nominal.Write()
-                print ( "replaced %s by %s" % (obj_name, obj_name.replace(proc, info_channelL[proc]) ) )
+                print ( "replaced coupling %s by %s" % (obj_name, obj_name.replace(proc, info_channelL[proc]) ) )
+        for proc in info_brsL.keys() :
+            if proc in obj_name:
+                nominal = obj.Clone()
+                nominal.SetName( obj_name.replace(proc, info_brsL[proc]) )
+                nominal.Write()
+                print ( "replaced decay mode name %s by %s" % (obj_name, obj_name.replace(proc, info_brsL[proc]) ) )
     tfileout1.Close()
 
 inputPathNew = "%s/newProcName/" % inputPath
@@ -73,4 +88,4 @@ for prepareDatacard in listproc :
     prepareDatacardNew = prepareDatacard.replace(inputPath, inputPathNew)
     shutil.copy2(prepareDatacard, prepareDatacardNew)
     print ("done", prepareDatacardNew)
-    rename_procs(prepareDatacardNew, info_channel)
+    rename_procs(prepareDatacardNew, info_channel, info_brs)
