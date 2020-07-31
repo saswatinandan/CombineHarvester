@@ -57,6 +57,7 @@ There is an additional option `--signal` related with [issue 1], that will chose
 # Issues
 
 - issue 1: by now in the development of link1 is pending to verify if/how we can use multiprocesses and how, so there are options to consider only one channel for tests.
+  -  This is just to keep in mind that you may need to change naming convention again for final consumption.
 
 The components needed to make the templates are [those](https://github.com/HEP-KBFI/CombineHarvester/blob/7c2ea180fd960d455860dc65977e778c74a55b08/ttH_htt/configs/list_channels_HH.py#L46)  for GF and [those](https://github.com/HEP-KBFI/CombineHarvester/blob/7c2ea180fd960d455860dc65977e778c74a55b08/ttH_htt/scripts/WriteDatacards.py#L206-L213) for VBF. To make the signal for each HH final state feed the physics model and construct the signal you need this complete set of 3 (5) shapes in for each HH final state.
 
