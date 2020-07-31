@@ -24,7 +24,8 @@ The `--channel` [defines the input cards](https://github.com/HEP-KBFI/CombineHar
 (eg for 1l_0tau [this is the card](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py)).
 This card contains choices of:
 
-- which BDT type (by the name convention of the prepareDatacards)
+- which MVA type (by the name convention of the prepareDatacards)
+ - in the baseline for bbWW SL we did only BDTs targeting the SM nonresonant and the spoin 0 900 GeV
 - which subcategories list, the full one, or one of your chosing after doing some files merging, [example](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L11-L15)
 - which subcategory to consider == you may like to comment in/out parts to have then done in different bin ranges/overlay same bin range
 - a range of bins to scan, [here](https://github.com/HEP-KBFI/CombineHarvester/blob/0cd321e3d62aa37c9eaa392f51219a76102fc972/ttH_htt/cards/info_1l_0tau_datacards.py#L37-L38)
