@@ -63,13 +63,13 @@ The components needed to make the templates are [those](https://github.com/HEP-K
 
 - issue 2: some processes in some subcategories have negligible yield in all the components -- that will lead to crashes/inconsistencies in the fit.
   - to solve that at the moment I comment stuff by hand
-    - eg all the yields of bbww SL are negligible in DL cards. To do multiprocess DL cards (DL cards considerig bbww DL and bbtt) I remove bbww SL of [this list](https://github.com/HEP-KBFI/CombineHarvester/blob/94b09ebd55eb83ec4ab7b5c16ec3eb96ba2d0db8/ttH_htt/configs/list_channels_HH.py#L15) -- that is not an ideal procedure!!!!
-  - [Suggestion to solve:] You need to put a safeguard that tells to not add any of the templates for that process if ALL templates are negligible == eg have yield less than 0.01. One idea is a variation of [this function](https://github.com/HEP-KBFI/CombineHarvester/blob/7c2ea180fd960d455860dc65977e778c74a55b08/ttH_htt/scripts/WriteDatacards.py#L206-L213) but entering the list of couplings for GF and VBF.
+    - eg all the yields of bbww SL are negligible in DL cards. To do multiprocess DL cards (DL cards considering bbww DL and bbtt) I remove bbww SL of [this list](https://github.com/HEP-KBFI/CombineHarvester/blob/94b09ebd55eb83ec4ab7b5c16ec3eb96ba2d0db8/ttH_htt/configs/list_channels_HH.py#L15) -- that is not an ideal procedure!!!!
+  - [Suggestion to solve:] You need to put a safeguard that tells to not add any of the templates for that process if (and only if) ALL the 3 (5) templates are negligible == eg have yield less than 0.01. One idea is a variation of [this function](https://github.com/HEP-KBFI/CombineHarvester/blob/7c2ea180fd960d455860dc65977e778c74a55b08/ttH_htt/scripts/WriteDatacards.py#L206-L213) but entering the list of couplings for GF and VBF (mind the renaming!).
     - the trick for not doing that using the above-mentioned function is that if you have a channel that have non-negligible yield for 2 parts of the shape template and a negligible yield to a third you will need to keep that third one.
 
-- issue 3: Not all the processes have complete set of templates to GF and/or VBF (= samples are missing in the system).
-  - You need to put a safeguard that tells to not add any of the templates for that process if ALL the templates are existent in the input file.
-    - by now that is also done by hand commenting in/out the lists [here](https://github.com/HEP-KBFI/CombineHarvester/blob/94b09ebd55eb83ec4ab7b5c16ec3eb96ba2d0db8/ttH_htt/configs/list_channels_HH.py#L13-L28)
+- issue 3: Not all the processes have complete set of templates to GF and/or VBF (= samples are missing in the system). In this case you cannot add the HH final state to  the card.
+  - by now that is also done by hand commenting in/out the lists [here](https://github.com/HEP-KBFI/CombineHarvester/blob/94b09ebd55eb83ec4ab7b5c16ec3eb96ba2d0db8/ttH_htt/configs/list_channels_HH.py#L13-L28)
+    - [Suggestion to solve:] You need to put a safeguard that tells to not add any of the templates for that process if ALL the templates are existent in the input file.
 
 # Working input examples (same of the rebinning exercise)
 
