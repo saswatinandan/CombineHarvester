@@ -74,7 +74,7 @@ The components needed to make the templates are [those](https://github.com/HEP-K
 # Working input examples (same of the rebinning exercise)
 
 - (manivald) prepareDatacards_path = /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/
-- (lxplus)   prepareDatacards_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/MVA/rebining_output_example.tar.gz
+- (lxplus)   prepareDatacards_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/MVA/
 
 
 # Examples of outputs -- to ilustrate [issue 1]
