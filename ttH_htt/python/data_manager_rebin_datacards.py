@@ -126,7 +126,7 @@ def rebinRegular(
         hSumAll = TH1F()
         ratiohSum=1.
         ratiohSumP=1.
-        name = histSource.split("/")[len(sourceL.split("/"))-1] + "_" + str(nbins) + nameOutFileAddL + ".root"
+        name = histSource.split("/")[len(histSource.split("/"))-1] + "_" + str(nbins) + nameOutFileAddL + ".root"
         nameOutFile = "%s/%s" % (outdir, name)
         fileOut  = TFile(nameOutFile, "recreate")
         print ("created %s" % nameOutFile)
