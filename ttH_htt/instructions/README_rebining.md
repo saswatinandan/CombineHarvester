@@ -4,7 +4,7 @@ Repository where the prepareDatacards to be rebined are: prepareDatacards_path
 
 The bellow command will:
 
-1 - do a datacard.txt/root of the prepareDatacards (see list on the input card described bellow)
+1 - do a datacard.txt/root of the prepareDatacards with many bins (see list on the input card described bellow)
 2 - do copies of this card rebined in a subdirectory `output_path/datacards_rebined`
 3 - do blinded limits to each one, save on log files in `output_path/datacards_rebined/results`
 4 - collect the numeric central limits + 1 sigma in a plot
@@ -78,13 +78,15 @@ By now there are two (done in [this function](https://github.com/HEP-KBFI/Combin
 2 - quantiles binning adding the option
  - now set ine the sum of BKGs, defined as any process that does not have a H, hh, signal or data_obs in the name, see [here](https://github.com/HEP-KBFI/CombineHarvester/blob/db024d3d09e680165b45a4520bdbabcc18275d46/ttH_htt/python/data_manager.py#L1134-L1139)
 
-Those pointers should help you in case you want to implement annother binning type.
+Those pointers should help you in case you want to implement another binning type.
 
-# TODO
+# To note
 
-Make the input card for 2l_0tau (bbWW DL) be compatible with the rebin_datacards_HH.py as the one for 1l_0tau (bbWW SL) is.
+- If you change the naming convention of the subcategories on the jobs (e.g. including multiclass bins), you will need to adapt the logic/namings in the input cards by channel.
 
-# Some concrete output examples
+- We do a text replacing in the datacard.txt [here](), that is introducing weird characters in the result datacard_Xbins.txt. That is not a problem for any computation, but maybe anoying if you want to oprn thr card to read with `less`. You may like to fix that, but that is not urgent.
+
+# Some concrete input/output examples
 
 - (manivald) prepareDatacards_path = output_path = /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/
 - (lxplus)   prepareDatacards_path = output_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/SL/rebining_output_example.tar.gz

@@ -28,7 +28,7 @@ python test/do_HH_GF_NLO_cards.py \
 --channel "2l_0tau"  \
 --signal DL \
 --prepareDatacards_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/newProcName/ \
---output_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO_DLonly \
+--output_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO \
 --era 2017
 """
 
@@ -38,7 +38,7 @@ parser.add_option("--channel ", type="string", dest="channel", help="The ones wh
 parser.add_option("--output_path", type="string", dest="output_path", help="Where to copy prepareDatacards and make subdiretories with results")
 parser.add_option("--prepareDatacards_path", type="string", dest="prepareDatacard_path", help="Where to copy prepareDatacards and make subdiretories with results")
 parser.add_option("--flavourCats", action="store_true", dest="flavourCats", help="If you call this will not do plots with repport", default=False)
-parser.add_option("--signal",      type="string",       dest="signal", help="Options: \"DL\" | \"SL\" | \"all\" ", default="nonresLO")
+parser.add_option("--signal",      type="string",       dest="signal", help="Options: \"DL\" | \"SL\" | \"bbtt\"  | \"all\" ", default="all")
 parser.add_option("--HHtype",      type="string",       dest="HHtype", help="Options: \"bbWW\" | \"multilep\" ", default="bbWW")
 parser.add_option("--era", type="int", dest="era", help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.", default=2016)
 (options, args) = parser.parse_args()
@@ -84,6 +84,20 @@ mom_datacards = "%s/datacards_rebined/" % local
 proc=subprocess.Popen(["mkdir %s" % mom_datacards],shell=True,stdout=subprocess.PIPE)
 out = proc.stdout.read()
 
+if signal == "DL" :
+    # coonsider only DL
+    nameOutFileAdd = "_onlyDL"
+elif signal == "SL" :
+    # coonsider only DL
+    nameOutFileAdd = "_onlySL"
+elif signal == "bbtt" :
+    # coonsider only DL
+    nameOutFileAdd = "_onlyBBTT"
+else :
+    # coonsider all possible ggHH
+    nameOutFileAdd = "_multisig"
+nameOutFileAdd = nameOutFileAdd + "_" + str(era)
+
 ### first we do one datacard.txt / bdtType
 sources           = []
 bdtTypesToDo      = []
@@ -121,9 +135,12 @@ for nn, source in enumerate(sources) :
     if signal == "DL" :
         # coonsider only DL
         cmd += " --HHtype bbWW_DL "
-    if signal == "SL" :
+    elif signal == "SL" :
         # coonsider only DL
         cmd += " --HHtype bbWW_SL "
+    elif signal == "bbtt" :
+        # coonsider only bbtt
+        cmd += " --HHtype bbWW_bbtt "
     else :
         # coonsider all possible ggHH
         cmd += " --HHtype bbWW"
@@ -144,7 +161,6 @@ for nn, source in enumerate(sources) :
     sourcesCards = sourcesCards + [ fileCard ]
 
 if 1 > 0 :
-    nameOutFileAdd = "_onlyDL"
     for nn, sourceL in enumerate(list(categories.keys()))  :
         print ( "rebining %s" % sourcesCards[nn] )
         errOcont = rebinRegular(
