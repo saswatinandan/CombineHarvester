@@ -1,4 +1,4 @@
-# One example of command
+# One example of command chain
 
 I give one example of the set of commands in the usual structure of subfolders I use to not get lost
 
