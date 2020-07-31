@@ -36,7 +36,7 @@ The options in last option (`--HHtype`) needs an explanation [issue 1]
 
 I am assuming that they need to be rebinned to have final cards.
 
-We do have a wrapper that does the rebining (out of a hardcoded dictionary of bin/subcategories)
+We do have a wrapper that does the rebining (out of a [hardcoded dictionary of bin/subcategories](https://github.com/HEP-KBFI/CombineHarvester/blob/bfe51dc8b83244dd5980da2b398d059dd1646dd2/ttH_htt/test/do_HH_GF_NLO_cards.py#L55-L78))
 and create the final card, so you so not need to make that by hand.
 
 ```
