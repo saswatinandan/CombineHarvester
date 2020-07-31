@@ -36,7 +36,7 @@ parser.add_option("--forceModifyShapes",           action="store_true", dest="fo
 
 parser.add_option("--signal_type",    type="string",       dest="signal_type", help="Options: \"nonresLO\" | \"nonresNLO\" | \"res\" ", default="none")
 parser.add_option("--mass",           type="string",       dest="mass",        help="Options: \n nonresNLO = it will be ignored \n noresLO = \"SM\", \"BM12\", \"kl_1p00\"... \n \"spin0_900\", ...", default="none")
-parser.add_option("--HHtype",         type="string",       dest="HHtype",      help="Options: \"bbWW\" | \"multilep\" ", default="none")
+parser.add_option("--HHtype",         type="string",       dest="HHtype",      help="Options: \"bbWW\" | \"multilep\" | \"bbWW_bbtt\" ", default="none")
 parser.add_option("--renamedHHInput", action="store_true", dest="renamedHHInput",   help="If used input already renamed.", default=False)
 
 (options, args) = parser.parse_args()

@@ -10,11 +10,32 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     # naming convention and separating by branching ratio
     # by now it will look for them (eg ttH_hww) in the prepareDatacards and not find
     decays_hh = []
-    if HHtype == "bbWW" :
-        decays_hh = ["bbvv_sl", "bbtt", "bbvv"]
+    if renamedHHInput :
+        if HHtype == "bbWW" :
+            decays_hh = ["SL_hbb_hww", "DL_hbb_hww", "hbb_htt"]
+            decays_hh_vbf = ["hbb_htt"]
+        elif HHtype == "bbWW_bbtt" :
+            decays_hh = ["hbb_htt"]
+            decays_hh_vbf = ["hbb_htt"]
+        elif HHtype == "bbWW_SL" :
+            decays_hh = ["SL_hbb_hww"]
+            decays_hh_vbf = []
+        elif HHtype == "bbWW_DL" :
+            decays_hh = ["DL_hbb_hww"]
+            decays_hh_vbf = []
+        else :
+            print("HHtype (%s) not implemented" % ( HHtype))
+            sys.exit()
     else :
-        print("HHtype (%s) not implemented" % ( HHtype))
-        sys.exit()
+        if HHtype == "bbWW" :
+            decays_hh = ["bbvv_sl", "bbtt", "bbvv"]
+        elif HHtype == "bbWW_SL" :
+            decays_hh = ["bbvv_sl"]
+        elif HHtype == "bbWW_DL" :
+            decays_hh = ["bbvv"]
+        else :
+            print("HHtype (%s) not implemented" % ( HHtype))
+            sys.exit()
 
     #---> by now not used, we may use to implement systematics/BR -- see how decays_hh is used in WriteDatacards
     higgs_procs = [ [y + x  for x in decays if not (x in ["hzg", "hmm"] and y != "ttH")] for y in sigs]
@@ -31,7 +52,7 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
         prefix_GF  = "ggHH"
         couplings_GF_NLO = [ "kl_0_kt_1", "kl_1_kt_1", "kl_5_kt_1" ]
         # --> using "cHHH2p45" as control -- check closure to see if this is the best case
-        couplings_VBF    = [ "CV_1_C2V_1_kl_1", "CV_1_C2V_1_kl_2", "CV_1_C2V_2_kl_1",  "CV_1_C2V_1_kl_0", "CV_1p5_C2V_1_kl_1", "CV_0p5_C2V_1_kl_1" ]
+        couplings_VBF    = [ "CV_1_C2V_1_kl_1", "CV_1_C2V_1_kl_2", "CV_1_C2V_2_kl_1",  "CV_1_C2V_1_kl_0", "CV_1p5_C2V_1_kl_1" ] # , "CV_0p5_C2V_1_kl_1"
 
     if signal_type == "nonresLO" :
         listSig = []
@@ -46,8 +67,9 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
         for decay_hh in decays_hh :
             for massType in couplings_GF_NLO :
                 listSig = listSig + [ "%s_%s_hh_%s" % (prefix_GF, massType , decay_hh) ]
-            #for massType in couplings_VBF :
-            #    listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]
+        for decay_hh in decays_hh_vbf :
+            for massType in couplings_VBF :
+                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]
         sigs = [ listSig ]
     elif signal_type == "res" :
         listSig = []
