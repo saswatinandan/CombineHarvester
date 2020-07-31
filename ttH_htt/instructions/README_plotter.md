@@ -48,10 +48,12 @@ comments:
 [1] protip: When you are going to do combined fits you may like to combine cards keeping the same bin naming convention for internal bins,
 like eg:
 
+```
 combineCards.py \
 HH_2l_0tau=datacard_hh_bb2l.txt \
 HH_1l_0tau=datacard_hh_bb1l.txt \
 > datacard_hh_combo.txt
+```
 
 # Description of the used configs
 
@@ -64,5 +66,5 @@ HH_1l_0tau=datacard_hh_bb1l.txt \
 
 Note: If you add processes to the datacards that are not in this list (eg ggH and qqH) you need to explicitly add on the above-mentioned places.
 
-IMPORTANT: you need to ssh with "ssh -XY" to that working, and let the canvases pop-up. With "ssh -XYC" the plotter maybe run faster.
+*IMPORTANT*: you need to ssh with "ssh -XY" to that working, and let the canvases pop-up. With "ssh -XYC" the plotter maybe run faster.
 That is why we cannot now make that faster / as jobs / in screen right now.
