@@ -70,14 +70,14 @@ There is an additional option `--signal` related with [issue 1], that will chose
 
 # Working input examples (same of the rebinning exercise)
 
-- (manivald) prepareDatacards_path = output_path = /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/
-- (lxplus)   prepareDatacards_path = output_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/MVA/rebining_output_example.tar.gz
+- (manivald) prepareDatacards_path = /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/
+- (lxplus)   prepareDatacards_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/MVA/rebining_output_example.tar.gz
 
 
 # Examples of outputs -- to ilustrate [issue 1]
 
-(manivald) /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO/datacards_rebined/
-(lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/nonResNLO/baseline_inclusive/
+- (manivald) /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO/datacards_rebined/
+- (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/nonResNLO/baseline_inclusive/
 
 
 ```
