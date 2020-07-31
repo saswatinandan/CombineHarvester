@@ -12,7 +12,7 @@ ps.2: It is ok to make datacards.txt/root in one CMSSW release and the inference
 
 Repository where the original prepareDatacards: prepareDatacards_path.
 
-## step 1 -- fixing naming conventions to go along link2
+## step 1 -- fixing naming conventions to go along link1
 
 python test/rename_procs.py --inputPath prepareDatacards_path
 
@@ -23,7 +23,7 @@ If you wanna test it out you will need to copy the prepareDatacards_path to a pl
 
 The naming conventions to change are written in this [dictionary](https://github.com/HEP-KBFI/CombineHarvester/blob/c00175249c5f344044a8f13b1e0d14003841979a/ttH_htt/test/rename_procs.py#L22-L43), you may need to adapt again due the inference part [issue 1].
 
-## step 2 -- To make a datacard.txt/root with the format needed in link2
+## step 2 -- To make a datacard.txt/root with the format needed in link1
 
 To make the correct formatting you need the bellow option
 (see here for details on the Writedatacards macro)
