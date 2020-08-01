@@ -71,16 +71,17 @@ The components needed to make the templates are [those](https://github.com/HEP-K
   - by now that is also done by hand commenting in/out the lists [here](https://github.com/HEP-KBFI/CombineHarvester/blob/94b09ebd55eb83ec4ab7b5c16ec3eb96ba2d0db8/ttH_htt/configs/list_channels_HH.py#L13-L28)
     - [Suggestion to solve:] You need to put a safeguard that tells to not add any of the templates for that process if ALL the templates are existent in the input file.
 
-# Working input examples (same of the rebinning exercise)
+- issue 4: Now in the working inputs we do not have the single H processes separated by branching ratio. Just for testing the workflow adding the single H scaling I ONLY renamed [those for a suitable naming convention](https://github.com/HEP-KBFI/CombineHarvester/blob/70ea4d84548242b4bf093b817553024fa020875a/ttH_htt/test/rename_procs.py#L28-L30). To link1 work well with single H processes scaled they need to be marked as signal.
+  - As this is not a permanent solution, and in the working inputs we have only a couple of single H to comment/uncomment [this part](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/configs/list_channels_HH.py#L84-L93) will chose what to have as signal in the resulting datacard.txt/root (whateaver is in `"bkg_procs_from_MC"` list is marked as BKG in the datacard.txt/root)
+    - [Solution:] solve [this issue](https://github.com/HEP-KBFI/hh-bbww/issues/6) in the analysis code
 
-- (manivald) prepareDatacards_path = /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/
-- (lxplus)   prepareDatacards_path = /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/MVA/
+# Working input examples (inputs and results inside)
 
-
-# Examples of outputs -- to ilustrate [issue 1]
-
-- (manivald) /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO/datacards_rebined/
-- (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/DL/nonResNLO/baseline_inclusive/
+  - (manivald)
+    - SL: /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/2017/
+    - DL: /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/2017/
+  - (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/cards_2017_baselineAug
+    - Two tarballs with SL and DL
 
 
 ```

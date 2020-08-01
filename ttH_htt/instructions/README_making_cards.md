@@ -34,7 +34,7 @@ comments:
 
 ## adding multilepton channels
 
-- to add mutilepton channels mind [here](https://github.com/HEP-KBFI/CombineHarvester/blob/612740181c88378389d0b736675645c1c7e9b348/ttH_htt/configs/list_channels_HH.py#L76-L89) and [here](https://github.com/HEP-KBFI/CombineHarvester/blob/612740181c88378389d0b736675645c1c7e9b348/ttH_htt/configs/plot_options_HH.py#L104-L150)
+- to add mutilepton channels mind [here](https://github.com/HEP-KBFI/CombineHarvester/blob/612740181c88378389d0b736675645c1c7e9b348/ttH_htt/configs/list_channels_HH.py#L76-L89), [here](https://github.com/HEP-KBFI/CombineHarvester/blob/612740181c88378389d0b736675645c1c7e9b348/ttH_htt/configs/plot_options_HH.py#L104-L150) and [here](https://github.com/HEP-KBFI/CombineHarvester/blob/03db55b95b0e5955d97820c3688c5d5d3f3422d6/ttH_htt/configs/list_channels_HH.py#L13-L38) (for this last do first the working example described [here](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/instructions/README_cards_kl_kt_lik.md)).
 
 ## TODO's (suggestions)
 
