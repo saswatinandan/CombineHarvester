@@ -4,12 +4,15 @@
 ```
 python test/do_HH_LO_cards.py \
 --channel "2l_0tau"  \
---prepareDatacards_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/2017/inputs/ \
---output_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/2017/shape_BM/NoFlavourSubcats/ \
---era 2016 --scan_in shape_BM
+--prepareDatacards_path prepareDatacards_path \
+--output_path output_path \
+--era 2016 \
+--scan_in shape_BM
 ```
 
-In the SL case you can add `--flavourCats` to make the cards with flavour categories (see issue 1)
+Check the options of `--scan_in`. 
+In the SL case you can add `--flavourCats` to make the cards with flavour categories (see issue 1).
+
 
 # Issues
 
