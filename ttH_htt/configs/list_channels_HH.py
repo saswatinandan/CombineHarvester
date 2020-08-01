@@ -88,9 +88,10 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     #sigs = [["signal_ggf_spin0_900_hh_bbtt", "signal_ggf_spin0_900_hh_bbvv", "signal_ggf_spin0_900_hh_bbvv_sl"]]
     #sigs = [["signal_ggf_spin0_400_hh_bbtt", "signal_ggf_spin0_400_hh_bbvv", "signal_ggf_spin0_400_hh_bbvv_sl"]]
     #sigs = [["signal_ggf_nonresonant_hh_bbttkl_1p00", "signal_ggf_nonresonant_hh_bbvv_slkl_1p00", "signal_ggf_nonresonant_hh_bbvvkl_1p00"]]
-    higgs_procs = higgs_procs + sigs
+    #higgs_procs = higgs_procs + sigs
+    higgs_procs = sigs + [["ttH_hww", "tHW_hww", "WH_hww"]]
+    #higgs_procs = sigs
 
-    higgs_procs = sigs
     conversions = "Convs"
     if fake_mc :
         fakes       = "fakes_mc"
@@ -102,13 +103,13 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     info_channel = {
         "2l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"],
+            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"], # "TTH", "TH", "VH",
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         },
         "1l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"],
+            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"],
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         }

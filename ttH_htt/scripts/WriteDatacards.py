@@ -106,6 +106,7 @@ if not (coupling == "none" or coupling == "kt_1_kv_1") :
 
 print higgs_procs
 higgs_procs_plain = sum(higgs_procs,[])
+print ("higgs_procs_plain", higgs_procs_plain)
 
 if only_ttH_sig :
     print ("MC processes -- after chosing to mark as signal only ttH:")

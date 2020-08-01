@@ -25,6 +25,9 @@ info_channel = {
     "EWK"                     : "DY",
     "signal_ggf_nonresonant_" : "ggHH_",
     "signal_vbf_nonresonant_" : "qqHH_",
+    "TTH"                     : "ttH_hww",
+    "TH"                      : "tHW_hww",
+    "VH"                      : "WH_hww",
 }
 
 info_coupling = {
@@ -48,6 +51,7 @@ info_brs["bbtt"]    = "hbb_htt"
 
 info_brs_remains = OrderedDict()
 info_brs_remains["DL_hbb_hww_sl"] = "SL_hbb_hww"
+info_brs_remains["TtHW_hww"] = "ttH_hww"
 
 def rename_procs (inputShapesL, info_channelL, info_brsL, info_couplingL, info_brs_remainsL) :
     ## it assumes no subdirectories in the preparedatacards file,

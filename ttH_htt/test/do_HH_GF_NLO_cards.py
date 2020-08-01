@@ -23,15 +23,6 @@ this = mainprogram()
 this.runme()
 testPrint()
 
-"""
-python test/do_HH_GF_NLO_cards.py \
---channel "2l_0tau"  \
---signal DL \
---prepareDatacards_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/newProcName/ \
---output_path /home/acaan/bbww_Jul2020_baseline_dataMC/DL/nonresLO \
---era 2017
-"""
-
 from optparse import OptionParser
 parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="2lss_1tau")
