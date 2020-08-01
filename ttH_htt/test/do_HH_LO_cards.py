@@ -1,7 +1,3 @@
-## to make scans in
-#(only SL 2016) \"kl_scan\" | \"resonance\"
-#(only DL 2017) \"shape_BM\" | \"kl_scan\" | \"resonance\"
-
 #!/usr/bin/env python
 import os, subprocess, sys
 workingDir = os.getcwd()
@@ -20,14 +16,6 @@ from subprocess import Popen, PIPE
 from io import open
 
 from CombineHarvester.ttH_htt.data_manager_rebin_datacards import testPrint, runCombineCmd, rebinRegular
-"""
-functions = os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt/python/data_manager_rebin_datacards.py"
-class mainprogram():
-    def runme(self):
-        execfile(functions)
-this = mainprogram()
-this.runme()
-"""
 testPrint()
 
 from optparse import OptionParser
