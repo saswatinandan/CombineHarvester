@@ -34,7 +34,8 @@ This card contains choices of:
 
 As you saw above, you can  chose the signal assumption in the command line `--signal_type res  --mass  --HHtype`
 By default the signal assumed is SM LO.
-IMPORTANT: if you are optimizing for a BDT trained for signal, you must chose that signal too be considered on the binning optimization to the results make sense!!!
+
+- *IMPORTANT*: if you are optimizing for a BDT trained for signal, you must chose that signal too be considered on the binning optimization to the results make sense!!!
 
 
 - The manipulation of the card with rebining information is manual and it is suposed to be manual -- that is a binning optimization, mostly visual.
