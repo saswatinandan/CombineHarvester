@@ -1,4 +1,5 @@
 import ROOT
+from ROOT import *
 import array as arr
 import math
 from math import sqrt, sin, cos, tan, exp
