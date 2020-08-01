@@ -82,15 +82,17 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     # FIXME ---> add VBF to nonres case (SM by default)
     # FIXME ---> add multilep options
     ######################
-    #sigs = [["signal_ggf_nonresonant_cHHH1_hh_bbtt", "signal_ggf_nonresonant_cHHH1_hh_bbvv_sl", "signal_ggf_nonresonant_cHHH1_hh_bbvv"]]
-    #sigs = [["signal_ggf_nonresonant_hh_bbttSM", "signal_ggf_nonresonant_hh_bbvv_slSM", "signal_ggf_nonresonant_hh_bbvvSM" ]]
-    #sigs = [["signal_ggf_nonresonant_hh_bbttBM12", "signal_ggf_nonresonant_hh_bbvv_slBM12", "signal_ggf_nonresonant_hh_bbvvBM12" ]]
-    #sigs = [["signal_ggf_spin0_900_hh_bbtt", "signal_ggf_spin0_900_hh_bbvv", "signal_ggf_spin0_900_hh_bbvv_sl"]]
-    #sigs = [["signal_ggf_spin0_400_hh_bbtt", "signal_ggf_spin0_400_hh_bbvv", "signal_ggf_spin0_400_hh_bbvv_sl"]]
-    #sigs = [["signal_ggf_nonresonant_hh_bbttkl_1p00", "signal_ggf_nonresonant_hh_bbvv_slkl_1p00", "signal_ggf_nonresonant_hh_bbvvkl_1p00"]]
+    ## the bellow would be if all the single h processes with all booked decay modes in the definition of higgs_procs are in the inputs
     #higgs_procs = higgs_procs + sigs
-    higgs_procs = sigs + [["ttH_hww", "tHW_hww", "WH_hww"]]
-    #higgs_procs = sigs
+    #higgs_proc_no_BR = []
+    ## the bellow would be if some list of single h processes with decay modes and correct naming convention are in the inputs
+    #higgs_procs = sigs + [["ttH_hww", "tHW_hww", "WH_hww"]]
+    #higgs_proc_no_BR = []
+    ## the bellow would be if some list of single h processes with decay modes and correct naming convention are in the inputs, but higgs_proc_no_BR is
+    higgs_procs = sigs
+    higgs_proc_no_BR = ["TTH", "TH", "VH",]
+
+    higgs_procs = sigs
 
     conversions = "Convs"
     if fake_mc :
@@ -103,13 +105,13 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     info_channel = {
         "2l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"], # "TTH", "TH", "VH",
+            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"] + higgs_proc_no_BR,
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         },
         "1l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"],
+            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"] + higgs_proc_no_BR,
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         }
