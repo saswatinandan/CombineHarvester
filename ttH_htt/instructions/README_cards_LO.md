@@ -10,9 +10,12 @@ python test/do_HH_LO_cards.py \
 --scan_in shape_BM
 ```
 
-Check the options of `--scan_in`. 
+Check the options of `--scan_in`.
 In the SL case you can add `--flavourCats` to make the cards with flavour categories (see issue 1).
 
+- Comment:
+  - The MVA (histogram) to be used is understood by the name of the input file
+    - In this example, for `--scan_in kl_scan` and `--scan_in shape_BM` the MVA is the one trained for SM and for `--scan_in resonance` it is the one trained for 900GeV signal. That is what this option is eg [here](https://github.com/HEP-KBFI/CombineHarvester/blob/8955e0dbe24b0241f79c4e09b9f2274d1916a34b/ttH_htt/test/do_HH_LO_cards.py#L89)
 
 # Issues
 
@@ -27,7 +30,7 @@ In the SL case you can add `--flavourCats` to make the cards with flavour catego
 - For the nonres you may like to do with other naming convention, to eg, match with other groups agreement (see step 1 [of these instructions](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/instructions/README_cards_kl_kt_lik.md))
 - You may like to have the same signal name in all cards for any reason, in this case this needs to be sone at datacard.txt/root level
   - As an is an example you may see what is coded when you add `--coupling` to the WriteDatacard script (that works for the tH signal having a coupling and appearing in the prepareDatcard as eg `tHq_coupling_hww` and in last step rename it to `tHq_hww` you will need to adapt it to HH/your case)
-- You may like to do input cards (as eg [here](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/instructions/README_rebining.md) ) to hardcode all these subcategories options / binning choices instead of having on the main code.
+- You may like to do input cards (as eg [here](https://github.com/HEP-KBFI/CombineHarvester/blob/master/ttH_htt/instructions/README_rebining.md) ) to hardcode all these subcategories options / binning choices / MVA choices, instead of having on the main code.
 
 # Working examples
 
