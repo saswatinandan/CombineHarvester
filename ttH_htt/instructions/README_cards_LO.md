@@ -40,6 +40,9 @@ In the SL case you can add `--flavourCats` to make the cards with flavour catego
 /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/2016/inputs/
 
 /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/2017/inputs/
+
+- (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/cards_baselineAug
+  - Tarballs with SL and DL
 ```
 
 There are also examples of outputs in one subfolder previous to inputs.

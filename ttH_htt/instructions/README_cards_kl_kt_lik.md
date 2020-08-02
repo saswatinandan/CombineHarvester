@@ -80,10 +80,8 @@ The components needed to make the templates are [those](https://github.com/HEP-K
   - (manivald)
     - SL: /home/acaan/bbww_Jul2020_baseline_dataMC/SL/MVA/2017/
     - DL: /home/acaan/bbww_Jul2020_baseline_dataMC/DL/MVA/2017/
-  - (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/cards_2017_baselineAug
-    - Two tarballs with SL and DL
-
-
+  - (lxplus) /afs/cern.ch/work/a/acarvalh/public/to_HH_bbWW/cards_baselineAug
+    - Tarballs with SL and DL
 ```
 datacard_hh_bb2l_hh_bb2l_OS_SM_plainVars_inclusive_bbWW_DL_nonresNLO_none_45_onlyDL_2017.txt
 
