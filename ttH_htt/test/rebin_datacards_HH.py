@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#python test/rebin_datacards_HH.py --channel "1l_0tau"  --signal_type res --mass spin0_900  --HHtype bbWW  --prepareDatacards_path /home/snandan/hhAnalysis/2016/full_analysis/datacards/hh_bb1l/prepareDatacards/ --output_path /home/snandan/hh_Analysis/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/dumb/ --subcats one_missing_resolved
 import os, subprocess, sys
 workingDir = os.getcwd()
 import os, re, shlex
@@ -7,6 +8,8 @@ import numpy as np
 import array as arr
 from math import sqrt, sin, cos, tan, exp
 import glob
+from datetime import datetime
+startTime = datetime.now()
 
 import matplotlib
 matplotlib.use('agg')
@@ -28,11 +31,14 @@ parser = OptionParser()
 parser.add_option("--channel ", type="string", dest="channel", help="The ones whose variables implemented now are:\n   - 1l_2tau\n   - 2lss_1tau\n It will create a local folder and store the report*/xml", default="2lss_1tau")
 parser.add_option("--variables", type="string", dest="variables", help="Add convention to file name", default="teste")
 parser.add_option("--BINtype", type="string", dest="BINtype", help="regular / ranged / quantiles", default="regular")
+parser.add_option("--do_signalFlat", action="store_true", dest="do_signalFlat", help="whether you want to make signal flat or total bkg flat", default=False)
 parser.add_option("--output_path", type="string", dest="output_path", help="Where to copy prepareDatacards and make subdiretories with results")
 parser.add_option("--prepareDatacards_path", type="string", dest="prepareDatacard_path", help="Where to copy prepareDatacards and make subdiretories with results")
 parser.add_option("--doPlots", action="store_true", dest="doPlots", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--drawLimitsOnly", action="store_true", dest="drawLimitsOnly", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--doLimitsOnly", action="store_true", dest="doLimitsOnly", help="If you call this will not do plots with repport", default=False)
+parser.add_option("--BDTfor", type="string", dest="BDTfor", help="type of BDT to be considered", default="SM")
+parser.add_option("--plot_hadd", action="store_true", dest="plot_hadd", help="plot after doing hadd for all subcategories", default=False)
 parser.add_option(
     "--signal_type",    type="string",       dest="signal_type",
     help="Options: \"nonresLO\" | \"nonresNLO\" | \"res\" ",
@@ -54,6 +60,72 @@ parser.add_option(
     help="To appear on the name of the file with the final plot. If era == 0 it assumes you gave the path for the 2018 era and it will use the same naming convention to look for the 2017/2016.",
     default=2016
     )
+parser.add_option(
+    "--subcats", 
+    choices = ["Res_allReco", "boosted_semiboosted", "one_missing_boosted", "one_missing_resolved", ""],
+    dest="subcats",
+    help="subcategory to be considered in rebinning",
+    default=''
+    )
+parser.add_option(
+    "--combine",
+    action = "store_true",
+    dest="combine",
+    help="whether wan to combine the cards or skip",
+    default=False
+    )
+parser.add_option(
+    "--add_missingjet_2b",
+    action = "store_true",
+    dest="add_missingjet_2b",
+    help="whether want to add missing jet 2b category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_missingjet_1b",
+    action = "store_true",
+    dest="add_missingjet_1b",
+    help="whether want to add add missing jet 1b tagged jet category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_Resolved_2b",
+    action = "store_true",
+    dest="add_Resolved_2b",
+    help="whether want to add Resolved 2b category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_Resolved_1b",
+    action = "store_true",
+    dest="add_Resolved_1b",
+    help="whether want to add Resolved 1b category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_boosted",
+    action = "store_true",
+    dest="add_boosted",
+    help="whether want to add boosted category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_semiboosted",
+    action = "store_true",
+    dest="add_semiboosted",
+    help="whether want to add semiboosted category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_missingjet_boosted",
+    action = "store_true",
+    dest="add_missingjet_boosted",
+    help="whether want to add missingjet boosted category to combine",
+    default=False
+    )
+
 (options, args) = parser.parse_args()
 
 doLimitsOnly   = options.doLimitsOnly
@@ -61,18 +133,29 @@ drawLimitsOnly = options.drawLimitsOnly
 doPlots    = options.doPlots
 channel    = options.channel
 BINtype    = options.BINtype
+do_signalFlat = options.do_signalFlat
 signal_type  = options.signal_type
 mass         = options.mass
 HHtype       = options.HHtype
 era          = options.era
 local        = options.output_path
 mom          = options.prepareDatacard_path
-
+in_more_subcats = options.subcats
+combine = options.combine
+add_missingjet_2b = options.add_missingjet_2b
+add_missingjet_1b = options.add_missingjet_1b
+add_Resolved_2b = options.add_Resolved_2b
+add_Resolved_1b = options.add_Resolved_1b
+add_boosted = options.add_boosted
+add_semiboosted = options.add_semiboosted
+add_missingjet_boosted = options.add_missingjet_boosted
+BDTfor =  options.BDTfor
+plot_hadd = options.plot_hadd
 ## HH
 if channel == "2l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_2l_0tau_datacards.py")
 if channel == "1l_0tau"   : execfile(os.environ["CMSSW_BASE"] + "/src/CombineHarvester/ttH_htt//cards/info_1l_0tau_datacards.py")
 
-info = read_from()
+info = read_from(in_more_subcats, BDTfor)
 print ("Cards to rebin from %s" % channel)
 
 sendToCondor = False
@@ -185,6 +268,7 @@ if not (drawLimitsOnly or doLimitsOnly) :
             sourceL,
             binstoDo,
             BINtype,
+            do_signalFlat,
             info["originalBinning"],
             doPlots,
             bdtTypesToDo[nn],
@@ -210,12 +294,12 @@ if not (drawLimitsOnly or doLimitsOnly) :
             if ncolor2 == 1 : linestyletype = "-."
             if ncolor2 == 2 : linestyletype = ":"
         ax.set_xlabel('nbins')
-    maxplot = 1.2
-    plt.axis((min(binstoDo),max(binstoDo),0,maxplot*1.2))
+
+    plt.axis((min(binstoDo),max(binstoDo),0,maxplot*1.5))
     ax.set_ylabel('err/content last bin')
     ax.legend(loc='best', fancybox=False, shadow=False, ncol=1, fontsize=8)
     plt.grid(True)
-    namefig = local + '/' + options.variables + '_ErrOcont_' + BINtype + '.pdf'
+    namefig = local + '/' + options.variables + '_'+ signal_type + '_' + mass + '_' + options.subcats + '_ErrOcont_' + BINtype + '.png'
     fig.savefig(namefig)
     print ("saved",namefig)
     print (bin_isMoreThan02)
@@ -336,13 +420,13 @@ print sources
 print "draw limits"
 fig, ax = plt.subplots(figsize=(5, 5))
 if BINtype == "quantiles" :
-    namefig=local+'/'+options.variables+'_fullsim_limits_quantiles'
+    namefig=local+'/'+options.variables+ '_'+options.channel+'_'+signal_type +'_'+mass+'_'+options.subcats +'_fullsim_limits_quantiles'
 if BINtype == "regular" or BINtype == "mTauTauVis":
-    namefig=local+'/'+options.variables+'_'+options.channel+'_fullsim_limits'
+    namefig=local+'/'+options.variables+'_'+options.channel+'_'+signal_type +'_'+mass+'_'+options.subcats +'_fullsim_limits'
 if BINtype == "ranged" :
     namefig=local+'/'+options.variables+'_fullsim_limits_ranged'
 file = open(namefig+".csv","w")
-#maxlim =-99.
+maxlimit =-99.
 for nn, source in enumerate(sourcesCards) :
     fileCardOnlyL = source.split("/")[len(source.split("/")) -1]
     print(fileCardOnlyL)
@@ -359,6 +443,7 @@ for nn, source in enumerate(sourcesCards) :
     print (len(binstoDo),len(limits[0]))
     print 'binstoDo= ', binstoDo
     print limits[0]
+    if max(limits[0]) > maxlimit : maxlimit = max(limits[0])
     for jj in limits[0] : file.write(unicode(str(jj)+', '))
     file.write(unicode('\n'))
     plt.plot(
@@ -377,10 +462,93 @@ ax.legend(
 ax.set_xlabel('nbins')
 ax.set_ylabel('limits')
 maxsum=0
-maxlim = info["maxlim"]
+#maxlim = info["maxlim"]
+maxlim = 1.5*maxlimit
 minlim = info["minlim"]
 plt.axis((min(binstoDo),max(binstoDo), minlim, maxlim))
 fig.savefig(namefig+'_ttH.png')
 fig.savefig(namefig+'_ttH.pdf')
 file.close()
 print ("saved",namefig)
+print(datetime.now() - startTime)
+
+if combine :
+ firstpart = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_X900GeV_"
+ lastpart = "_bbWW_%s_%s_12bins.txt" %(signal_type, mass)
+ HbbFat_WjjFat_HP_e = firstpart+ "HbbFat_WjjFat_HP_e" +lastpart
+ HbbFat_WjjFat_HP_m = firstpart+"HbbFat_WjjFat_HP_m" +lastpart
+ HbbFat_WjjFat_LP_e = firstpart+"HbbFat_WjjFat_LP_e" +lastpart
+ HbbFat_WjjFat_LP_m = firstpart+"HbbFat_WjjFat_LP_m" +lastpart
+ HbbFat_WjjRes_allReco_e = firstpart+"HbbFat_WjjRes_allReco_e" +lastpart
+ HbbFat_WjjRes_allReco_m = firstpart+"HbbFat_WjjRes_allReco_m" +lastpart
+ Res_allReco_2b_e = firstpart+"Res_allReco_2b_e" +lastpart
+ Res_allReco_2b_m = firstpart+"Res_allReco_2b_m" +lastpart
+
+ Res_allReco_1b_e = firstpart+"Res_allReco_1b_e" +lastpart
+ Res_allReco_1b_m = firstpart+"Res_allReco_1b_m" +lastpart
+
+ HbbFat_WjjRes_MissJet_e = firstpart+ "HbbFat_WjjRes_MissJet_e" + lastpart
+ HbbFat_WjjRes_MissJet_m = firstpart+ "HbbFat_WjjRes_MissJet_m" + lastpart
+ Res_MissWJet_2b_e = firstpart + "Res_MissWJet_2b_e" + lastpart
+ Res_MissWJet_2b_m = firstpart + "Res_MissWJet_2b_m" + lastpart
+
+ Res_MissWJet_1b_e = firstpart + "Res_MissWJet_1b_e" + lastpart
+ Res_MissWJet_1b_m = firstpart + "Res_MissWJet_1b_m" + lastpart
+
+ combinecard = "combinecard_%s_%s_addResolved_2b_%s_add_Resolved_1b_%s_add_semiboosted_%s_add_boosted_%s_add_missingjet_boosted_%s_add_missingjet_2b_%s_add_missingjet_1b_%s" %(signal_type, mass, add_Resolved_2b, add_Resolved_1b, add_semiboosted, add_boosted, add_missingjet_boosted, add_missingjet_2b, add_missingjet_1b)
+ FolderOut = "%s/results/" % mom_datacards
+
+ cmd = ''
+ if add_boosted :
+     cmd = "combineCards.py HbbFat_WjjFat_HP_e=%s HbbFat_WjjFat_HP_m=%s HbbFat_WjjFat_LP_e=%s HbbFat_WjjFat_LP_m=%s" %(HbbFat_WjjFat_HP_e, HbbFat_WjjFat_HP_m, HbbFat_WjjFat_LP_e, HbbFat_WjjFat_LP_m)
+
+ if add_semiboosted : 
+     if len(cmd) :
+         cmd += " HbbFat_WjjRes_allReco_e=%s HbbFat_WjjRes_allReco_m=%s" %(HbbFat_WjjRes_allReco_e, HbbFat_WjjRes_allReco_m)
+     else :
+         cmd = " combineCards.py  HbbFat_WjjRes_allReco_e=%s HbbFat_WjjRes_allReco_m=%s" %(HbbFat_WjjRes_allReco_e, HbbFat_WjjRes_allReco_m)
+ if add_Resolved_2b :
+     if len(cmd) :
+         cmd += " Res_allReco_2b_e=%s Res_allReco_2b_m=%s " %(Res_allReco_2b_e, Res_allReco_2b_m)
+     else :
+         cmd = "combineCards.py  Res_allReco_2b_e=%s Res_allReco_2b_m=%s " %(Res_allReco_2b_e, Res_allReco_2b_m)
+         if plot_hadd :
+             cmd_hadd = "hadd %sRes_allReco_2b%s %s %s " %(firstpart, lastpart.replace("txt", "root"), Res_allReco_2b_e.replace("txt","root"), Res_allReco_2b_m.replace("txt","root"))
+             print cmd_hadd
+             runCombineCmd(cmd_hadd, local, "hadd_%s_%s_Res_allReco_2b.log" %(signal_type, mass))
+
+ if add_Resolved_1b :
+     if len(cmd) :
+        cmd += " Res_allReco_1b_e=%s Res_allReco_1b_m=%s" %(Res_allReco_1b_e, Res_allReco_1b_m)
+     else :
+         cmd = "combineCards.py  Res_allReco_1b_e=%s Res_allReco_1b_m=%s " %(Res_allReco_1b_e, Res_allReco_1b_m)
+         if plot_hadd :
+             cmd_hadd = "hadd %sRes_allReco_1b%s %s %s " %(firstpart, lastpart.replace("txt", "root"), Res_allReco_1b_e.replace("txt","root"), Res_allReco_1b_m.replace("txt","root"))
+             print cmd_hadd
+             runCombineCmd(cmd_hadd, local, "hadd_%s_%s_Res_allReco_1b.log" %(signal_type, mass))
+ if add_missingjet_2b :
+     if len(cmd) :
+         cmd += " Res_MissWJet_2b_e=%s Res_MissWJet_2b_m=%s" %(Res_MissWJet_2b_e, Res_MissWJet_2b_m)
+     else :
+         cmd = "combineCards.py Res_MissWJet_2b_e=%s Res_MissWJet_2b_m=%s" %(Res_MissWJet_2b_e, Res_MissWJet_2b_m)
+
+ if add_missingjet_1b :
+     if len(cmd) :
+         cmd += " Res_MissWJet_1b_e=%s Res_MissWJet_1b_m=%s" %(Res_MissWJet_1b_e, Res_MissWJet_1b_m)
+     else :
+         cmd = "combineCards.py Res_MissWJet_1b_e=%s Res_MissWJet_1b_m=%s" %(Res_MissWJet_1b_e, Res_MissWJet_1b_m)
+ if add_missingjet_boosted :
+     if len(cmd) :
+         cmd += " HbbFat_WjjRes_MissJet_e=%s HbbFat_WjjRes_MissJet_m=%s" %(HbbFat_WjjRes_MissJet_e, HbbFat_WjjRes_MissJet_m)
+     else :
+         cmd = "combineCards.py HbbFat_WjjRes_MissJet_e=%s HbbFat_WjjRes_MissJet_m=%s" %(HbbFat_WjjRes_MissJet_e, HbbFat_WjjRes_MissJet_m)
+
+ cmd += " > %s/%s.txt" %(mom_datacards, combinecard)
+ runCombineCmd(cmd, local, "combinecard.log")
+ cmd = "combineTool.py  -M AsymptoticLimits  -t -1 %s/%s.txt " % (mom_datacards, combinecard)
+ runCombineCmd(cmd,  local, "%s.log" % combinecard)
+ if plot_hadd :
+     pass
+ 
+
+
