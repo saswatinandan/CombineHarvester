@@ -70,6 +70,7 @@ def rebinRegular(
     histSource,
     nbin,
     BINtype,
+    do_signalFlat,
     originalBinning,
     doplots,
     bdtType,
@@ -125,6 +126,7 @@ def rebinRegular(
         hSum = TH1F()
         hFakes = TH1F()
         hSumAll = TH1F()
+        hSumSignal = TH1F()
         ratiohSum=1.
         ratiohSumP=1.
         name = histSource.split("/")[len(histSource.split("/"))-1] + "_" + str(nbins) + nameOutFileAddL + ".root"
@@ -148,6 +150,7 @@ def rebinRegular(
                 hSum = TH1F()
                 hFakes = TH1F()
                 hSumAll = TH1F()
+                hSumSignal = TH1F()
                 ratiohSum=1.
                 ratiohSumP=1.
             else :
@@ -188,10 +191,20 @@ def rebinRegular(
                        hSumAll.SetName("hSumAllBk1")
                    else :
                        hSumAll.Add(h2)
+               if h2.GetName().find("hh") != -1 :
+                   if not hSumSignal.Integral()>0 :
+                       hSumSignal=h2.Clone()
+                       hSumSignal.SetName("hSumSignal")
+                   else :
+                       hSumSignal.Add(h2)
+
             #################################################
             print ("Sum of BKG: ", hSumAll.Integral(), ", hFakes.Integral: ",hFakes.Integral())
             if BINtype=="quantiles" :
-                nbinsQuant =  getQuantiles(hSumAll, nbins, xmax)
+                if do_signalFlat :
+                    nbinsQuant =  getQuantiles(hSumSignal, nbins, xmax)
+                else  :
+                    nbinsQuant =  getQuantiles(hSumAll, nbins, xmax)
             ## nbins+1 if first quantile is zero ## getQuantiles(hFakes,nbins,xmax) #
             #print ("Bins by quantiles ",nbins,nbinsQuant)
             if withFolder :
@@ -216,28 +229,6 @@ def rebinRegular(
                 elif BINtype=="ranged" or BINtype=="regular" :
                     histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
                 elif BINtype=="quantiles" :
-                    xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
-                    histo=TH1F( nameHisto, nameHisto , nbins , nbinsQuant) # nbins+1 if first is zero
-                elif BINtype=="mTauTauVis" :
-                    histo= TH1F( nameHisto, nameHisto , nbins , 0. , 200.)
-                histo.Sumw2()
-                #if BINtype=="quantiles" : ### fix that -- I do not want these written to the file
-                for place in range(0,histogramCopy.GetNbinsX() + 1) :
-                    content =      histogramCopy.GetBinContent(place)
-                    #if content < 0 : continue # print (content,place)
-                    binErrorCopy = histogramCopy.GetBinError(place);
-                    newbin =       histo.GetXaxis().FindBin(histogramCopy.GetXaxis().GetBinCenter(place))
-                    binError =     histo.GetBinError(newbin);
-                    contentNew =   histo.GetBinContent(newbin)
-                    histo.SetBinContent(newbin, content+contentNew)
-                    histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
-                if BINtype=="none" :
-                    histo=histogramCopy.Clone()
-                    histo.SetName(nameHisto)
-                elif BINtype=="ranged" or BINtype=="regular" :
-                    histo= TH1F( nameHisto, nameHisto , nbins , xmin , xmax)
-                elif BINtype=="quantiles" :
-                    nbinsQuant= getQuantiles(hSumAll,nbins,xmax) # getQuantiles(hSumAll,nbins,xmax) ## nbins+1 if first quantile is zero
                     xmaxLbin=xmaxLbin+[nbinsQuant[nbins-2]]
                     histo=TH1F( nameHisto, nameHisto , nbins , nbinsQuant) # nbins+1 if first is zero
                 elif BINtype=="mTauTauVis" :

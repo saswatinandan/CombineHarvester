@@ -409,30 +409,31 @@ for cc, catcat in enumerate(catcats) :
         )
 
 if do_bottom :
-    canvas = ROOT.TCanvas("canvas", "canvas", 600, 1500)
+    canvas = ROOT.TCanvas("canvas", "canvas", 1100, 1500)
 else :
     canvas = ROOT.TCanvas("canvas", "canvas", 900, 900)
+
 canvas.SetFillColor(10)
 canvas.SetBorderSize(2)
-dumb = canvas.Draw()
-del dumb
+#dumb = canvas.Draw()
+#del dumb
 
 if do_bottom :
     topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995)
     topPad.SetFillColor(10)
-    topPad.SetTopMargin(0.075)
-    topPad.SetLeftMargin(0.20)
+    topPad.SetTopMargin(0.04)
+    topPad.SetLeftMargin(0.15)
     topPad.SetBottomMargin(0.053)
-    topPad.SetRightMargin(0.04)
+    topPad.SetRightMargin(0.02)
     if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
         topPad.SetLogy()
 
     bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
     bottomPad.SetFillColor(10)
-    bottomPad.SetTopMargin(0.036)
-    bottomPad.SetLeftMargin(0.20)
+    bottomPad.SetTopMargin(0.04)
+    bottomPad.SetLeftMargin(0.15)
     bottomPad.SetBottomMargin(0.35)
-    bottomPad.SetRightMargin(0.04)
+    bottomPad.SetRightMargin(0.02)
 else :
     topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.05, 1.00, 0.995)
     topPad.SetFillColor(10)
@@ -444,13 +445,12 @@ else :
         topPad.SetLogy()
 ####################################
 canvas.cd()
-dumb = topPad.Draw()
-del dumb
+topPad.Draw()
+#del dumb
 topPad.cd()
-del topPad
-dumb = hist_total.Draw("axis")
+#del topPad
+#hist_total.Draw("axis")
 
-del dumb
 histogramStack_mc = ROOT.THStack()
 print ("list of processes considered and their integrals")
 
@@ -525,8 +525,7 @@ for kk, key in  enumerate(dprocs.keys()) :
     if hist_rebin == 0 or not hist_rebin.Integral() > 0 or (info_hist["labelPos"] == 0 and not options.original == "none" )  : # : (info_hist["labelPos"] == 0 and not options.original == "none" )
         continue
     print (key,  0 if hist_rebin == 0 else hist_rebin.Integral() )
-    dumb = histogramStack_mc.Add(hist_rebin)
-    del dumb
+    histogramStack_mc.Add(hist_rebin)
 
 if HH :
     colorsH = [1, 4, 8, 5, 6]
@@ -560,47 +559,42 @@ if HH :
             continue
         histHH.SetMarkerSize(0)
         histHH.SetLineWidth(3)
-        histHH.SetFillColor(colorsH[hh])
+        #histHH.SetFillColor(colorsH[hh])
         histHH.SetLineColor(colorsH[hh])
-        histHH.SetFillStyle(3315)
+        #histHH.SetFillStyle(3315)
         #histHH.Scale(1.18)
         histogramsHH[hh] = histHH.Clone()
-        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", "").replace("nonresonant", "").replace("kl", "").replace("1p00", "SM"), "f")
+        legend1.AddEntry(histogramsHH[hh], Hproc.replace("signal", "").replace("_", " ").replace("hh", "").replace("spin0", "").replace("ggf", "").replace("nonresonant", ""), "f")
         print(Hproc.replace("signal", "").replace("_", ""), histHH.Integral())
+max_ = 25*histogramStack_mc.GetMaximum()
+histogramStack_mc.Draw("hist,H")
+histogramStack_mc.SetMaximum(max_)
+histogramStack_mc.SetMinimum(0.1)
+#histogramStack_mc.SetLabelSize(0.)
+hist_total.Draw("axis,same")
+hist_total.Draw("e2,same")
 
 for line1 in linebin :
     line1.SetLineColor(1)
     line1.SetLineStyle(3)
-    line1.Draw()
-
-dumb = hist_total.Draw("axis,same")
-dumb = histogramStack_mc.Draw("hist,same")
-del dumb
-dumb = hist_total.Draw("e2,same")
-del dumb
+    line1.Draw()   
 if HH :
     for histoHHdraw in histogramsHH :
         if histoHHdraw.Integral() > 0 :
-            dumb = histoHHdraw.Draw("hist,same")
-            del dumb
+            histoHHdraw.Draw("hist,same")
 if options.unblind :
-    dumb = dataTGraph1.Draw("e1P,same")
-    del dumb
-dumb = hist_total.Draw("axis,same")
-del dumb
+    dataTGraph1.Draw("e1P,same")
+hist_total.Draw("axis,same")
 
-dumb = legend1.Draw("same")
-del dumb
+legend1.Draw("same")
 
 labels = addLabel_CMS_preliminary(options.era)
 for ll, label in enumerate(labels) :
     print ("printing label", ll)
     if ll == 0 :
-        dumb = label.Draw("same")
-        del dumb
+        label.Draw("same")
     else :
-        dumb = label.Draw()
-        del dumb
+        label.Draw()
 
 for cc, cat in enumerate(options_plot_ranges("ttH")[typeCat]["cats"]) :
     print ("Draw label cat", cat, cc)
@@ -622,8 +616,7 @@ legend1.AddEntry(hist_total, "Uncertainty", "f")
 #################################
 if do_bottom :
     canvas.cd()
-    dumb = bottomPad.Draw()
-    del dumb
+    bottomPad.Draw()
     bottomPad.cd()
     bottomPad.SetLogy(0)
     print ("doing bottom pad")
@@ -643,8 +636,7 @@ if do_bottom :
             era
             )
         print (readFrom, lastbin)
-    dumb = hist_total_err.Draw("e2")
-    del dumb
+    hist_total_err.Draw("e2")
     if options.unblind :
         if not options.fromHavester :
             dataTGraph2 = ROOT.TGraphAsymmErrors()
@@ -665,15 +657,13 @@ if do_bottom :
                 hist_total,
                 readFrom,
                 fin[0])
-        dumb = dataTGraph2.Draw("e1P,same")
-        del dumb
+        dataTGraph2.Draw("e1P,same")
     line = ROOT.TF1("line", "0", hist_total_err.GetXaxis().GetXmin(), hist_total_err.GetXaxis().GetXmax())
     line.SetLineStyle(3)
     line.SetLineColor(ROOT.kBlack)
-    dumb = line.Draw("same")
-    del dumb
+    line.Draw("same")
     print ("done bottom pad")
-    del bottomPad
+
 ##################################
 oplin = "linear"
 if options.useLogPlot :
@@ -685,11 +675,15 @@ if divideByBinWidth :
 
 savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat
 print ("saving...", savepdf )
-dumb = canvas.SaveAs(savepdf + ".pdf")
+canvas.SaveAs(savepdf + ".pdf")
+canvas.SaveAs(savepdf + ".png")
+histogramStack_mc
+del topPad
+if do_bottom : del bottomPad
+del canvas
 print ("saved", savepdf + ".pdf")
-del dumb
 
-dumb = canvas.Print(savepdf + ".root")
+'''canvas.Print(savepdf + ".root")
 print ("saved", savepdf + ".root")
 del dumb
 canvas.IsA().Destructor(canvas)
@@ -697,3 +691,4 @@ canvas.IsA().Destructor(canvas)
 #print ("saved", savepdf + ".png")
 #del dumb
 #print ("saved", savepdf)
+'''
