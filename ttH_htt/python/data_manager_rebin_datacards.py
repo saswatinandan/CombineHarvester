@@ -181,8 +181,7 @@ def rebinRegular(
                    h2.SetName(str(h2.GetName()))
                histograms.append(h2.Clone())
                if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
-               if "fakes_data" in h2.GetName() : hFakes=h2.Clone()
-               if h2.GetName().find("H") ==-1 and h2.GetName().find("data_obs") ==-1  : # and "DY" in h2.GetName()
+               if h2.GetName().find("hh") ==-1 and h2.GetName().find("data_obs") ==-1  : # and "DY" in h2.GetName()
                    #hSumDumb2 = obj # h2_rebin #
                    if BINtype=="quantiles" :
                        print ("sum to quantiles in BKG:", h2.GetName(), h2.Integral())
