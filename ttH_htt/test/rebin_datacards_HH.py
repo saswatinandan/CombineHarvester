@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#python test/rebin_datacards_HH.py --channel "1l_0tau"  --signal_type res --mass spin0_900  --HHtype bbWW  --prepareDatacards_path /home/snandan/hhAnalysis/2016/full_analysis/datacards/hh_bb1l/prepareDatacards/ --output_path /home/snandan/hh_Analysis/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/dumb/ --subcats one_missing_resolved
+#python test/rebin_datacards_HH.py --channel "1l_0tau"  --signal_type res --mass spin0_900  --HHtype bbWW  --prepareDatacards_path /home/snandan/hhAnalysis/2016/full_analysis/datacards/hh_bb1l/prepareDatacards/ --output_path /home/snandan/hh_Analysis/CMSSW_8_1_0/src/CombineHarvester/ttH_htt/dumb/ --subcats one_missing_resolved --BDTfor X900GeV
 import os, subprocess, sys
 workingDir = os.getcwd()
 import os, re, shlex
@@ -37,7 +37,7 @@ parser.add_option("--prepareDatacards_path", type="string", dest="prepareDatacar
 parser.add_option("--doPlots", action="store_true", dest="doPlots", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--drawLimitsOnly", action="store_true", dest="drawLimitsOnly", help="If you call this will not do plots with repport", default=False)
 parser.add_option("--doLimitsOnly", action="store_true", dest="doLimitsOnly", help="If you call this will not do plots with repport", default=False)
-parser.add_option("--BDTfor", type="string", dest="BDTfor", help="type of BDT to be considered", default="SM")
+parser.add_option("--BDTfor", choices = ["SM", "X900GeV"], dest="BDTfor", help="type of BDT to be considered", default="SM")
 parser.add_option("--plot_hadd", action="store_true", dest="plot_hadd", help="plot after doing hadd for all subcategories", default=False)
 parser.add_option(
     "--signal_type",    type="string",       dest="signal_type",
@@ -299,7 +299,7 @@ if not (drawLimitsOnly or doLimitsOnly) :
     ax.set_ylabel('err/content last bin')
     ax.legend(loc='best', fancybox=False, shadow=False, ncol=1, fontsize=8)
     plt.grid(True)
-    namefig = local + '/' + options.variables + '_'+ signal_type + '_' + mass + '_' + options.subcats + '_ErrOcont_' + BINtype + '.png'
+    namefig = local + '/' + options.variables + '_'+ signal_type + '_' + mass + '_' + options.subcats + '_ErrOcont_' + BINtype + '_do_signalFlat_' + str(do_signalFlat) +'.png'
     fig.savefig(namefig)
     print ("saved",namefig)
     print (bin_isMoreThan02)
@@ -420,7 +420,7 @@ print sources
 print "draw limits"
 fig, ax = plt.subplots(figsize=(5, 5))
 if BINtype == "quantiles" :
-    namefig=local+'/'+options.variables+ '_'+options.channel+'_'+signal_type +'_'+mass+'_'+options.subcats +'_fullsim_limits_quantiles'
+    namefig=local+'/'+options.variables+ '_'+options.channel+'_'+signal_type +'_'+mass+'_'+options.subcats +'_fullsim_limits_quantiles' + "_do_signalFlat_" + str(options.do_signalFlat)
 if BINtype == "regular" or BINtype == "mTauTauVis":
     namefig=local+'/'+options.variables+'_'+options.channel+'_'+signal_type +'_'+mass+'_'+options.subcats +'_fullsim_limits'
 if BINtype == "ranged" :
@@ -473,8 +473,8 @@ print ("saved",namefig)
 print(datetime.now() - startTime)
 
 if combine :
- firstpart = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_X900GeV_"
- lastpart = "_bbWW_%s_%s_12bins.txt" %(signal_type, mass)
+ firstpart = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_"
+ lastpart = "_%s_bbWW_%s_%s_14bins_%s.txt" %(BINtype, signal_type, mass, BINtype)
  HbbFat_WjjFat_HP_e = firstpart+ "HbbFat_WjjFat_HP_e" +lastpart
  HbbFat_WjjFat_HP_m = firstpart+"HbbFat_WjjFat_HP_m" +lastpart
  HbbFat_WjjFat_LP_e = firstpart+"HbbFat_WjjFat_LP_e" +lastpart
@@ -495,7 +495,7 @@ if combine :
  Res_MissWJet_1b_e = firstpart + "Res_MissWJet_1b_e" + lastpart
  Res_MissWJet_1b_m = firstpart + "Res_MissWJet_1b_m" + lastpart
 
- combinecard = "combinecard_%s_%s_addResolved_2b_%s_add_Resolved_1b_%s_add_semiboosted_%s_add_boosted_%s_add_missingjet_boosted_%s_add_missingjet_2b_%s_add_missingjet_1b_%s" %(signal_type, mass, add_Resolved_2b, add_Resolved_1b, add_semiboosted, add_boosted, add_missingjet_boosted, add_missingjet_2b, add_missingjet_1b)
+ combinecard = "combinecard_%s_%s_addResolved_2b_%s_add_Resolved_1b_%s_add_semiboosted_%s_add_boosted_%s_add_missingjet_boosted_%s_add_missingjet_2b_%s_add_missingjet_1b_%s_%s_do_signalFlat_%s" %(signal_type, mass, add_Resolved_2b, add_Resolved_1b, add_semiboosted, add_boosted, add_missingjet_boosted, add_missingjet_2b, add_missingjet_1b, BINtype, str(do_signalFlat))
  FolderOut = "%s/results/" % mom_datacards
 
  cmd = ''
@@ -512,20 +512,13 @@ if combine :
          cmd += " Res_allReco_2b_e=%s Res_allReco_2b_m=%s " %(Res_allReco_2b_e, Res_allReco_2b_m)
      else :
          cmd = "combineCards.py  Res_allReco_2b_e=%s Res_allReco_2b_m=%s " %(Res_allReco_2b_e, Res_allReco_2b_m)
-         if plot_hadd :
-             cmd_hadd = "hadd %sRes_allReco_2b%s %s %s " %(firstpart, lastpart.replace("txt", "root"), Res_allReco_2b_e.replace("txt","root"), Res_allReco_2b_m.replace("txt","root"))
-             print cmd_hadd
-             runCombineCmd(cmd_hadd, local, "hadd_%s_%s_Res_allReco_2b.log" %(signal_type, mass))
 
  if add_Resolved_1b :
      if len(cmd) :
         cmd += " Res_allReco_1b_e=%s Res_allReco_1b_m=%s" %(Res_allReco_1b_e, Res_allReco_1b_m)
      else :
          cmd = "combineCards.py  Res_allReco_1b_e=%s Res_allReco_1b_m=%s " %(Res_allReco_1b_e, Res_allReco_1b_m)
-         if plot_hadd :
-             cmd_hadd = "hadd %sRes_allReco_1b%s %s %s " %(firstpart, lastpart.replace("txt", "root"), Res_allReco_1b_e.replace("txt","root"), Res_allReco_1b_m.replace("txt","root"))
-             print cmd_hadd
-             runCombineCmd(cmd_hadd, local, "hadd_%s_%s_Res_allReco_1b.log" %(signal_type, mass))
+
  if add_missingjet_2b :
      if len(cmd) :
          cmd += " Res_MissWJet_2b_e=%s Res_MissWJet_2b_m=%s" %(Res_MissWJet_2b_e, Res_MissWJet_2b_m)
@@ -547,8 +540,6 @@ if combine :
  runCombineCmd(cmd, local, "combinecard.log")
  cmd = "combineTool.py  -M AsymptoticLimits  -t -1 %s/%s.txt " % (mom_datacards, combinecard)
  runCombineCmd(cmd,  local, "%s.log" % combinecard)
- if plot_hadd :
-     pass
  
 
 
