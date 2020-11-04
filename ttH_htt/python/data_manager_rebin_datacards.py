@@ -64,6 +64,20 @@ def getQuantiles(histoP, ntarget, xmax) :
     for  ii in range(1,ntarget+1) : yqbin[ii]=yq[ii]
     yqbin[ntarget] = xmax
     return yqbin
+global rebinHistogram_binindex
+def rebinHistogram_binindex(histogram) :
+  numBins = histogram.GetNbinsX()
+  histogram_rebinned = TH1F()
+  histogram_rebinned = TH1F(histogram.GetName(), histogram.GetName(),  numBins, 0.5, numBins + 0.5)
+  if not histogram_rebinned.GetSumw2N() : histogram_rebinned.Sumw2()
+  histogram_rebinned.Reset()
+  for idxBin in range(0, numBins+1) : # CV: include underflow and overflow bins
+    binContent = histogram.GetBinContent(idxBin)
+    binError = histogram.GetBinError(idxBin)
+    histogram_rebinned.SetBinContent(idxBin, binContent)
+    histogram_rebinned.SetBinError(idxBin, binError)
+  return histogram_rebinned
+
 
 global rebinRegular
 def rebinRegular(
@@ -243,6 +257,9 @@ def rebinRegular(
                     contentNew =   histo.GetBinContent(newbin)
                     histo.SetBinContent(newbin, content+contentNew)
                     histo.SetBinError(newbin, sqrt(binError*binError+binErrorCopy*binErrorCopy))
+                if do_signalFlat :
+                    histo = rebinHistogram_binindex(histo)
+
                 if "fakes_data" in histo.GetName() and nkey == 0 :
                     ratio=1.
                     ratioP=1.
