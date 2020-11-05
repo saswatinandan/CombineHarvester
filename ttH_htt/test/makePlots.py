@@ -344,17 +344,17 @@ else :
     template.GetYaxis().SetTitle(labelY)
     print (nbinscatlist)
 
-legend_y0 = 0.645
-legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.910)
+legend_y0 = 0.75
+legend1 = ROOT.TLegend(0.2400, legend_y0, 0.9450, 0.94)
 legend1.SetNColumns(3)
 legend1.SetFillStyle(0)
 legend1.SetBorderSize(0)
 legend1.SetFillColor(10)
-legend1.SetTextSize(0.040)
+legend1.SetTextSize(0.020)
 print label_head
 legend1.SetHeader(label_head)
 header = legend1.GetListOfPrimitives().First()
-header.SetTextSize(.05)
+header.SetTextSize(.02)
 header.SetTextColor(1)
 header.SetTextFont(62)
 
@@ -421,24 +421,24 @@ canvas.SetBorderSize(2)
 if do_bottom :
     topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995)
     topPad.SetFillColor(10)
-    topPad.SetTopMargin(0.04)
-    topPad.SetLeftMargin(0.15)
-    topPad.SetBottomMargin(0.053)
-    topPad.SetRightMargin(0.02)
+    topPad.SetTopMargin(0.06)
+    topPad.SetLeftMargin(0.1)
+    topPad.SetBottomMargin(0.0)#53)
+    topPad.SetRightMargin(0.1)
     if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
         topPad.SetLogy()
 
     bottomPad = ROOT.TPad("bottomPad", "bottomPad", 0.00, 0.05, 1.00, 0.34)
     bottomPad.SetFillColor(10)
-    bottomPad.SetTopMargin(0.04)
-    bottomPad.SetLeftMargin(0.15)
+    bottomPad.SetTopMargin(0.05)
+    bottomPad.SetLeftMargin(0.1)
     bottomPad.SetBottomMargin(0.35)
-    bottomPad.SetRightMargin(0.02)
+    bottomPad.SetRightMargin(0.1)
 else :
     topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.05, 1.00, 0.995)
     topPad.SetFillColor(10)
     topPad.SetTopMargin(0.075)
-    topPad.SetLeftMargin(0.20)
+    topPad.SetLeftMargin(0.10)
     topPad.SetBottomMargin(0.1)
     topPad.SetRightMargin(0.04)
     if options.useLogPlot or options_plot_ranges("ttH")[typeCat]["useLogPlot"]:
@@ -571,6 +571,7 @@ histogramStack_mc.Draw("hist,H")
 histogramStack_mc.SetMaximum(max_)
 histogramStack_mc.SetMinimum(0.1)
 #histogramStack_mc.SetLabelSize(0.)
+hist_total.GetYaxis().SetLabelSize(100)
 hist_total.Draw("axis,same")
 hist_total.Draw("e2,same")
 
@@ -673,7 +674,7 @@ optbin = "plain"
 if divideByBinWidth :
     optbin = "divideByBinWidth"
 
-savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat
+savepdf = options.odir+category+"_"+typeFit+"_"+optbin+"_"+options.nameOut+"_unblind"+str(options.unblind)+"_"+oplin + "_" + options.typeCat+"_"+str(options.era)
 print ("saving...", savepdf )
 canvas.SaveAs(savepdf + ".pdf")
 canvas.SaveAs(savepdf + ".png")
