@@ -339,7 +339,7 @@ del dumb
 topPad = ROOT.TPad("topPad", "topPad", 0.00, 0.34, 1.00, 0.995);
 topPad.SetFillColor(10);
 topPad.SetTopMargin(0.075);
-topPad.SetLeftMargin(0.20);
+topPad.SetLeftMargin(0.04);
 topPad.SetBottomMargin(0.03);
 topPad.SetRightMargin(0.04);
 if options.useLogPlot : topPad.SetLogy();
