@@ -149,7 +149,7 @@ def list_channels(analysis, fake_mc) :
         },
         "1l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"],
+            "bkg_procs_from_MC"  : ["Convs", "TTH", "TH", "TTZ", "TTW", "TTWW", "TT", "ST", "Other", "VH", "DY", "W", "WW", "WZ", "ZZ"],
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         }
