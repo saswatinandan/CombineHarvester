@@ -65,12 +65,14 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
     elif signal_type == "nonresNLO" :
         listSig = []
         for decay_hh in decays_hh :
-            for massType in couplings_GF_NLO :
-                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_GF, massType , decay_hh) ]
-        for decay_hh in decays_hh_vbf :
+            #for massType in couplings_GF_NLO :
+            #listSig = listSig + [ "%s_%s_hh_%s" % (prefix_GF, massType , decay_hh) ]
+            listSig = listSig + [ "%s_hh_%s%s" % (prefix_GF, decay_hh, mass) ]
+        '''for decay_hh in decays_hh_vbf :
             for massType in couplings_VBF :
-                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]
+                listSig = listSig + [ "%s_%s_hh_%s" % (prefix_VBF, massType, decay_hh) ]'''
         sigs = [ listSig ]
+        print '***************', sigs
     elif signal_type == "res" :
         listSig = []
         for decay_hh in decays_hh :
@@ -111,7 +113,7 @@ def list_channels( fake_mc, signal_type="none", mass="none", HHtype="none", rena
         },
         "1l_0tau" : {
             "bkg_proc_from_data" : [ fakes    ],
-            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "Other", "DY", "W", "WW", "WZ", "ZZ"] + higgs_proc_no_BR,
+            "bkg_procs_from_MC"  : ["Convs", "TTZ", "TTW", "TTWW", "TT", "ST", "Other", "DY", "W", "WW", "WZ", "ZZ"] + higgs_proc_no_BR,
             "isSMCSplit" : False,
             "proc_to_remove" : {}
         }
