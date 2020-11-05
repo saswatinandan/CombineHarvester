@@ -62,7 +62,8 @@ parser.add_option(
     )
 parser.add_option(
     "--subcats", 
-    choices = ["Res_allReco", "boosted_semiboosted", "one_missing_boosted", "one_missing_resolved", ""],
+    choices = ["Res_allReco", "boosted_semiboosted", "one_missing_boosted", "one_missing_resolved", "semiboosted_boosted_combine", "singleCat",
+               "resolved_singleCat", "boosted_singleCat", ""],
     dest="subcats",
     help="subcategory to be considered in rebinning",
     default=''
@@ -104,6 +105,30 @@ parser.add_option(
     )
 
 parser.add_option(
+    "--add_Resolved_0b",
+    action = "store_true",
+    dest="add_Resolved_0b",
+    help="whether want to add Resolved 0b category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_Resolved_restOfcat_1b",
+    action = "store_true",
+    dest="add_Resolved_restOfcat_1b",
+    help="whether want to add Resolved restOfcat 1b category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_Resolved_restOfcat_2b",
+    action = "store_true",
+    dest="add_Resolved_restOfcat_2b",
+    help="whether want to add Resolved restOfcat 2b category to combine",
+    default=False
+    )
+
+parser.add_option(
     "--add_boosted",
     action = "store_true",
     dest="add_boosted",
@@ -119,10 +144,64 @@ parser.add_option(
     )
 
 parser.add_option(
+    "--add_semiboosted_restOfcat",
+    action = "store_true",
+    dest="add_semiboosted_restOfcat",
+    help="whether want to add semiboosted restOfcat category to combine",
+    default=False
+    )
+
+parser.add_option(
     "--add_missingjet_boosted",
     action = "store_true",
     dest="add_missingjet_boosted",
     help="whether want to add missingjet boosted category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_semiboosted_boosted_combine",
+    action = "store_true",
+    dest="add_semiboosted_boosted_combine",
+    help="whether want to add missingjet boosted category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_singleCat_1b",
+    action = "store_true",
+    dest="add_singleCat_1b",
+    help="whether want to add single category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_singleCat_2b",
+    action = "store_true",
+    dest="add_singleCat_2b",
+    help="whether want to add single category to combine",
+    default=False
+    )
+parser.add_option(
+    "--add_resolved_singleCat_1b",
+    action = "store_true",
+    dest="add_resolved_singleCat_1b",
+    help="whether want to add resolved_single 2b category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_resolved_singleCat_2b",
+    action = "store_true",
+    dest="add_resolved_singleCat_2b",
+    help="whether want to add resolved_single 2b category to combine",
+    default=False
+    )
+
+parser.add_option(
+    "--add_boosted_singleCat",
+    action = "store_true",
+    dest="add_boosted_singleCat",
+    help="whether want to add boosted_single category to combine",
     default=False
     )
 
@@ -146,9 +225,19 @@ add_missingjet_2b = options.add_missingjet_2b
 add_missingjet_1b = options.add_missingjet_1b
 add_Resolved_2b = options.add_Resolved_2b
 add_Resolved_1b = options.add_Resolved_1b
+add_Resolved_0b = options.add_Resolved_0b
+add_Resolved_restOfcat_1b = options.add_Resolved_restOfcat_1b
+add_Resolved_restOfcat_2b = options.add_Resolved_restOfcat_2b
 add_boosted = options.add_boosted
 add_semiboosted = options.add_semiboosted
+add_semiboosted_restOfcat = options.add_semiboosted_restOfcat
 add_missingjet_boosted = options.add_missingjet_boosted
+add_semiboosted_boosted_combine = options.add_semiboosted_boosted_combine
+add_singleCat_1b = options.add_singleCat_1b
+add_singleCat_2b = options.add_singleCat_2b
+add_resolved_singleCat_1b = options.add_resolved_singleCat_1b
+add_resolved_singleCat_2b = options.add_resolved_singleCat_2b
+add_boosted_singleCat = options.add_boosted_singleCat
 BDTfor =  options.BDTfor
 plot_hadd = options.plot_hadd
 ## HH
@@ -208,7 +297,7 @@ print binstoDo
 ### first we do one datacard.txt / bdtType
 for nn, source in enumerate(sources) :
     if BINtype == "regular" :
-        outfile = "%s" % (source.replace("prepareDatacards_", "datacard_"))
+        outfile = "%s_%s" % (source.replace("prepareDatacards_", "datacard_"), BINtype)
     if BINtype == "quantiles" or BINtype == "ranged":
         outfile = "%s_%s" % (source.replace("prepareDatacards_", "datacard_"), BINtype )
 
@@ -241,7 +330,7 @@ nameOutFileAdd = ""
 if BINtype=="none" :
     nameOutFileAdd =  "bins_none"
 if BINtype=="regular" or options.BINtype == "mTauTauVis":
-    nameOutFileAdd =  "bins"
+    nameOutFileAdd =  "bins_regular"
 if BINtype=="ranged" :
     nameOutFileAdd =  "bins_ranged"
 if BINtype=="quantiles" :
@@ -474,28 +563,77 @@ print(datetime.now() - startTime)
 
 if combine :
  firstpart = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_"
- lastpart = "_%s_bbWW_%s_%s_14bins_%s.txt" %(BINtype, signal_type, mass, BINtype)
+ firstpart_HH = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_HH_node_"
+ firstpart_TT = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_TT_node_"
+ firstpart_DY = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_DY_node_"
+ firstpart_ST = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_ST_node_"
+ firstpart_W = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_W_node_"
+ firstpart_Other = mom_datacards + "datacard_hh_bb1l_hh_bb1l_cat_jet_2BDT_Wjj_BDT_SM_wLBN_Other_node_"
+ lastpart = "_%s_bbWW_%s_%s_20bins_%s.txt" %(BINtype, signal_type, mass, BINtype)
  HbbFat_WjjFat_HP_e = firstpart+ "HbbFat_WjjFat_HP_e" +lastpart
  HbbFat_WjjFat_HP_m = firstpart+"HbbFat_WjjFat_HP_m" +lastpart
  HbbFat_WjjFat_LP_e = firstpart+"HbbFat_WjjFat_LP_e" +lastpart
  HbbFat_WjjFat_LP_m = firstpart+"HbbFat_WjjFat_LP_m" +lastpart
  HbbFat_WjjRes_allReco_e = firstpart+"HbbFat_WjjRes_allReco_e" +lastpart
  HbbFat_WjjRes_allReco_m = firstpart+"HbbFat_WjjRes_allReco_m" +lastpart
+
+ semiboosted_boosted_combine = firstpart+ "semiboosted_boosted_combine" + lastpart
  Res_allReco_2b_e = firstpart+"Res_allReco_2b_e" +lastpart
  Res_allReco_2b_m = firstpart+"Res_allReco_2b_m" +lastpart
 
  Res_allReco_1b_e = firstpart+"Res_allReco_1b_e" +lastpart
  Res_allReco_1b_m = firstpart+"Res_allReco_1b_m" +lastpart
 
+ Res_allReco_0b_e = firstpart+"Res_allReco_0b_e" +lastpart
+ Res_allReco_0b_m = firstpart+"Res_allReco_0b_m" +lastpart
+
+ Res_restOfcat_2b_e = firstpart+"Res_restOfcat_2b_e" +lastpart
+ Res_restOfcat_2b_m = firstpart+"Res_restOfcat_2b_m" +lastpart
+ Res_restOfcat_1b_e = firstpart+"Res_restOfcat_1b_e" +lastpart
+ Res_restOfcat_1b_m = firstpart+"Res_restOfcat_1b_m" +lastpart
+
  HbbFat_WjjRes_MissJet_e = firstpart+ "HbbFat_WjjRes_MissJet_e" + lastpart
  HbbFat_WjjRes_MissJet_m = firstpart+ "HbbFat_WjjRes_MissJet_m" + lastpart
+
+ HbbFat_restOfcat_e = firstpart+ "HbbFat_restOfcat_e" + lastpart
+ HbbFat_restOfcat_m = firstpart+ "HbbFat_restOfcat_m" + lastpart
+
  Res_MissWJet_2b_e = firstpart + "Res_MissWJet_2b_e" + lastpart
  Res_MissWJet_2b_m = firstpart + "Res_MissWJet_2b_m" + lastpart
 
  Res_MissWJet_1b_e = firstpart + "Res_MissWJet_1b_e" + lastpart
  Res_MissWJet_1b_m = firstpart + "Res_MissWJet_1b_m" + lastpart
 
- combinecard = "combinecard_%s_%s_addResolved_2b_%s_add_Resolved_1b_%s_add_semiboosted_%s_add_boosted_%s_add_missingjet_boosted_%s_add_missingjet_2b_%s_add_missingjet_1b_%s_%s_do_signalFlat_%s" %(signal_type, mass, add_Resolved_2b, add_Resolved_1b, add_semiboosted, add_boosted, add_missingjet_boosted, add_missingjet_2b, add_missingjet_1b, BINtype, str(do_signalFlat))
+ singleCat_1b_e = firstpart + "singleCat_1b_e" + lastpart
+ singleCat_1b_m = firstpart + "singleCat_1b_m" + lastpart
+ singleCat_2b_e = firstpart + "singleCat_2b_e" + lastpart
+ singleCat_2b_m = firstpart + "singleCat_2b_m" + lastpart
+
+ resolved_singleCat_1b_HH = firstpart_HH + "resolved_singleCat_1b" + lastpart 
+ resolved_singleCat_1b_TT = firstpart_TT + "resolved_singleCat_1b" + lastpart
+ resolved_singleCat_1b_W = firstpart_W + "resolved_singleCat_1b" + lastpart 
+ resolved_singleCat_1b_ST = firstpart_ST + "resolved_singleCat_1b" + lastpart
+ resolved_singleCat_1b_DY = firstpart_DY + "resolved_singleCat_1b" + lastpart 
+ resolved_singleCat_1b_Other = firstpart_Other + "resolved_singleCat_1b" + lastpart
+ resolved_singleCat_2b_HH = firstpart_HH + "resolved_singleCat_2b" + lastpart 
+ resolved_singleCat_2b_TT = firstpart_TT + "resolved_singleCat_2b" + lastpart
+ resolved_singleCat_2b_W = firstpart_W + "resolved_singleCat_2b" + lastpart
+ resolved_singleCat_2b_ST = firstpart_ST + "resolved_singleCat_2b" + lastpart
+ resolved_singleCat_2b_DY = firstpart_DY + "resolved_singleCat_2b" + lastpart
+ resolved_singleCat_2b_Other = firstpart_Other + "resolved_singleCat_2b" + lastpart
+ boosted_singleCat_HH = firstpart_HH + "boosted_singleCat" + lastpart 
+ boosted_singleCat_TT = firstpart_TT + "boosted_singleCat" + lastpart
+ boosted_singleCat_W = firstpart_W + "boosted_singleCat" + lastpart
+ boosted_singleCat_ST = firstpart_ST + "boosted_singleCat" + lastpart
+ boosted_singleCat_DY = firstpart_DY + "boosted_singleCat" + lastpart
+ boosted_singleCat_Other = firstpart_Other + "boosted_singleCat" + lastpart
+ resolved_singleCat_2b = firstpart + "resolved_singleCat_2b" + lastpart
+ resolved_singleCat_2b_m = firstpart + "resolved_singleCat_2b_m" + lastpart
+
+ boosted_singleCat = firstpart + "boosted_singleCat" + lastpart
+ boosted_singleCat_m = firstpart + "boosted_singleCat_m" + lastpart
+
+ combinecard = "combinecard_%s_%s_addResolved_2b_%s_add_Resolved_1b_%s_add_semiboosted_%s_add_boosted_%s_add_missingjet_boosted_%s_add_missingjet_2b_%s_add_missingjet_1b_%s_%s_do_signalFlat_%s_add_semiboosted_boosted_combine" %(signal_type, mass, add_Resolved_2b, add_Resolved_1b, add_semiboosted, add_boosted, add_missingjet_boosted, add_missingjet_2b, add_missingjet_1b, BINtype, str(do_signalFlat))
  FolderOut = "%s/results/" % mom_datacards
 
  cmd = ''
@@ -507,6 +645,18 @@ if combine :
          cmd += " HbbFat_WjjRes_allReco_e=%s HbbFat_WjjRes_allReco_m=%s" %(HbbFat_WjjRes_allReco_e, HbbFat_WjjRes_allReco_m)
      else :
          cmd = " combineCards.py  HbbFat_WjjRes_allReco_e=%s HbbFat_WjjRes_allReco_m=%s" %(HbbFat_WjjRes_allReco_e, HbbFat_WjjRes_allReco_m)
+ if add_semiboosted_boosted_combine :
+     if len(cmd) :
+         cmd += " semiboosted_boosted_combine=%s " %(semiboosted_boosted_combine)
+     else :
+         cmd = " combineCards.py  semiboosted_boosted_combine=%s" %(semiboosted_boosted_combine)
+
+ if add_semiboosted_restOfcat :
+     if len(cmd) :
+         cmd += " HbbFat_restOfcat_e=%s HbbFat_restOfcat_m=%s" %(HbbFat_restOfcat_e, HbbFat_restOfcat_m)
+     else :
+         cmd = " combineCards.py  HbbFat_restOfcat_e=%s HbbFat_restOfcat_m=%s" %(HbbFat_restOfcat_e, HbbFat_restOfcat_m)
+
  if add_Resolved_2b :
      if len(cmd) :
          cmd += " Res_allReco_2b_e=%s Res_allReco_2b_m=%s " %(Res_allReco_2b_e, Res_allReco_2b_m)
@@ -518,6 +668,18 @@ if combine :
         cmd += " Res_allReco_1b_e=%s Res_allReco_1b_m=%s" %(Res_allReco_1b_e, Res_allReco_1b_m)
      else :
          cmd = "combineCards.py  Res_allReco_1b_e=%s Res_allReco_1b_m=%s " %(Res_allReco_1b_e, Res_allReco_1b_m)
+
+ if add_Resolved_restOfcat_2b :
+     if len(cmd) :
+        cmd += " Res_restOfcat_2b_e=%s Res_restOfcat_2b_m=%s" %(Res_restOfcat_2b_e, Res_restOfcat_2b_m)
+     else :
+         cmd = "combineCards.py  Res_restOfcat_2b_e=%s Res_restOfcat_2b_m=%s " %(Res_restOfcat_2b_e, Res_restOfcat_2b_m)
+
+ if add_Resolved_restOfcat_1b :
+     if len(cmd) :
+        cmd += " Res_restOfcat_1b_e=%s Res_restOfcat_1b_m=%s" %(Res_restOfcat_1b_e, Res_restOfcat_1b_m)
+     else :
+         cmd = "combineCards.py  Res_restOfcat_1b_e=%s Res_restOfcat_1b_m=%s " %(Res_restOfcat_1b_e, Res_restOfcat_1b_m)
 
  if add_missingjet_2b :
      if len(cmd) :
@@ -535,7 +697,32 @@ if combine :
          cmd += " HbbFat_WjjRes_MissJet_e=%s HbbFat_WjjRes_MissJet_m=%s" %(HbbFat_WjjRes_MissJet_e, HbbFat_WjjRes_MissJet_m)
      else :
          cmd = "combineCards.py HbbFat_WjjRes_MissJet_e=%s HbbFat_WjjRes_MissJet_m=%s" %(HbbFat_WjjRes_MissJet_e, HbbFat_WjjRes_MissJet_m)
+ if add_singleCat_1b :
+     if len(cmd) :
+         cmd += " singleCat_1b_e=%s singleCat_1b_m=%s" %(singleCat_1b_e, singleCat_1b_m)
+     else :
+         cmd = "combineCards.py singleCat_1b_e=%s singleCat_1b_m=%s" %(singleCat_1b_e, singleCat_1b_m)
+ if add_singleCat_2b :
+     if len(cmd) :
+         cmd += " singleCat_2b_e=%s singleCat_2b_m=%s" %(singleCat_2b_e, singleCat_2b_m)
+     else :
+         cmd = "combineCards.py singleCat_2b_e=%s singleCat_2b_m=%s" %(singleCat_2b_e, singleCat_2b_m)
+ if add_resolved_singleCat_1b :
+     if len(cmd) :
+         cmd += " resolved_singleCat_1b_HH=%s resolved_singleCat_1b_TT=%s resolved_singleCat_1b_DY=%s resolved_singleCat_1b_W=%s resolved_singleCat_1b_ST=%s resolved_singleCat_1b_Other=%s" %(resolved_singleCat_1b_HH, resolved_singleCat_1b_TT, resolved_singleCat_1b_DY, resolved_singleCat_1b_W, resolved_singleCat_1b_ST, resolved_singleCat_1b_Other)
+     else :
+         cmd = "combineCards.py resolved_singleCat_1b_HH=%s resolved_singleCat_1b_TT=%s resolved_singleCat_1b_DY=%s resolved_singleCat_1b_W=%s resolved_singleCat_1b_ST=%s resolved_singleCat_1b_Other=%s" %(resolved_singleCat_1b_HH, resolved_singleCat_1b_TT, resolved_singleCat_1b_DY, resolved_singleCat_1b_W, resolved_singleCat_1b_ST, resolved_singleCat_1b_Other)
+ if add_resolved_singleCat_2b :
+     if len(cmd) :
+         cmd += " resolved_singleCat_2b_HH=%s resolved_singleCat_2b_TT=%s resolved_singleCat_2b_DY=%s resolved_singleCat_2b_W=%s resolved_singleCat_2b_ST=%s resolved_singleCat_2b_Other=%s" %(resolved_singleCat_2b_HH, resolved_singleCat_2b_TT, resolved_singleCat_2b_DY, resolved_singleCat_2b_W, resolved_singleCat_2b_ST, resolved_singleCat_2b_Other)
+     else :
+         cmd = "combineCards.py resolved_singleCat_2b_HH=%s resolved_singleCat_2b_TT=%s resolved_singleCat_2b_DY=%s resolved_singleCat_2b_W=%s resolved_singleCat_2b_ST=%s resolved_singleCat_2b_Other=%s"%(resolved_singleCat_2b_HH, resolved_singleCat_2b_TT, resolved_singleCat_2b_DY, resolved_singleCat_2b_W, resolved_singleCat_2b_ST, resolved_singleCat_2b_Other)
 
+ if add_boosted_singleCat :
+     if len(cmd) :
+         cmd += " boosted_singleCat_HH=%s boosted_singleCat_TT=%s boosted_singleCat_DY=%s boosted_singleCat_W=%s boosted_singleCat_ST=%s boosted_singleCat_Other=%s" %(boosted_singleCat_HH, boosted_singleCat_TT, boosted_singleCat_DY, boosted_singleCat_W, boosted_singleCat_ST, boosted_singleCat_Other)
+     else :
+         cmd = "combineCards.py boosted_singleCat_HH=%s boosted_singleCat_TT=%s boosted_singleCat_DY=%s boosted_singleCat_W=%s boosted_singleCat_ST=%s boosted_singleCat_Other=%s" %(boosted_singleCat_HH, boosted_singleCat_TT, boosted_singleCat_DY, boosted_singleCat_W, boosted_singleCat_ST, boosted_singleCat_Other)
  cmd += " > %s/%s.txt" %(mom_datacards, combinecard)
  runCombineCmd(cmd, local, "combinecard.log")
  cmd = "combineTool.py  -M AsymptoticLimits  -t -1 %s/%s.txt " % (mom_datacards, combinecard)
