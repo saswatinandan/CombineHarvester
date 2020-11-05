@@ -92,11 +92,12 @@ def rebin_total(hist, folder, fin, divideByBinWidth, name_total, lastbin, do_bot
         hist.GetXaxis().SetTitle(labelX)
         hist.GetXaxis().SetTitleOffset(1.2)
         hist.GetXaxis().SetTitleSize(0.05)
-        hist.GetXaxis().SetLabelSize(0.05)
+        hist.GetXaxis().SetLabelSize(0.10)
         hist.GetXaxis().SetLabelColor(1)
     else :
         hist.GetXaxis().SetLabelColor(10)
         hist.GetXaxis().SetTitleOffset(0.7)
+        hist.GetXaxis().SetLabelOffset(0.7)
         hist.GetXaxis().SetTickLength(0.04)
         hist.GetYaxis().SetTitleOffset(1.2)
     hist.GetYaxis().SetTitleSize(0.055)
@@ -327,11 +328,11 @@ def do_hist_total_err(hist_total_err, labelX, total_hist, minBottom, maxBottom, 
     allbins = total_hist.GetNbinsX() #GetNonZeroBins(total_hist)
     hist_total_err.GetYaxis().SetTitle("#frac{Data - Expectation}{Expectation}")
     hist_total_err.GetXaxis().SetTitleOffset(1.25)
-    hist_total_err.GetYaxis().SetTitleOffset(1.2)
-    hist_total_err.GetXaxis().SetTitleSize(0.14)
+    hist_total_err.GetYaxis().SetTitleOffset(.55)
+    hist_total_err.GetXaxis().SetTitleSize(0.075)#14)
     hist_total_err.GetYaxis().SetTitleSize(0.075)
-    hist_total_err.GetYaxis().SetLabelSize(0.105)
-    hist_total_err.GetXaxis().SetLabelSize(0.10)
+    hist_total_err.GetYaxis().SetLabelSize(0.06)
+    hist_total_err.GetXaxis().SetLabelSize(0.05)
     hist_total_err.GetYaxis().SetTickLength(0.04)
     hist_total_err.GetXaxis().SetLabelColor(1)
     hist_total_err.GetXaxis().SetTitle(labelX)
@@ -351,14 +352,14 @@ def do_hist_total_err(hist_total_err, labelX, total_hist, minBottom, maxBottom, 
 
 def addLabel_CMS_preliminary(era) :
     x0 = 0.2
-    y0 = 0.953
+    y0 = 0.98
     ypreliminary = 0.95
     xlumi = 0.67
-    label_cms = ROOT.TPaveText(x0, y0, x0 + 0.0950, y0 + 0.0600, "NDC")
+    label_cms = ROOT.TPaveText(x0, y0-.005, x0 + 0.0950, y0 + 0.0600 -0.005, "NDC")
     label_cms.AddText("CMS")
-    label_cms.SetTextFont(61)
+    label_cms.SetTextFont(50)
     label_cms.SetTextAlign(13)
-    label_cms.SetTextSize(0.0575)
+    label_cms.SetTextSize(0.040)
     label_cms.SetTextColor(1)
     label_cms.SetFillStyle(0)
     label_cms.SetBorderSize(0)
@@ -366,7 +367,7 @@ def addLabel_CMS_preliminary(era) :
     label_preliminary.AddText("Preliminary")
     label_preliminary.SetTextFont(50)
     label_preliminary.SetTextAlign(13)
-    label_preliminary.SetTextSize(0.048)
+    label_preliminary.SetTextSize(0.040)
     label_preliminary.SetTextColor(1)
     label_preliminary.SetFillStyle(0)
     label_preliminary.SetBorderSize(0)
@@ -378,7 +379,7 @@ def addLabel_CMS_preliminary(era) :
     label_luminosity.AddText(lumi + " fb^{-1} (13 TeV)")
     label_luminosity.SetTextFont(42)
     label_luminosity.SetTextAlign(13)
-    label_luminosity.SetTextSize(0.045)
+    label_luminosity.SetTextSize(0.040)
     label_luminosity.SetTextColor(1)
     label_luminosity.SetFillStyle(0)
     label_luminosity.SetBorderSize(0)
