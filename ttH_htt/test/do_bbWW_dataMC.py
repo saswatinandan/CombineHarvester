@@ -25,8 +25,8 @@ era          = options.era
 channel      = options.channel
 
 ## agreed that for data/MC files the signal should bt 400 GeV resonace
-signal_type = "res"
-mass         = "spin0_400"
+signal_type = "res"#"nonresLO"#"res"
+mass         = "spin0_400"#"kl_1p00"#"spin0_400"
 mergeSL   = False
 makeCards = True
 makePlots = True
@@ -85,27 +85,28 @@ elif channel == "1l_0tau" :
 
     else :
         categories_list_bins =  [
-        "_HbbFat_WjjRes_allReco_e",
+        #"_HbbFat_WjjRes_allReco_e",
         "_Res_allReco_1b_e",
-        "_Res_allReco_2b_e",
-        "_HbbFat_WjjRes_allReco_m",
-        "_Res_allReco_1b_m",
-        "_Res_allReco_2b_m",
-        "_HbbFat_WjjRes_MissJet_e",
-        "_Res_MissWJet_1b_e",
-        "_Res_MissWJet_2b_e",
-        "_HbbFat_WjjRes_MissJet_m",
-        "_Res_MissWJet_1b_m",
-        "_Res_MissWJet_2b_m",
+        #"_Res_allReco_2b_e",
+        #"_HbbFat_WjjRes_allReco_m",
+        #"_Res_allReco_1b_m",
+        #"_Res_allReco_2b_m",
+        #"_HbbFat_WjjRes_MissJet_e",
+        #"_Res_MissWJet_1b_e",
+        #"_Res_MissWJet_2b_e",
+        #"_HbbFat_WjjRes_MissJet_m",
+        #"_Res_MissWJet_1b_m",
+        #"_Res_MissWJet_2b_m",
         ]
 
     for_data_MC_plots = [
-    "jet1_pt",
-    "jet1_eta",
-    "lep1_pt",
-    "lep1_eta",
-    "jet2_pt",
-    "jet2_eta"
+    #"jet1_pt",
+    "MET_pT",
+    #"jet1_eta",
+    #"lep1_pt",
+    #"lep1_eta",
+    #"jet2_pt",
+    #"jet2_eta"
     ]
     for typeMVA in for_data_MC_plots :
       for typyCat in categories_list_bins :
